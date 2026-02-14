@@ -21,7 +21,17 @@ const useData = (endpoint, options = {}) => {
       const response = await fetch(endpoint, options);
       
       if (!response.ok) {
-        throw new Error(`שגיאה בטעינת הנתונים: ${response.status}`);
+        let errorMessage = `שגיאה בטעינת הנתונים: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          console.error('API Error Details:', errorData);
+          if (errorData.message) {
+            errorMessage += ` - ${errorData.message}`;
+          }
+        } catch (e) {
+          // Could not parse JSON error response
+        }
+        throw new Error(errorMessage);
       }
       
       const result = await response.json();

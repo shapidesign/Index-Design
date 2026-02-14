@@ -25,6 +25,11 @@ const navSections = [
 
 const Header = ({ activeSection, onSectionChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Debug version
+  useEffect(() => {
+    console.log('Current App Version:', pkg.version);
+  }, []);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {

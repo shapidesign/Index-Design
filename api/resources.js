@@ -68,20 +68,45 @@ async function fetchAllPages() {
   let hasMore = true;
   let startCursor = undefined;
 
-  while (hasMore) {
+  // Helper to query with fallback
+  const queryNotion = async (cursor) => {
+    // Try dataSources.query first (for Data Source IDs)
     try {
-      const response = await notion.dataSources.query({
+      console.log('Trying notion.dataSources.query...');
+      return await notion.dataSources.query({
         data_source_id: DATABASE_ID,
         page_size: 100,
-        start_cursor: startCursor,
+        start_cursor: cursor,
       });
+    } catch (dsError) {
+      console.warn('notion.dataSources.query failed:', dsError.message);
+      
+      // If that fails, try databases.query (for Database IDs)
+      try {
+        console.log('Falling back to notion.databases.query...');
+        return await notion.databases.query({
+          database_id: DATABASE_ID,
+          page_size: 100,
+          start_cursor: cursor,
+        });
+      } catch (dbError) {
+        console.error('notion.databases.query also failed:', dbError.message);
+        // Throw the original error or a combined one
+        throw new Error(`Failed to query Notion. DataSources error: ${dsError.message}. Databases error: ${dbError.message}`);
+      }
+    }
+  };
+
+  while (hasMore) {
+    try {
+      const response = await queryNotion(startCursor);
 
       allPages.push(...response.results);
       hasMore = response.has_more;
       startCursor = response.next_cursor;
     } catch (error) {
-      console.error('Error querying Notion database:', error.body || error);
-      throw new Error(`Notion API error: ${error.message}`);
+      console.error('Error querying Notion:', error);
+      throw error;
     }
   }
 
