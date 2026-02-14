@@ -127,7 +127,7 @@ const Header = ({ activeSection, onSectionChange }) => {
 
           {/* Version Tag - Always visible, far left, styled box */}
           <div className={cn(
-            "hidden md:flex items-center justify-center",
+            "flex items-center justify-center",
             "px-3 py-1",
             "bg-tetris-yellow",
             "border-2 border-off-black",
@@ -135,7 +135,8 @@ const Header = ({ activeSection, onSectionChange }) => {
             "rounded-[4px]",
             "text-xs font-bold font-mono text-off-black",
             "rotate-[-2deg]",
-            "hover:rotate-0 transition-transform duration-200"
+            "hover:rotate-0 transition-transform duration-200",
+            "z-50"
           )}>
             v{pkg.version}
           </div>

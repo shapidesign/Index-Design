@@ -240,16 +240,16 @@ const App = () => {
         {/* Hero + category cards: hidden when any section is active */}
         {!activeSection && (
           <>
-            <section className="text-center mb-16 py-8">
+            <section className="text-center mb-8 py-4">
               {/* Logo "אינדקס" from Figma */}
-              <div className="flex justify-center mb-6">
+              <div className="flex justify-center mb-4">
                 <img
                   src={logoHero}
                   alt="אינדקס"
                   className="h-16 md:h-24 w-auto"
                 />
               </div>
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+              <h1 className="text-5xl md:text-7xl font-bold mb-4 leading-tight">
                 <span className="text-tetris-purple">משאבי עיצוב לסטודנט</span>
               </h1>
               <p className="text-lg text-dark-gray max-w-2xl mx-auto font-ibm text-balance">
@@ -260,7 +260,7 @@ const App = () => {
         )}
 
         {/* ===== SEARCH BAR (always visible) ===== */}
-        <section className="max-w-xl mx-auto mb-12" ref={searchContainerRef}>
+        <section className="max-w-xl mx-auto mb-8" ref={searchContainerRef}>
           <div className="relative">
             <div className={cn(
               "flex items-center gap-3",
