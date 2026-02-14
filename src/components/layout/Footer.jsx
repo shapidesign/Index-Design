@@ -2,6 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import TetrisBlock from '@/components/tetris/TetrisBlock';
 import logoDark from '@/assets/svg/logo-dark.svg';
+import pkg from '../../../package.json';
 
 /**
  * Footer - כותרת תחתונה
@@ -47,14 +48,24 @@ const Footer = () => {
               <TetrisBlock type="O" color="green" size={20} />
               <TetrisBlock type="L" color="orange" size={20} />
             </div>
-            <span className={cn(
-              'inline-block px-3 py-1',
-              'bg-tetris-green',
-              'text-off-black text-xs font-bold',
-              'border-2 border-off-white',
-            )}>
-              נבנה על ידי יהונתן שפירא, 2026
-            </span>
+            <div className="flex items-center gap-2">
+              <span className={cn(
+                'inline-block px-3 py-1',
+                'bg-tetris-green',
+                'text-off-black text-xs font-bold',
+                'border-2 border-off-white',
+              )}>
+                נבנה על ידי יהונתן שפירא, 2026
+              </span>
+              <span className={cn(
+                'inline-block px-2 py-1',
+                'bg-tetris-yellow',
+                'text-off-black text-xs font-bold font-mono',
+                'border-2 border-off-white',
+              )}>
+                v{pkg.version}
+              </span>
+            </div>
           </div>
         </div>
 

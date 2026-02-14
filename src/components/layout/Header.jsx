@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Menu, X } from 'lucide-react';
 import logoDark from '@/assets/svg/logo-dark.svg';
-import pkg from '../../../package.json'; // Import package.json for version
 
 /**
  * Header - כותרת עליונה
@@ -12,7 +11,6 @@ import pkg from '../../../package.json'; // Import package.json for version
  * - Nav buttons: #EEEEEE fill, rounded-[5px], 4px shadow
  * - Purple hamburger button with white lines
  * - Shimshon pixel font for all nav text
- * - Version tag on top left (Yellow box)
  */
 
 const navSections = [
@@ -27,11 +25,6 @@ const navSections = [
 const Header = ({ activeSection, onSectionChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // Debug version
-  useEffect(() => {
-    console.log('Current App Version:', pkg.version);
-  }, []);
-
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -60,7 +53,7 @@ const Header = ({ activeSection, onSectionChange }) => {
           <img src={logoDark} alt="אינדקס האב" className="h-8 w-auto" />
         </a>
 
-        {/* Desktop Navigation + Hamburger + Version */}
+        {/* Desktop Navigation + Hamburger */}
         <div className="flex items-center gap-4">
           <div className="hidden md:flex items-center gap-4">
             <nav className="flex items-center gap-4">
@@ -124,22 +117,6 @@ const Header = ({ activeSection, onSectionChange }) => {
               <Menu size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
             )}
           </button>
-
-          {/* Version Tag - Always visible, far left, styled box */}
-          <div className={cn(
-            "flex items-center justify-center",
-            "px-3 py-1",
-            "bg-tetris-yellow",
-            "border-2 border-off-black",
-            "shadow-[2px_2px_0_#1F1F1F]",
-            "rounded-[4px]",
-            "text-xs font-bold font-mono text-off-black",
-            "rotate-[-2deg]",
-            "hover:rotate-0 transition-transform duration-200",
-            "z-[60]"
-          )}>
-            v{pkg.version}
-          </div>
         </div>
       </div>
 
@@ -174,21 +151,6 @@ const Header = ({ activeSection, onSectionChange }) => {
               {section.label}
             </button>
           ))}
-          
-          {/* Version in Mobile Menu */}
-          <div className="mt-auto pt-6 flex justify-center">
-            <div className={cn(
-              "inline-flex items-center justify-center",
-              "px-3 py-1",
-              "bg-tetris-yellow",
-              "border-2 border-off-black",
-              "shadow-[2px_2px_0_#1F1F1F]",
-              "rounded-[4px]",
-              "text-xs font-bold font-mono text-off-black"
-            )}>
-              v{pkg.version}
-            </div>
-          </div>
         </nav>
       </div>
     </header>
