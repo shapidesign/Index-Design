@@ -71,29 +71,29 @@ async function fetchAllPages() {
 
   // Helper to query with fallback
   const queryNotion = async (cursor) => {
-    // Try dataSources.query first (for Data Source IDs)
+    // Try databases.query first (standard integration)
     try {
-      console.log('Trying notion.dataSources.query...');
-      return await notion.dataSources.query({
-        data_source_id: DATABASE_ID,
+      console.log('Trying notion.databases.query...');
+      return await notion.databases.query({
+        database_id: DATABASE_ID,
         page_size: 100,
         start_cursor: cursor,
       });
-    } catch (dsError) {
-      console.warn('notion.dataSources.query failed:', dsError.message);
+    } catch (dbError) {
+      console.warn('notion.databases.query failed:', dbError.message);
       
-      // If that fails, try databases.query (for Database IDs)
+      // If that fails, try dataSources.query (for Data Source IDs)
       try {
-        console.log('Falling back to notion.databases.query...');
-        return await notion.databases.query({
-          database_id: DATABASE_ID,
+        console.log('Falling back to notion.dataSources.query...');
+        return await notion.dataSources.query({
+          data_source_id: DATABASE_ID,
           page_size: 100,
           start_cursor: cursor,
         });
-      } catch (dbError) {
-        console.error('notion.databases.query also failed:', dbError.message);
+      } catch (dsError) {
+        console.error('notion.dataSources.query also failed:', dsError.message);
         // Throw the original error or a combined one
-        throw new Error(`Failed to query Notion. DataSources error: ${dsError.message}. Databases error: ${dbError.message}`);
+        throw new Error(`Failed to query Notion. Databases error: ${dbError.message}. DataSources error: ${dsError.message}`);
       }
     }
   };

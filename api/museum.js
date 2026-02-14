@@ -52,7 +52,7 @@ async function fetchAllPages() {
 
     // Helper to query with fallback
     const queryNotion = async (cursor) => {
-        // Try databases.query first since this is a new DB ID
+        // Try databases.query first (standard integration)
         try {
             console.log(`Trying notion.databases.query for ${MUSEUM_DB_ID}...`);
             return await notion.databases.query({
@@ -63,7 +63,7 @@ async function fetchAllPages() {
         } catch (dbError) {
             console.warn(`notion.databases.query failed for ${MUSEUM_DB_ID}:`, dbError.message);
             
-            // Fallback to dataSources.query just in case
+            // If that fails, try dataSources.query (for Data Source IDs)
             try {
                 console.log(`Falling back to notion.dataSources.query for ${MUSEUM_DB_ID}...`);
                 return await notion.dataSources.query({
