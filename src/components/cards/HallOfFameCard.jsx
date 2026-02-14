@@ -281,7 +281,7 @@ const ListRow = ({
                 <span
                     className={cn(
                         'shrink-0 px-2 py-0.5',
-                        'text-[11px] font-bold text-off-black',
+                        'text-[11px] font-bold text-off-white',
                         'border border-off-black',
                         'font-shimshon',
                         eraColor
@@ -292,7 +292,7 @@ const ListRow = ({
             )}
 
             {/* Tags */}
-            <div className="hidden md:flex flex-wrap gap-1 shrink-0 max-w-[200px]">
+            <div className="hidden md:flex flex-wrap gap-1 shrink-0 max-w-[200px] justify-end">
                 {styles?.slice(0, 2).map((style, i) => {
                     const bgColor = styleColors[i % styleColors.length];
                     return (
