@@ -22,7 +22,9 @@ function transformResource(page) {
 
   // שם (Name) - title
   const name =
-    props['שם']?.title?.[0]?.plain_text || '';
+    props['שם']?.title?.[0]?.plain_text || 
+    props['Title']?.title?.[0]?.plain_text || 
+    '';
 
   // תיאור (Description) - rich_text
   const description =

@@ -17,9 +17,25 @@ const notion = new Client({
  */
 function transformPage(page) {
     const p = page.properties || {};
-    const rawName = p['שם']?.title?.[0]?.plain_text || '';
     
-    // Extract image from "תמונה" (Files & media)
+    // Name: 'Name' (title) or 'שם' (title)
+    const rawName = p['Name']?.title?.[0]?.plain_text || p['שם']?.title?.[0]?.plain_text || '';
+    
+    // Description: 'הערות' (rich_text) or 'תיאור' (rich_text)
+    const description = p['הערות']?.rich_text?.[0]?.plain_text || p['תיאור']?.rich_text?.[0]?.plain_text || '';
+    
+    // Country: 'מדינה/אזור' (select)
+    const country = p['מדינה/אזור']?.select?.name || '';
+    
+    // Type: 'תחום' (multi_select) or 'סוג' (multi_select) or 'תגיות' (multi_select)
+    const type = p['תחום']?.multi_select?.map(s => s.name) || 
+                 p['סוג']?.multi_select?.map(s => s.name) || 
+                 p['תגיות']?.multi_select?.map(s => s.name) || [];
+                 
+    // Link: 'מקורות' (url) or 'קישור' (url)
+    const link = p['מקורות']?.url || p['קישור']?.url || '';
+    
+    // Image: 'תמונה' (files)
     let imageUrl = null;
     const imageProp = p['תמונה'];
     if (imageProp && imageProp.type === 'files' && imageProp.files.length > 0) {
@@ -34,11 +50,11 @@ function transformPage(page) {
     return {
         id: page.id,
         name: rawName,
-        description: p['תיאור']?.rich_text?.[0]?.plain_text || '',
-        country: p['מדינה/אזור']?.select?.name || '',
-        type: p['סוג']?.multi_select?.map((s) => s.name) || [],
-        link: p['קישור']?.url || '',
-        imageUrl, // Notion image URL
+        description,
+        country,
+        type,
+        link,
+        imageUrl,
     };
 }
 
