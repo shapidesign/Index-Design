@@ -1,0 +1,1056 @@
+# Tetris Design Hub - Cursor AI Rules
+# האב משאבים לסטודנטים לעיצוב גרפי
+
+## PROJECT OVERVIEW
+You are building a Hebrew RTL, Neo-Brutalist, Tetris-themed resource hub for graphic design students.
+- Primary Language: Hebrew (עברית)
+- Direction: RTL (right-to-left)
+- Design Style: Neo-Brutalism with Tetris theme
+- Framework: React 18 + Vite
+- Styling: Tailwind CSS with RTL plugin
+- Backend: Notion API via Express serverless functions
+- Deployment: Vercel
+- Cost: $0/month (free tier everything)
+
+## CORE PRINCIPLES
+
+### 1. RTL-FIRST DESIGN
+- ALWAYS set `dir="rtl"` on containers
+- ALWAYS use RTL-aware Tailwind utilities (e.g., `ms-4` not `ml-4`)
+- ALWAYS reverse animations for RTL (transform directions)
+- ALWAYS test with `lang="he"` attribute
+- Text alignment: `text-right` is default
+- Flexbox: Use `flex-row-reverse` for RTL horizontal layouts
+- Grid: Mirror for RTL contexts
+
+### 2. NEO-BRUTALIST STYLE
+- ALL interactive elements MUST have:
+  - 3px solid black border: `border-3 border-off-black`
+  - 6px drop shadow: `shadow-brutalist` (6px 6px 0px #1F1F1F)
+  - Hover state: shadow reduces to 3px, element translates 3px down/right
+  - Active state: shadow 0px, element translates 6px down/right
+- NO rounded corners (except tetris blocks which are blocky)
+- NO gradients on main UI (only in backgrounds/special effects)
+- NO subtle shadows (always hard, offset shadows)
+- Bold, chunky typography
+- High contrast colors
+- Thick borders everywhere
+
+### 3. TETRIS THEME
+- Use tetris block shapes for icons, decorations, layouts
+- 7 block types: I, O, T, S, Z, J, L
+- Animations should feel "blocky" and snap to grid
+- Rotations: ONLY 90° increments (no smooth continuous rotation)
+- Movement: Prefer translate over smooth transitions
+- Use tetris colors for categories:
+  - Typography: Purple
+  - Mockups: Green
+  - AI Tools: Orange
+  - Software: Blue
+  - Tips: Pink
+  - Featured: Yellow
+  - Navigation: Cyan
+
+## COLOR SYSTEM
+
+### Primary Colors (Soft Pastels)
+```css
+--tetris-purple: #A78BFA;  /* Purple 400 - Typography category */
+--tetris-green: #86EFAC;   /* Green 300 - Mockups category */
+--tetris-orange: #FDBA74;  /* Orange 300 - AI Tools category */
+```
+
+### Secondary Colors
+```css
+--tetris-pink: #F9A8D4;    /* Pink - Student tips */
+--tetris-yellow: #FDE047;  /* Yellow - Featured items */
+--tetris-blue: #93C5FD;    /* Blue - Software category */
+--tetris-cyan: #67E8F9;    /* Cyan - I-blocks */
+```
+
+### Neutrals (NOT Pure Black/White)
+```css
+--off-black: #1F1F1F;      /* NOT #000000 - for text, borders, shadows */
+--dark-gray: #404040;      /* Secondary text */
+--off-white: #FAFAF9;      /* NOT #FFFFFF - main background */
+--light-gray: #F5F5F4;     /* Secondary background */
+```
+
+### Tailwind Usage
+Always use these custom classes:
+- Text: `text-off-black` or `text-dark-gray`
+- Background: `bg-off-white` or `bg-light-gray`
+- Borders: `border-off-black border-3`
+- Shadows: `shadow-brutalist` or `shadow-brutalist-sm`
+
+## TYPOGRAPHY
+
+### Font Family
+```css
+Primary: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
+/* Rubik supports Hebrew beautifully */
+```
+
+### Type Scale
+```css
+H1 (Hero): text-7xl font-bold (90px)
+H2 (Section): text-5xl font-bold (48px)
+H3 (Category): text-3xl font-semibold (32px)
+Body Large: text-lg font-normal (18px)
+Body: text-base font-normal (16px)
+Small: text-sm font-medium (14px)
+Caption: text-xs font-medium (12px)
+```
+
+### Hebrew Typography Rules
+- Line height: 1.5-1.6 (Hebrew needs more breathing room)
+- Letter spacing: normal (don't tighten)
+- Font weight: Bold (700) for headers, Regular (400) for body
+- Never use font-thin or font-light with Hebrew
+
+## SPACING SYSTEM
+
+Follow 4px base unit:
+```css
+Micro: 4px (space-1)
+Tiny: 8px (space-2)
+Small: 12px (space-3)
+Medium: 16px (space-4)
+Large: 24px (space-6)
+XLarge: 32px (space-8)
+XXLarge: 48px (space-12)
+Huge: 64px (space-16)
+```
+
+## COMPONENT STRUCTURE
+
+### File Organization
+```
+src/
+  components/
+    layout/
+      Header.jsx
+      Navigation.jsx
+      MobileMenu.jsx
+      Footer.jsx
+    tetris/
+      TetrisBlock.jsx
+      TetrisLoader.jsx
+      TetrisBackground.jsx
+      TetrisIcon.jsx
+    cards/
+      ResourceCard.jsx
+      LocationCard.jsx
+      BookCard.jsx
+      TipCard.jsx
+      DesignerCard.jsx
+    ui/
+      Button.jsx
+      Input.jsx
+      Badge.jsx
+      Tag.jsx
+  lib/
+    notion.js        # Notion API client (frontend calls)
+    utils.js         # Utility functions
+  hooks/
+    useSearch.js
+    useData.js
+  styles/
+    globals.css
+  App.jsx
+  main.jsx
+```
+
+### Component Template
+Every component MUST follow this structure:
+
+```jsx
+import React from 'react';
+import { cn } from '@/lib/utils'; // classnames utility
+
+/**
+ * ComponentName - Brief description
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.className - Additional classes
+ * @returns {JSX.Element}
+ */
+const ComponentName = ({ 
+  children,
+  className,
+  ...props 
+}) => {
+  return (
+    <div 
+      dir="rtl"
+      className={cn(
+        "base-classes",
+        "rtl-specific-classes",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
+
+export default ComponentName;
+```
+
+## RTL IMPLEMENTATION RULES
+
+### HTML Setup
+```html
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+```
+
+### CSS Rules
+```css
+/* ALWAYS use logical properties when possible */
+margin-inline-start: 16px;  /* NOT margin-left */
+padding-inline-end: 16px;   /* NOT padding-right */
+
+/* Tailwind RTL utilities */
+ms-4   /* margin-inline-start (replaces ml-4) */
+me-4   /* margin-inline-end (replaces mr-4) */
+ps-4   /* padding-inline-start (replaces pl-4) */
+pe-4   /* padding-inline-end (replaces pr-4) */
+```
+
+### Animation Reversal
+```css
+/* LTR animation */
+@keyframes slide-in-ltr {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* RTL version (REQUIRED) */
+[dir="rtl"] @keyframes slide-in-rtl {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+```
+
+### Flexbox RTL
+```jsx
+// ALWAYS use flex-row-reverse for RTL horizontal layouts
+<div className="flex flex-row-reverse items-center gap-4">
+  {/* Items appear right-to-left */}
+</div>
+```
+
+## NOTION API INTEGRATION
+
+### Environment Variables
+```env
+# Backend only (no VITE_ prefix)
+NOTION_API_KEY=secret_xxx
+NOTION_RESOURCES_DB=xxx
+NOTION_LOCATIONS_DB=xxx
+NOTION_BOOKS_DB=xxx
+NOTION_TIPS_DB=xxx
+NOTION_DESIGNERS_DB=xxx
+```
+
+### API Routes Pattern
+```javascript
+// api/index.js
+export default async (req, res) => {
+  const { type } = req.query;
+  
+  try {
+    const data = await fetchFromNotion(type);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+```
+
+### Frontend Data Fetching
+```javascript
+// ALWAYS use API routes, NEVER expose Notion key in frontend
+const fetchResources = async () => {
+  const response = await fetch('/api/resources');
+  if (!response.ok) throw new Error('Failed to fetch');
+  return response.json();
+};
+```
+
+### Notion Data Transformation
+```javascript
+// Transform Notion properties to clean objects
+const transformResource = (page) => ({
+  id: page.id,
+  name: page.properties.Name.title[0]?.plain_text || '',
+  description: page.properties.Description.rich_text[0]?.plain_text || '',
+  category: page.properties.Category.select?.name || '',
+  link: page.properties.Link.url || '',
+  tip: page.properties.Tip.rich_text[0]?.plain_text || '',
+  featured: page.properties.Featured.checkbox || false,
+  tags: page.properties.Tags.multi_select.map(t => t.name) || []
+});
+```
+
+## ANIMATION GUIDELINES
+
+### Performance Rules
+```css
+/* ALWAYS animate with transform, NOT position */
+/* ❌ BAD */
+.element { left: 100px; transition: left 0.3s; }
+
+/* ✅ GOOD */
+.element { transform: translateX(100px); transition: transform 0.3s; }
+
+/* ALWAYS use will-change for frequently animated elements */
+.tetris-block-falling {
+  will-change: transform, opacity;
+}
+```
+
+### Tetris Animation Timings
+```css
+/* Standard timings for consistency */
+--timing-micro: 0.1s;      /* Button active state */
+--timing-fast: 0.2s;       /* Hover effects */
+--timing-normal: 0.3s;     /* State changes */
+--timing-slow: 0.5s;       /* Page transitions */
+--timing-loading: 2s;      /* Loader animations */
+
+/* Standard easing */
+--ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+--ease-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+--ease-sharp: cubic-bezier(0.4, 0.0, 1, 1);
+```
+
+### Required Animations
+1. **TetrisLoader** - Falling blocks during data fetch
+2. **BlockStack** - Content appears by stacking
+3. **ButtonPress** - Shadow shrinks, element moves
+4. **CardHover** - 90° rotation on hover
+5. **LineClear** - Featured items flash yellow
+6. **SlideTransition** - Section changes with rotation
+
+## BUTTON PATTERNS
+
+### Primary Button (Default State)
+```jsx
+<button className={cn(
+  "px-6 py-3",
+  "bg-tetris-purple",
+  "text-off-black font-bold text-base",
+  "border-3 border-off-black",
+  "shadow-brutalist",
+  "transition-all duration-200",
+  "hover:shadow-brutalist-sm hover:translate-x-[3px] hover:translate-y-[3px]",
+  "active:shadow-none active:translate-x-[6px] active:translate-y-[6px]",
+  "disabled:opacity-50 disabled:cursor-not-allowed"
+)}>
+  כפתור
+</button>
+```
+
+### Secondary Button
+```jsx
+<button className={cn(
+  "px-6 py-3",
+  "bg-off-white",
+  "text-off-black font-bold text-base",
+  "border-3 border-off-black",
+  "shadow-brutalist",
+  "hover:bg-light-gray",
+  "transition-all duration-200"
+)}>
+  כפתור משני
+</button>
+```
+
+### Icon Button
+```jsx
+<button className={cn(
+  "p-3",
+  "bg-tetris-yellow",
+  "border-3 border-off-black",
+  "shadow-brutalist-sm",
+  "hover:rotate-90",
+  "transition-all duration-300 ease-bounce"
+)}>
+  <TetrisIcon icon="bookmark" size={24} />
+</button>
+```
+
+## CARD PATTERNS
+
+### Resource Card
+```jsx
+<div className={cn(
+  "p-6",
+  "bg-off-white",
+  "border-3 border-off-black",
+  featured ? "shadow-[6px_6px_0_#FDE047,9px_9px_0_#1F1F1F]" : "shadow-brutalist",
+  "hover:shadow-brutalist-sm hover:translate-x-[3px] hover:translate-y-[3px]",
+  "transition-all duration-200",
+  "group"
+)}>
+  <div className="flex flex-row-reverse items-start justify-between mb-3">
+    <h3 className="text-xl font-bold text-off-black text-right">{name}</h3>
+    <TetrisIcon icon="external-link" className="text-dark-gray" />
+  </div>
+  
+  <p className="text-base text-dark-gray text-right mb-4">{description}</p>
+  
+  {tip && (
+    <div className="mt-4 pt-4 border-t-3 border-light-gray">
+      <p className="text-sm text-off-black text-right">💡 {tip}</p>
+    </div>
+  )}
+  
+  <div className="flex flex-row-reverse gap-2 mt-4">
+    {tags.map(tag => (
+      <span key={tag} className="px-3 py-1 bg-tetris-purple border-2 border-off-black shadow-[2px_2px_0_#1F1F1F] text-xs font-bold">
+        {tag}
+      </span>
+    ))}
+  </div>
+</div>
+```
+
+## TETRIS BLOCK COMPONENT
+
+### Base Pattern
+```jsx
+const TetrisBlock = ({ type, color, size = 24, className }) => {
+  const blocks = {
+    I: { path: "M0,0 L96,0 L96,24 L0,24 Z", viewBox: "0 0 96 24" },
+    O: { path: "M0,0 L48,0 L48,48 L0,48 Z", viewBox: "0 0 48 48" },
+    T: { path: "M0,0 L72,0 L72,24 L48,24 L48,48 L24,48 L24,24 L0,24 Z", viewBox: "0 0 72 48" },
+    // ... other blocks
+  };
+  
+  const block = blocks[type];
+  const colors = {
+    cyan: '#67E8F9',
+    yellow: '#FDE047',
+    purple: '#A78BFA',
+    green: '#86EFAC',
+    pink: '#F9A8D4',
+    blue: '#93C5FD',
+    orange: '#FDBA74'
+  };
+  
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={block.viewBox}
+      className={cn("tetris-block", className)}
+    >
+      <path
+        d={block.path}
+        fill={colors[color]}
+        stroke="#1F1F1F"
+        strokeWidth="3"
+      />
+    </svg>
+  );
+};
+```
+
+## SEARCH IMPLEMENTATION
+
+### Search Hook Pattern
+```javascript
+const useSearch = (items, searchQuery) => {
+  return useMemo(() => {
+    if (!searchQuery.trim()) return items;
+    
+    const query = searchQuery.toLowerCase();
+    
+    return items.filter(item => {
+      // Search in Hebrew and English
+      const searchableText = [
+        item.name,
+        item.description,
+        item.tip,
+        ...(item.tags || [])
+      ].join(' ').toLowerCase();
+      
+      return searchableText.includes(query);
+    });
+  }, [items, searchQuery]);
+};
+```
+
+### Search Input
+```jsx
+<div className="relative">
+  <input
+    type="text"
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    placeholder="חיפוש משאבים..."
+    className={cn(
+      "w-full px-4 py-3 pe-12",
+      "bg-off-white",
+      "text-off-black text-right",
+      "border-3 border-off-black",
+      "focus:outline-none focus:shadow-brutalist",
+      "transition-shadow duration-200"
+    )}
+    dir="rtl"
+  />
+  <TetrisIcon 
+    icon="search" 
+    className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-gray"
+  />
+</div>
+```
+
+## STATE MANAGEMENT
+
+### Loading States
+```jsx
+const [loading, setLoading] = useState(true);
+const [data, setData] = useState([]);
+const [error, setError] = useState(null);
+
+// ALWAYS show TetrisLoader during loading
+if (loading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <TetrisLoader />
+    </div>
+  );
+}
+
+// ALWAYS show friendly error with retry
+if (error) {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-off-white p-8">
+      <TetrisBlock type="O" color="yellow" size={64} />
+      <h2 className="text-2xl font-bold text-off-black mt-6 mb-4">אופס! משהו השתבש</h2>
+      <p className="text-dark-gray text-center mb-6">{error}</p>
+      <button 
+        onClick={() => window.location.reload()}
+        className="px-6 py-3 bg-tetris-green border-3 border-off-black shadow-brutalist"
+      >
+        נסה שוב
+      </button>
+    </div>
+  );
+}
+```
+
+## RESPONSIVE DESIGN
+
+### Breakpoints
+```javascript
+const breakpoints = {
+  mobile: '375px',   // Mobile first
+  tablet: '768px',   // Tablets
+  laptop: '1024px',  // Laptops
+  desktop: '1440px'  // Desktop
+};
+```
+
+### Mobile-First Approach
+```jsx
+<div className={cn(
+  // Mobile (default)
+  "flex flex-col gap-4 p-4",
+  // Tablet
+  "md:flex-row md:gap-6 md:p-6",
+  // Laptop
+  "lg:gap-8 lg:p-8",
+  // Desktop
+  "xl:max-w-7xl xl:mx-auto"
+)}>
+  {/* Content */}
+</div>
+```
+
+### Mobile Menu Pattern
+```jsx
+const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+// ALWAYS prevent body scroll when menu open
+useEffect(() => {
+  if (mobileMenuOpen) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'unset';
+  }
+  
+  return () => {
+    document.body.style.overflow = 'unset';
+  };
+}, [mobileMenuOpen]);
+
+// Full-screen overlay with tetris close button
+<div className={cn(
+  "fixed inset-0 bg-off-white z-50",
+  "flex flex-col items-center justify-center",
+  "transition-transform duration-300",
+  mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+)}>
+  {/* Menu content */}
+</div>
+```
+
+## ACCESSIBILITY
+
+### Required Attributes
+```jsx
+// ALWAYS add ARIA labels in Hebrew
+<button aria-label="סגור תפריט">
+  <TetrisIcon icon="close" />
+</button>
+
+// ALWAYS add proper heading hierarchy
+<h1>כותרת ראשית</h1>
+<h2>כותרת משנית</h2>
+<h3>כותרת קטגוריה</h3>
+
+// ALWAYS add alt text to images in Hebrew
+<img src="..." alt="תיאור התמונה בעברית" />
+
+// ALWAYS support keyboard navigation
+<button 
+  onClick={handleClick}
+  onKeyPress={(e) => e.key === 'Enter' && handleClick()}
+>
+```
+
+### Focus States
+```css
+/* ALWAYS add visible focus states */
+.interactive:focus-visible {
+  outline: 3px solid var(--tetris-yellow);
+  outline-offset: 3px;
+}
+```
+
+### Reduced Motion
+```css
+/* ALWAYS respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+## PERFORMANCE OPTIMIZATION
+
+### Image Optimization
+```jsx
+// ALWAYS lazy load images
+<img 
+  src={imageUrl} 
+  alt={altText}
+  loading="lazy"
+  decoding="async"
+/>
+```
+
+### Code Splitting
+```javascript
+// ALWAYS lazy load routes/heavy components
+const LocationMap = lazy(() => import('./components/LocationMap'));
+
+<Suspense fallback={<TetrisLoader />}>
+  <LocationMap />
+</Suspense>
+```
+
+### Memoization
+```javascript
+// ALWAYS memoize expensive computations
+const filteredResources = useMemo(() => {
+  return resources.filter(r => r.category === activeCategory);
+}, [resources, activeCategory]);
+
+// ALWAYS memoize callbacks passed to children
+const handleClick = useCallback(() => {
+  // Handle click
+}, [dependencies]);
+```
+
+## ERROR HANDLING
+
+### API Calls
+```javascript
+const fetchData = async () => {
+  try {
+    setLoading(true);
+    const response = await fetch('/api/resources');
+    
+    if (!response.ok) {
+      throw new Error(`שגיאה בטעינת הנתונים: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    setData(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    setError(error.message || 'שגיאה לא צפויה');
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+### Form Validation
+```javascript
+const validateForm = (values) => {
+  const errors = {};
+  
+  if (!values.name?.trim()) {
+    errors.name = 'שם הוא שדה חובה';
+  }
+  
+  if (values.email && !isValidEmail(values.email)) {
+    errors.email = 'כתובת אימייל לא תקינה';
+  }
+  
+  return errors;
+};
+```
+
+## TESTING REQUIREMENTS
+
+### Before Committing Code
+```bash
+# ALWAYS test these before committing:
+1. RTL display is correct
+2. Hebrew text renders properly
+3. All animations work smoothly
+4. Mobile responsive works
+5. Keyboard navigation works
+6. Focus states visible
+7. No console errors
+8. Data loads from Notion correctly
+```
+
+## COMMON PATTERNS TO AVOID
+
+### ❌ NEVER DO THIS:
+```jsx
+// ❌ Using pure black/white
+<div className="bg-white text-black">
+
+// ❌ Using left/right directly
+<div className="ml-4 mr-8">
+
+// ❌ Exposing API keys in frontend
+const NOTION_KEY = "secret_xxx";
+
+// ❌ Animating width/height/left/right
+.element { transition: left 0.3s; }
+
+// ❌ Rounded corners everywhere
+<div className="rounded-lg">
+
+// ❌ Subtle shadows
+<div className="shadow-sm">
+
+// ❌ Missing RTL direction
+<div className="flex flex-row">
+
+// ❌ English placeholder in Hebrew input
+<input placeholder="Search..." />
+
+// ❌ Hard-coded strings instead of Hebrew
+<h1>Welcome to Design Hub</h1>
+```
+
+### ✅ ALWAYS DO THIS:
+```jsx
+// ✅ Using off-black/off-white
+<div className="bg-off-white text-off-black">
+
+// ✅ Using logical properties
+<div className="ms-4 me-8">
+
+// ✅ API keys in backend only
+// In .env: NOTION_API_KEY=secret_xxx
+
+// ✅ Animating transforms
+.element { transition: transform 0.3s; }
+
+// ✅ No rounded corners (or blocky only)
+<div className=""> or <div className="rounded-none">
+
+// ✅ Thick brutalist shadows
+<div className="shadow-brutalist">
+
+// ✅ RTL flex with reverse
+<div className="flex flex-row-reverse">
+
+// ✅ Hebrew placeholder
+<input placeholder="חיפוש..." />
+
+// ✅ Hebrew strings
+<h1>ברוכים הבאים לאב העיצוב</h1>
+```
+
+## FILE NAMING CONVENTIONS
+
+```
+Components: PascalCase (ResourceCard.jsx)
+Utils/Hooks: camelCase (useSearch.js, formatDate.js)
+Styles: kebab-case (globals.css, tetris-animations.css)
+API routes: kebab-case (index.js, get-resources.js)
+```
+
+## GIT COMMIT MESSAGES
+
+Follow this pattern:
+```
+feat: Add tetris loader component
+fix: RTL animation direction in card hover
+style: Update color palette to soft pastels
+refactor: Extract notion transform logic
+docs: Add Hebrew README
+test: Add RTL layout tests
+```
+
+## DEPLOYMENT CHECKLIST
+
+Before deploying to Vercel:
+```
+✅ Environment variables set in Vercel dashboard
+✅ Build succeeds locally (npm run build)
+✅ No console errors in production build
+✅ RTL working in production
+✅ Hebrew text displays correctly
+✅ Notion API connected and working
+✅ All animations smooth on mobile
+✅ Performance score >90 on Lighthouse
+✅ Accessibility score >95
+```
+
+## WHEN IN DOUBT
+
+1. **Check the guides**: TETRIS_HUB_GUIDE.md, COLOR_PALETTE.md, TETRIS_ANIMATIONS.md
+2. **Follow RTL-first**: Always design for Hebrew RTL, not English LTR
+3. **Be brutalist**: Thick borders, hard shadows, no subtlety
+4. **Think tetris**: Blocky, grid-based, 90° rotations only
+5. **Ask**: If unsure, ask me to clarify the requirement
+
+## EXAMPLE FULL COMPONENT
+
+Here's a perfect example that follows ALL rules:
+
+```jsx
+import React, { useState } from 'react';
+import { cn } from '@/lib/utils';
+import TetrisIcon from '@/components/tetris/TetrisIcon';
+
+/**
+ * ResourceCard - כרטיס משאב עבור סטודנטים
+ * Displays a resource with tetris-themed brutalist design
+ * 
+ * @param {Object} props
+ * @param {string} props.name - שם המשאב
+ * @param {string} props.description - תיאור המשאב
+ * @param {string} props.category - קטגוריה
+ * @param {string} props.link - קישור
+ * @param {string} props.tip - טיפ לסטודנט
+ * @param {boolean} props.featured - האם מומלץ
+ * @param {string[]} props.tags - תגיות
+ */
+const ResourceCard = ({
+  name,
+  description,
+  category,
+  link,
+  tip,
+  featured = false,
+  tags = [],
+  className
+}) => {
+  const [saved, setSaved] = useState(false);
+  
+  const categoryColors = {
+    'טיפוגרפיה': 'bg-tetris-purple',
+    'מוקאפים': 'bg-tetris-green',
+    'כלי AI': 'bg-tetris-orange',
+    'תוכנות': 'bg-tetris-blue'
+  };
+  
+  const handleSave = () => {
+    setSaved(!saved);
+    // Save to localStorage or API
+    const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+    if (!saved) {
+      bookmarks.push({ name, link });
+    } else {
+      const index = bookmarks.findIndex(b => b.link === link);
+      bookmarks.splice(index, 1);
+    }
+    localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+  };
+  
+  return (
+    <article 
+      dir="rtl"
+      className={cn(
+        "p-6",
+        "bg-off-white",
+        "border-3 border-off-black",
+        featured 
+          ? "shadow-[6px_6px_0_#FDE047,9px_9px_0_#1F1F1F]" 
+          : "shadow-brutalist",
+        "hover:shadow-brutalist-sm hover:translate-x-[3px] hover:translate-y-[3px]",
+        "transition-all duration-200",
+        "group",
+        "animate-tetris-stack",
+        className
+      )}
+    >
+      {/* Header */}
+      <div className="flex flex-row-reverse items-start justify-between mb-4">
+        <div className="flex-1 me-4">
+          <h3 className="text-xl font-bold text-off-black text-right mb-2">
+            {name}
+          </h3>
+          <span 
+            className={cn(
+              "inline-block px-3 py-1",
+              "text-xs font-bold",
+              "border-2 border-off-black",
+              "shadow-[2px_2px_0_#1F1F1F]",
+              categoryColors[category] || 'bg-light-gray'
+            )}
+          >
+            {category}
+          </span>
+        </div>
+        
+        <button
+          onClick={handleSave}
+          aria-label={saved ? "בטל שמירה" : "שמור משאב"}
+          className={cn(
+            "p-2",
+            "border-3 border-off-black",
+            "shadow-brutalist-sm",
+            "transition-all duration-300",
+            "hover:rotate-90 hover:scale-110",
+            saved ? "bg-tetris-pink" : "bg-off-white"
+          )}
+        >
+          <TetrisIcon 
+            icon={saved ? "bookmark-filled" : "bookmark"} 
+            size={20}
+          />
+        </button>
+      </div>
+      
+      {/* Description */}
+      <p className="text-base text-dark-gray text-right mb-4 leading-relaxed">
+        {description}
+      </p>
+      
+      {/* Link */}
+      {link && (
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            "inline-flex flex-row-reverse items-center gap-2",
+            "text-sm font-medium text-off-black",
+            "hover:text-tetris-purple",
+            "transition-colors duration-200"
+          )}
+        >
+          <span>קישור למשאב</span>
+          <TetrisIcon icon="external-link" size={16} />
+        </a>
+      )}
+      
+      {/* Student Tip */}
+      {tip && (
+        <div className="mt-4 pt-4 border-t-3 border-light-gray">
+          <p className="text-sm text-off-black text-right">
+            <span className="font-bold">💡 טיפ: </span>
+            {tip}
+          </p>
+        </div>
+      )}
+      
+      {/* Tags */}
+      {tags.length > 0 && (
+        <div className="flex flex-row-reverse flex-wrap gap-2 mt-4">
+          {tags.map(tag => (
+            <span
+              key={tag}
+              className={cn(
+                "px-3 py-1",
+                "bg-light-gray",
+                "border-2 border-off-black",
+                "shadow-[2px_2px_0_#1F1F1F]",
+                "text-xs font-bold",
+                "hover:bg-tetris-yellow hover:rotate-[-5deg]",
+                "transition-all duration-200 ease-bounce",
+                "cursor-pointer"
+              )}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+      
+      {/* Featured Badge */}
+      {featured && (
+        <div className="absolute -top-3 -right-3">
+          <span className={cn(
+            "block px-3 py-1",
+            "bg-tetris-yellow",
+            "text-off-black text-xs font-bold",
+            "border-3 border-off-black",
+            "shadow-brutalist-sm",
+            "rotate-12",
+            "animate-line-clear"
+          )}>
+            מומלץ ⭐
+          </span>
+        </div>
+      )}
+    </article>
+  );
+};
+
+export default ResourceCard;
+```
+
+## SUMMARY
+
+This Tetris Design Hub must be:
+- ✅ Hebrew-first with perfect RTL support
+- ✅ Neo-brutalist (thick borders, hard shadows, high contrast)
+- ✅ Tetris-themed (blocky, grid-based, colorful)
+- ✅ Performant (transforms, lazy loading, memoization)
+- ✅ Accessible (ARIA, keyboard nav, focus states)
+- ✅ Secure (API keys in backend only)
+- ✅ Mobile-responsive
+- ✅ $0 cost (using free tiers)
+
+Every line of code should follow these rules. When generating code, ALWAYS:
+1. Check if RTL is properly implemented
+2. Verify colors match the palette
+3. Ensure brutalist styling (borders + shadows)
+4. Add tetris theme elements
+5. Include proper Hebrew text
+6. Optimize for performance
+7. Add accessibility attributes
+8. Handle errors gracefully
+
+Good luck building the most unique design student hub! 🎮🎨
