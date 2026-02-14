@@ -129,8 +129,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    if (!NOTION_API_KEY || !DATABASE_ID) {
-      throw new Error('Missing Notion configuration (NOTION_API_KEY or NOTION_RESOURCES_DB/NOTION_DATASOURCE_ID)');
+    // Debug logging for environment variables
+    console.log('Env Check - NOTION_API_KEY exists:', !!NOTION_API_KEY);
+    console.log('Env Check - DATABASE_ID exists:', !!DATABASE_ID);
+    console.log('Env Check - NOTION_DATASOURCE_ID exists:', !!process.env.NOTION_DATASOURCE_ID);
+    console.log('Env Check - NOTION_RESOURCES_DB exists:', !!process.env.NOTION_RESOURCES_DB);
+
+    if (!NOTION_API_KEY) {
+      throw new Error('Configuration Error: NOTION_API_KEY is missing from environment variables.');
+    }
+
+    if (!DATABASE_ID) {
+      throw new Error('Configuration Error: No database ID found. Please set NOTION_RESOURCES_DB or NOTION_DATASOURCE_ID.');
     }
 
     const pages = await fetchAllPages();

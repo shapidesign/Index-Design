@@ -179,8 +179,18 @@ export default async function handler(req, res) {
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
-        if (!NOTION_API_KEY || !DS1) {
-            throw new Error('Missing Notion configuration (NOTION_API_KEY or NOTION_DESIGNERS_DB/NOTION_HALL_OF_FAME_DS1)');
+        // Debug logging for environment variables
+        console.log('Env Check - NOTION_API_KEY exists:', !!NOTION_API_KEY);
+        console.log('Env Check - DS1 exists:', !!DS1);
+        console.log('Env Check - NOTION_HALL_OF_FAME_DS1 exists:', !!process.env.NOTION_HALL_OF_FAME_DS1);
+        console.log('Env Check - NOTION_DESIGNERS_DB exists:', !!process.env.NOTION_DESIGNERS_DB);
+
+        if (!NOTION_API_KEY) {
+            throw new Error('Configuration Error: NOTION_API_KEY is missing from environment variables.');
+        }
+
+        if (!DS1) {
+            throw new Error('Configuration Error: No database ID found. Please set NOTION_DESIGNERS_DB or NOTION_HALL_OF_FAME_DS1.');
         }
 
         // Fetch from both data sources in parallel, merge & deduplicate
