@@ -7,8 +7,8 @@
 import { Client } from '@notionhq/client';
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
-// Support both variable names: legacy DATASOURCE_ID and standard RESOURCES_DB
-const DATABASE_ID = process.env.NOTION_DATASOURCE_ID || process.env.NOTION_RESOURCES_DB;
+// Support multiple variable names for the main resources database
+const DATABASE_ID = process.env.NOTION_DATASOURCE_ID || process.env.NOTION_RESOURCES_DB || process.env.NOTION_DATABASE_ID;
 
 const notion = new Client({
   auth: NOTION_API_KEY,
@@ -134,13 +134,14 @@ export default async function handler(req, res) {
     console.log('Env Check - DATABASE_ID exists:', !!DATABASE_ID);
     console.log('Env Check - NOTION_DATASOURCE_ID exists:', !!process.env.NOTION_DATASOURCE_ID);
     console.log('Env Check - NOTION_RESOURCES_DB exists:', !!process.env.NOTION_RESOURCES_DB);
+    console.log('Env Check - NOTION_DATABASE_ID exists:', !!process.env.NOTION_DATABASE_ID);
 
     if (!NOTION_API_KEY) {
       throw new Error('Configuration Error: NOTION_API_KEY is missing from environment variables.');
     }
 
     if (!DATABASE_ID) {
-      throw new Error('Configuration Error: No database ID found. Please set NOTION_RESOURCES_DB or NOTION_DATASOURCE_ID.');
+      throw new Error('Configuration Error: No database ID found. Please set NOTION_DATASOURCE_ID, NOTION_RESOURCES_DB, or NOTION_DATABASE_ID.');
     }
 
     const pages = await fetchAllPages();
