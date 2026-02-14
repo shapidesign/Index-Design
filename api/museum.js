@@ -18,26 +18,60 @@ const notion = new Client({
 function transformPage(page) {
     const p = page.properties || {};
     
-    // Name: 'Name' (title) or 'שם' (title)
-    const rawName = p['Name']?.title?.[0]?.plain_text || p['שם']?.title?.[0]?.plain_text || '';
+    // Debug: Log properties for the first item to help diagnose schema issues
+    if (global.debugFirstItem !== true) {
+        console.log('--- DEBUG: First Item Properties ---');
+        console.log('ID:', page.id);
+        console.log('Keys:', Object.keys(p));
+        // Check potential name fields
+        console.log('Name field:', p['Name'] ? 'Found' : 'Missing');
+        console.log('Title field:', p['Title'] ? 'Found' : 'Missing');
+        console.log('שם field:', p['שם'] ? 'Found' : 'Missing');
+        global.debugFirstItem = true;
+    }
+
+    // Name: Try 'Name', 'Title', 'name', 'title', 'שם'
+    const rawName = 
+        p['Name']?.title?.[0]?.plain_text || 
+        p['Title']?.title?.[0]?.plain_text || 
+        p['name']?.title?.[0]?.plain_text || 
+        p['title']?.title?.[0]?.plain_text || 
+        p['שם']?.title?.[0]?.plain_text || 
+        '';
     
-    // Description: 'הערות' (rich_text) or 'תיאור' (rich_text)
-    const description = p['הערות']?.rich_text?.[0]?.plain_text || p['תיאור']?.rich_text?.[0]?.plain_text || '';
+    // Description: 'הערות', 'תיאור', 'Description'
+    const description = 
+        p['הערות']?.rich_text?.[0]?.plain_text || 
+        p['תיאור']?.rich_text?.[0]?.plain_text || 
+        p['Description']?.rich_text?.[0]?.plain_text || 
+        '';
     
-    // Country: 'מדינה/אזור' (select)
-    const country = p['מדינה/אזור']?.select?.name || '';
+    // Country: 'מדינה/אזור', 'Country'
+    const country = 
+        p['מדינה/אזור']?.select?.name || 
+        p['Country']?.select?.name || 
+        '';
     
-    // Type: 'תחום' (multi_select) or 'סוג' (multi_select) or 'תגיות' (multi_select)
-    const type = p['תחום']?.multi_select?.map(s => s.name) || 
-                 p['סוג']?.multi_select?.map(s => s.name) || 
-                 p['תגיות']?.multi_select?.map(s => s.name) || [];
+    // Type: 'תחום', 'סוג', 'תגיות', 'Type', 'Tags'
+    const type = 
+        p['תחום']?.multi_select?.map(s => s.name) || 
+        p['סוג']?.multi_select?.map(s => s.name) || 
+        p['תגיות']?.multi_select?.map(s => s.name) || 
+        p['Type']?.multi_select?.map(s => s.name) || 
+        p['Tags']?.multi_select?.map(s => s.name) || 
+        [];
                  
-    // Link: 'מקורות' (url) or 'קישור' (url)
-    const link = p['מקורות']?.url || p['קישור']?.url || '';
+    // Link: 'מקורות', 'קישור', 'Link', 'URL'
+    const link = 
+        p['מקורות']?.url || 
+        p['קישור']?.url || 
+        p['Link']?.url || 
+        p['URL']?.url || 
+        '';
     
-    // Image: 'תמונה' (files)
+    // Image: 'תמונה', 'Image'
     let imageUrl = null;
-    const imageProp = p['תמונה'];
+    const imageProp = p['תמונה'] || p['Image'];
     if (imageProp && imageProp.type === 'files' && imageProp.files.length > 0) {
         const fileObj = imageProp.files[0];
         if (fileObj.type === 'file') {
