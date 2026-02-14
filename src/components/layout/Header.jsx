@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Menu, X } from 'lucide-react';
 import logoDark from '@/assets/svg/logo-dark.svg';
+import pkg from '../../../package.json'; // Import package.json for version
 
 /**
  * Header - כותרת עליונה
@@ -11,6 +12,7 @@ import logoDark from '@/assets/svg/logo-dark.svg';
  * - Nav buttons: #EEEEEE fill, rounded-[5px], 4px shadow
  * - Purple hamburger button with white lines
  * - Shimshon pixel font for all nav text
+ * - Version tag on top left
  */
 
 const navSections = [
@@ -52,32 +54,52 @@ const Header = ({ activeSection, onSectionChange }) => {
           <img src={logoDark} alt="אינדקס האב" className="h-8 w-auto" />
         </a>
 
-        {/* Desktop Navigation + Hamburger */}
-        <div className="hidden md:flex items-center gap-4">
-          <nav className="flex items-center gap-4">
-            {navSections.map((section) => (
-              <button
-                key={section.id}
-                onClick={() => onSectionChange?.(section.id)}
-                className={cn(
-                  'px-4 py-2',
-                  'text-sm font-shimshon',
-                  'rounded-[5px]',
-                  'border border-[#555555]',
-                  'transition-all duration-200',
-                  activeSection === section.id
-                    ? 'bg-tetris-purple text-off-white shadow-none translate-x-[4px] translate-y-[4px]'
-                    : 'bg-btn-gray text-[#050505] shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
-                )}
-              >
-                {section.label}
-              </button>
-            ))}
-          </nav>
+        {/* Desktop Navigation + Hamburger + Version */}
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
+            <nav className="flex items-center gap-4">
+              {navSections.map((section) => (
+                <button
+                  key={section.id}
+                  onClick={() => onSectionChange?.(section.id)}
+                  className={cn(
+                    'px-4 py-2',
+                    'text-sm font-shimshon',
+                    'rounded-[5px]',
+                    'border border-[#555555]',
+                    'transition-all duration-200',
+                    activeSection === section.id
+                      ? 'bg-tetris-purple text-off-white shadow-none translate-x-[4px] translate-y-[4px]'
+                      : 'bg-btn-gray text-[#050505] shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+                  )}
+                >
+                  {section.label}
+                </button>
+              ))}
+            </nav>
 
-          {/* Hamburger button (desktop - for extra menu) */}
+            {/* Hamburger button (desktop - for extra menu) */}
+            <button
+              className={cn(
+                'w-[34px] h-[34px]',
+                'flex items-center justify-center',
+                'bg-tetris-purple',
+                'rounded-[5px]',
+                'border-[1.7px] border-[#555555]',
+                'shadow-brutalist-hamburger',
+                'transition-all duration-200',
+                'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
+              )}
+              aria-label="תפריט נוסף"
+            >
+              <Menu size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
+            </button>
+          </div>
+
+          {/* Mobile: hamburger only */}
           <button
             className={cn(
+              'md:hidden',
               'w-[34px] h-[34px]',
               'flex items-center justify-center',
               'bg-tetris-purple',
@@ -87,34 +109,21 @@ const Header = ({ activeSection, onSectionChange }) => {
               'transition-all duration-200',
               'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
             )}
-            aria-label="תפריט נוסף"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'סגור תפריט' : 'פתח תפריט'}
           >
-            <Menu size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
+            {mobileMenuOpen ? (
+              <X size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
+            ) : (
+              <Menu size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
+            )}
           </button>
-        </div>
 
-        {/* Mobile: hamburger only */}
-        <button
-          className={cn(
-            'md:hidden',
-            'w-[34px] h-[34px]',
-            'flex items-center justify-center',
-            'bg-tetris-purple',
-            'rounded-[5px]',
-            'border-[1.7px] border-[#555555]',
-            'shadow-brutalist-hamburger',
-            'transition-all duration-200',
-            'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
-          )}
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label={mobileMenuOpen ? 'סגור תפריט' : 'פתח תפריט'}
-        >
-          {mobileMenuOpen ? (
-            <X size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
-          ) : (
-            <Menu size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
-          )}
-        </button>
+          {/* Version Tag - Always visible, far left */}
+          <div className="hidden md:flex items-center justify-center px-2 py-1 bg-off-black border border-[#333] rounded text-[10px] text-[#666] font-mono">
+            v{pkg.version}
+          </div>
+        </div>
       </div>
 
       {/* Mobile Menu Overlay */}
@@ -148,6 +157,11 @@ const Header = ({ activeSection, onSectionChange }) => {
               {section.label}
             </button>
           ))}
+          
+          {/* Version in Mobile Menu */}
+          <div className="mt-auto pt-6 text-center text-[#666] text-xs font-mono">
+            v{pkg.version}
+          </div>
         </nav>
       </div>
     </header>
