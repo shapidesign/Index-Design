@@ -12,6 +12,72 @@ import { LayoutGrid, List, ChevronDown, X, Search } from 'lucide-react';
  * with country filter, searchable dropdown filters, and search bar.
  */
 
+// ===== DECADE SLIDER COMPONENT =====
+const DECADE_MIN = 1890;
+const DECADE_MAX = 2020;
+const DECADES = [];
+for (let d = DECADE_MIN; d <= DECADE_MAX; d += 10) DECADES.push(d);
+
+const DecadeSlider = ({ range, onChange }) => {
+    const lastIdx = DECADES.length - 1;
+    const startIdx = DECADES.indexOf(range[0]) === -1 ? 0 : DECADES.indexOf(range[0]);
+    const endIdx = DECADES.indexOf(range[1]) === -1 ? lastIdx : DECADES.indexOf(range[1]);
+
+    const highlightLeft = ((lastIdx - endIdx) / lastIdx) * 100;
+    const highlightRight = ((lastIdx - (lastIdx - startIdx)) / lastIdx) * 100;
+
+    return (
+        <div className="flex flex-col gap-2">
+            <label className="text-xs font-shimshon text-dark-gray text-right">
+                תקופת פעילות
+            </label>
+            <div className="flex items-center gap-3" dir="ltr">
+                <span className="text-xs font-pixelify text-dark-gray min-w-[32px] text-center">{range[1]}</span>
+                <div className="flex-1 relative h-8 flex items-center">
+                    <div className="absolute inset-x-0 h-2 bg-light-gray border-2 border-off-black rounded-none" />
+                    <div
+                        className="absolute h-2 bg-tetris-yellow border-y-2 border-off-black"
+                        style={{
+                            left: `${highlightLeft}%`,
+                            right: `${highlightRight}%`,
+                        }}
+                    />
+                    <input
+                        type="range"
+                        min={0}
+                        max={lastIdx}
+                        value={startIdx}
+                        onChange={(e) => {
+                            const newStart = Math.min(+e.target.value, endIdx);
+                            onChange([DECADES[newStart], range[1]]);
+                        }}
+                        className="absolute inset-x-0 w-full appearance-none bg-transparent pointer-events-none z-10 cursor-pointer slider-thumb-interactive"
+                        style={{ height: '32px', direction: 'rtl' }}
+                    />
+                    <input
+                        type="range"
+                        min={0}
+                        max={lastIdx}
+                        value={endIdx}
+                        onChange={(e) => {
+                            const newEnd = Math.max(+e.target.value, startIdx);
+                            onChange([range[0], DECADES[newEnd]]);
+                        }}
+                        className="absolute inset-x-0 w-full appearance-none bg-transparent pointer-events-none z-20 cursor-pointer slider-thumb-interactive"
+                        style={{ height: '32px', direction: 'rtl' }}
+                    />
+                </div>
+                <span className="text-xs font-pixelify text-dark-gray min-w-[32px] text-center">{range[0]}</span>
+            </div>
+            <div className="flex justify-between px-1" dir="ltr">
+                {DECADES.filter((_, i) => i % 3 === 0).reverse().map((d) => (
+                    <span key={d} className="text-[9px] font-pixelify text-mid-gray">{d}</span>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 // ===== SEARCHABLE DROPDOWN COMPONENT (Reused) =====
 const SearchableDropdown = ({ label, options, selected, onToggle, onClear }) => {
     const [open, setOpen] = useState(false);
@@ -130,6 +196,129 @@ const quickSearches = [
     'ניו יורק',
 ];
 
+// ===== MUSEUM MODAL COMPONENT =====
+const MuseumModal = ({ item, onClose }) => {
+    if (!item) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-off-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <div 
+                className="relative w-full max-w-2xl bg-off-white border-3 border-off-black shadow-brutalist animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
+                dir="rtl"
+            >
+                <button 
+                    onClick={onClose}
+                    className="absolute top-4 left-4 p-2 bg-tetris-pink border-2 border-off-black hover:bg-tetris-orange transition-colors z-10"
+                >
+                    <X size={20} />
+                </button>
+
+                <div className="flex flex-col md:flex-row">
+                    {/* Image Side */}
+                    <div className="w-full md:w-1/3 h-64 md:h-auto min-h-[300px] bg-light-gray border-b-3 md:border-b-0 md:border-l-3 border-off-black relative overflow-hidden">
+                        {item.imageUrl ? (
+                            <img 
+                                src={item.imageUrl} 
+                                alt={item.name} 
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-tetris-blue/10">
+                                <TetrisShape type="T" size={80} color="purple" className="opacity-50" />
+                            </div>
+                        )}
+                        {item.country && (
+                            <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-off-white border-2 border-off-black shadow-sm">
+                                <span className="text-sm font-bold font-shimshon">{item.country}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Content Side */}
+                    <div className="flex-1 p-6 md:p-8">
+                        <div className="mb-6">
+                            <h2 className="text-3xl font-bold font-shimshon text-off-black mb-1">{item.nameHe}</h2>
+                            {item.nameEn && (
+                                <h3 className="text-xl font-pixelify text-mid-gray">{item.nameEn}</h3>
+                            )}
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 mb-6">
+                            {item.type?.map((t) => (
+                                <span key={t} className="px-3 py-1 text-xs font-bold font-shimshon bg-tetris-cyan/30 border border-off-black">
+                                    {t}
+                                </span>
+                            ))}
+                            {item.era?.map((e) => (
+                                <span key={e} className="px-3 py-1 text-xs font-bold font-shimshon bg-tetris-purple text-off-white border border-off-black">
+                                    {e}
+                                </span>
+                            ))}
+                        </div>
+
+                        <div className="space-y-4 mb-8">
+                            <div>
+                                <h4 className="text-sm font-bold font-shimshon text-off-black mb-1">תיאור</h4>
+                                <p className="text-sm text-dark-gray font-ibm leading-relaxed">
+                                    {item.description}
+                                </p>
+                            </div>
+
+                            {item.famousWork && (
+                                <div>
+                                    <h4 className="text-sm font-bold font-shimshon text-off-black mb-1">עבודות בולטות</h4>
+                                    <p className="text-sm text-dark-gray font-ibm">
+                                        {item.famousWork}
+                                    </p>
+                                </div>
+                            )}
+
+                            {item.quote && (
+                                <div className="bg-tetris-yellow/20 p-4 border-l-4 border-tetris-yellow">
+                                    <p className="text-sm font-bold font-shimshon text-off-black italic">
+                                        "{item.quote}"
+                                    </p>
+                                </div>
+                            )}
+                            
+                            {item.tags?.length > 0 && (
+                                <div>
+                                    <h4 className="text-sm font-bold font-shimshon text-off-black mb-2">תגיות</h4>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {item.tags.map((tag) => (
+                                            <span key={tag} className="text-xs text-mid-gray font-ibm bg-light-gray px-2 py-0.5 rounded border border-off-black/20">
+                                                #{tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {item.link && (
+                            <a
+                                href={item.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={cn(
+                                    'inline-flex items-center gap-2 px-6 py-3',
+                                    'bg-off-black text-off-white',
+                                    'font-bold font-shimshon',
+                                    'hover:bg-tetris-purple transition-colors',
+                                    'border-2 border-transparent hover:border-off-black'
+                                )}
+                            >
+                                <span>לאתר</span>
+                                <ExternalLink size={16} />
+                            </a>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // ===== MAIN SECTION =====
 const MuseumSection = () => {
     const { data, loading, error, refetch } = useData('/api/museum');
@@ -138,6 +327,9 @@ const MuseumSection = () => {
     const [searchFocused, setSearchFocused] = useState(false);
     const [selectedCountries, setSelectedCountries] = useState([]);
     const [selectedTypes, setSelectedTypes] = useState([]);
+    const [selectedTags, setSelectedTags] = useState([]);
+    const [decadeRange, setDecadeRange] = useState([DECADE_MIN, DECADE_MAX]);
+    const [selectedItem, setSelectedItem] = useState(null);
     const searchRef = useRef(null);
 
     const items = data?.results || [];
@@ -164,6 +356,13 @@ const MuseumSection = () => {
         return Array.from(set).sort();
     }, [items]);
 
+    /** All unique tags from data */
+    const allTags = useMemo(() => {
+        const set = new Set();
+        items.forEach((d) => d.tags?.forEach((t) => set.add(t)));
+        return Array.from(set).sort();
+    }, [items]);
+
     /** Toggle country filter */
     const toggleCountry = useCallback((val) => {
         setSelectedCountries((prev) =>
@@ -178,16 +377,28 @@ const MuseumSection = () => {
         );
     }, []);
 
+    /** Toggle tag filter */
+    const toggleTag = useCallback((val) => {
+        setSelectedTags((prev) =>
+            prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
+        );
+    }, []);
+
     /** All active filters */
     const hasActiveFilters = searchQuery.trim() ||
         selectedCountries.length > 0 ||
-        selectedTypes.length > 0;
+        selectedTypes.length > 0 ||
+        selectedTags.length > 0 ||
+        decadeRange[0] !== DECADE_MIN ||
+        decadeRange[1] !== DECADE_MAX;
 
     /** Clear all filters */
     const clearAll = useCallback(() => {
         setSearchQuery('');
         setSelectedCountries([]);
         setSelectedTypes([]);
+        setSelectedTags([]);
+        setDecadeRange([DECADE_MIN, DECADE_MAX]);
     }, []);
 
     /** Filtered items */
@@ -198,9 +409,12 @@ const MuseumSection = () => {
                 const q = searchQuery.trim().toLowerCase();
                 const match =
                     d.name?.toLowerCase().includes(q) ||
+                    d.nameHe?.toLowerCase().includes(q) ||
+                    d.nameEn?.toLowerCase().includes(q) ||
                     d.description?.toLowerCase().includes(q) ||
                     d.country?.toLowerCase().includes(q) ||
-                    d.type?.some((t) => t.toLowerCase().includes(q));
+                    d.type?.some((t) => t.toLowerCase().includes(q)) ||
+                    d.tags?.some((t) => t.toLowerCase().includes(q));
                 if (!match) return false;
             }
 
@@ -214,9 +428,27 @@ const MuseumSection = () => {
                 if (!d.type?.some((t) => selectedTypes.includes(t))) return false;
             }
 
+            // Tag filter
+            if (selectedTags.length > 0) {
+                if (!d.tags?.some((t) => selectedTags.includes(t))) return false;
+            }
+
+            // Decade range filter
+            if (decadeRange[0] !== DECADE_MIN || decadeRange[1] !== DECADE_MAX) {
+                // If item has no era data, decide whether to show or hide. 
+                // Usually hide if filtering is active.
+                if (!d.decadeStart && !d.decadeEnd) return false;
+                
+                const dStart = d.decadeStart ?? DECADE_MIN;
+                const dEnd = d.decadeEnd ?? DECADE_MAX;
+                
+                // Check for overlap
+                if (dEnd < decadeRange[0] || dStart > decadeRange[1]) return false;
+            }
+
             return true;
         });
-    }, [items, searchQuery, selectedCountries, selectedTypes]);
+    }, [items, searchQuery, selectedCountries, selectedTypes, selectedTags, decadeRange]);
 
     // ===== LOADING STATE =====
     if (loading) {
@@ -258,6 +490,11 @@ const MuseumSection = () => {
 
     return (
         <section dir="rtl" className="animate-tetris-stack">
+            {/* ===== MODAL ===== */}
+            {selectedItem && (
+                <MuseumModal item={selectedItem} onClose={() => setSelectedItem(null)} />
+            )}
+
             {/* ===== SECTION HEADER + VIEW TOGGLE ===== */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -360,7 +597,7 @@ const MuseumSection = () => {
                 </div>
 
                 {/* Filter row: dropdowns */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     {/* Country dropdown */}
                     <SearchableDropdown
                         label="מדינה/אזור"
@@ -378,6 +615,18 @@ const MuseumSection = () => {
                         onToggle={toggleType}
                         onClear={() => setSelectedTypes([])}
                     />
+
+                    {/* Tags dropdown */}
+                    <SearchableDropdown
+                        label="תגיות"
+                        options={allTags}
+                        selected={selectedTags}
+                        onToggle={toggleTag}
+                        onClear={() => setSelectedTags([])}
+                    />
+
+                    {/* Decade slider */}
+                    <DecadeSlider range={decadeRange} onChange={setDecadeRange} />
                 </div>
 
                 {/* Clear all filters */}
@@ -407,13 +656,16 @@ const MuseumSection = () => {
                         {filteredItems.map((item) => (
                             <MuseumCard
                                 key={item.id}
+                                id={item.id}
                                 viewMode="gallery"
-                                name={item.name}
+                                nameHe={item.nameHe}
+                                nameEn={item.nameEn}
                                 description={item.description}
                                 country={item.country}
                                 type={item.type}
                                 link={item.link}
                                 imageUrl={item.imageUrl}
+                                onClick={() => setSelectedItem(item)}
                             />
                         ))}
                     </div>
@@ -422,13 +674,16 @@ const MuseumSection = () => {
                         {filteredItems.map((item) => (
                             <MuseumCard
                                 key={item.id}
+                                id={item.id}
                                 viewMode="list"
-                                name={item.name}
+                                nameHe={item.nameHe}
+                                nameEn={item.nameEn}
                                 description={item.description}
                                 country={item.country}
                                 type={item.type}
                                 link={item.link}
                                 imageUrl={item.imageUrl}
+                                onClick={() => setSelectedItem(item)}
                             />
                         ))}
                     </div>
