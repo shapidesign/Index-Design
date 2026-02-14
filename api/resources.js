@@ -1,13 +1,17 @@
 /**
  * Vercel Serverless Function - /api/resources
  * Fetches all resources from Notion "אתרי עיצוב" data source
- * Uses Notion API v2025-09-03 with data sources
+ * Uses official Notion API client
  */
 
+import { Client } from '@notionhq/client';
+
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
-const DATASOURCE_ID = process.env.NOTION_DATASOURCE_ID;
-const NOTION_VERSION = '2025-09-03';
-const NOTION_BASE = 'https://api.notion.com/v1';
+const DATABASE_ID = process.env.NOTION_DATASOURCE_ID;
+
+const notion = new Client({
+  auth: NOTION_API_KEY,
+});
 
 /**
  * Transform a Notion page into a clean resource object
@@ -57,7 +61,7 @@ function transformResource(page) {
 }
 
 /**
- * Fetch all pages from the data source (handles pagination)
+ * Fetch all pages from the database (handles pagination)
  */
 async function fetchAllPages() {
   const allPages = [];
@@ -65,31 +69,20 @@ async function fetchAllPages() {
   let startCursor = undefined;
 
   while (hasMore) {
-    const body = { page_size: 100 };
-    if (startCursor) body.start_cursor = startCursor;
+    try {
+      const response = await notion.dataSources.query({
+        data_source_id: DATABASE_ID,
+        page_size: 100,
+        start_cursor: startCursor,
+      });
 
-    const response = await fetch(
-      `${NOTION_BASE}/data_sources/${DATASOURCE_ID}/query`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${NOTION_API_KEY}`,
-          'Notion-Version': NOTION_VERSION,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Notion API error: ${error.message || response.status}`);
+      allPages.push(...response.results);
+      hasMore = response.has_more;
+      startCursor = response.next_cursor;
+    } catch (error) {
+      console.error('Error querying Notion database:', error.body || error);
+      throw new Error(`Notion API error: ${error.message}`);
     }
-
-    const data = await response.json();
-    allPages.push(...data.results);
-    hasMore = data.has_more;
-    startCursor = data.next_cursor;
   }
 
   return allPages;
@@ -110,7 +103,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    if (!NOTION_API_KEY || !DATASOURCE_ID) {
+    if (!NOTION_API_KEY || !DATABASE_ID) {
       throw new Error('Missing Notion configuration (NOTION_API_KEY or NOTION_DATASOURCE_ID)');
     }
 
@@ -157,6 +150,7 @@ export default async function handler(req, res) {
     return res.status(500).json({
       error: 'שגיאה בטעינת המשאבים',
       message: error.message,
+      details: error.body || undefined
     });
   }
 }

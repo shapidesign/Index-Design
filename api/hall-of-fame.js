@@ -4,11 +4,15 @@
  * Queries both data sources and merges results (deduplicates by page ID)
  */
 
+import { Client } from '@notionhq/client';
+
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const DS1 = process.env.NOTION_HALL_OF_FAME_DS1;
 const DS2 = process.env.NOTION_HALL_OF_FAME_DS2;
-const NOTION_VERSION = '2025-09-03';
-const NOTION_BASE = 'https://api.notion.com/v1';
+
+const notion = new Client({
+  auth: NOTION_API_KEY,
+});
 
 /**
  * Parse a name like "Hebrew (English)" or "Hebrew" into separate parts.
@@ -112,47 +116,28 @@ function transformPage(page, dsIndex) {
 }
 
 /**
- * Fetch a Wikipedia thumbnail URL for a given name.
- * Uses the Wikipedia REST API search endpoint.
- * Returns the thumbnail URL or null if not found.
+ * Fetch all pages from a single database (handles pagination)
  */
-// function fetchWikiThumbnail removed
-
-/**
- * Fetch all pages from a single data source (handles pagination)
- */
-async function fetchAllPages(dataSourceId) {
+async function fetchAllPages(databaseId) {
     const allPages = [];
     let hasMore = true;
     let startCursor = undefined;
 
     while (hasMore) {
-        const body = { page_size: 100 };
-        if (startCursor) body.start_cursor = startCursor;
+        try {
+            const response = await notion.dataSources.query({
+                data_source_id: databaseId,
+                page_size: 100,
+                start_cursor: startCursor,
+            });
 
-        const response = await fetch(
-            `${NOTION_BASE}/data_sources/${dataSourceId}/query`,
-            {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${NOTION_API_KEY}`,
-                    'Notion-Version': NOTION_VERSION,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(body),
-            }
-        );
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(`Notion API error: ${error.message || response.status}`);
+            allPages.push(...response.results);
+            hasMore = response.has_more;
+            startCursor = response.next_cursor;
+        } catch (error) {
+            console.error(`Error querying Notion database ${databaseId}:`, error.body || error);
+            throw new Error(`Notion API error: ${error.message}`);
         }
-
-        const data = await response.json();
-
-        allPages.push(...data.results);
-        hasMore = data.has_more;
-        startCursor = data.next_cursor;
     }
 
     return allPages;
@@ -196,8 +181,6 @@ export default async function handler(req, res) {
             }
         }
 
-
-
         // Cache for 5 minutes
         res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
 
@@ -210,6 +193,7 @@ export default async function handler(req, res) {
         return res.status(500).json({
             error: 'שגיאה בטעינת היכל התהילה',
             message: error.message,
+            details: error.body || undefined
         });
     }
 }
