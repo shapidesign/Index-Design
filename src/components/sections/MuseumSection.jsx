@@ -12,72 +12,6 @@ import { LayoutGrid, List, ChevronDown, X, Search } from 'lucide-react';
  * with country filter, searchable dropdown filters, and search bar.
  */
 
-// ===== DECADE SLIDER COMPONENT =====
-const DECADE_MIN = 1890;
-const DECADE_MAX = 2020;
-const DECADES = [];
-for (let d = DECADE_MIN; d <= DECADE_MAX; d += 10) DECADES.push(d);
-
-const DecadeSlider = ({ range, onChange }) => {
-    const lastIdx = DECADES.length - 1;
-    const startIdx = DECADES.indexOf(range[0]) === -1 ? 0 : DECADES.indexOf(range[0]);
-    const endIdx = DECADES.indexOf(range[1]) === -1 ? lastIdx : DECADES.indexOf(range[1]);
-
-    const highlightLeft = ((lastIdx - endIdx) / lastIdx) * 100;
-    const highlightRight = ((lastIdx - (lastIdx - startIdx)) / lastIdx) * 100;
-
-    return (
-        <div className="flex flex-col gap-2">
-            <label className="text-xs font-shimshon text-dark-gray text-right">
-                תקופת פעילות
-            </label>
-            <div className="flex items-center gap-3" dir="ltr">
-                <span className="text-xs font-pixelify text-dark-gray min-w-[32px] text-center">{range[1]}</span>
-                <div className="flex-1 relative h-8 flex items-center">
-                    <div className="absolute inset-x-0 h-2 bg-light-gray border-2 border-off-black rounded-none" />
-                    <div
-                        className="absolute h-2 bg-tetris-yellow border-y-2 border-off-black"
-                        style={{
-                            left: `${highlightLeft}%`,
-                            right: `${highlightRight}%`,
-                        }}
-                    />
-                    <input
-                        type="range"
-                        min={0}
-                        max={lastIdx}
-                        value={startIdx}
-                        onChange={(e) => {
-                            const newStart = Math.min(+e.target.value, endIdx);
-                            onChange([DECADES[newStart], range[1]]);
-                        }}
-                        className="absolute inset-x-0 w-full appearance-none bg-transparent pointer-events-none z-10 cursor-pointer slider-thumb-interactive"
-                        style={{ height: '32px', direction: 'rtl' }}
-                    />
-                    <input
-                        type="range"
-                        min={0}
-                        max={lastIdx}
-                        value={endIdx}
-                        onChange={(e) => {
-                            const newEnd = Math.max(+e.target.value, startIdx);
-                            onChange([range[0], DECADES[newEnd]]);
-                        }}
-                        className="absolute inset-x-0 w-full appearance-none bg-transparent pointer-events-none z-20 cursor-pointer slider-thumb-interactive"
-                        style={{ height: '32px', direction: 'rtl' }}
-                    />
-                </div>
-                <span className="text-xs font-pixelify text-dark-gray min-w-[32px] text-center">{range[0]}</span>
-            </div>
-            <div className="flex justify-between px-1" dir="ltr">
-                {DECADES.filter((_, i) => i % 3 === 0).reverse().map((d) => (
-                    <span key={d} className="text-[9px] font-pixelify text-mid-gray">{d}</span>
-                ))}
-            </div>
-        </div>
-    );
-};
-
 // ===== SEARCHABLE DROPDOWN COMPONENT (Reused) =====
 const SearchableDropdown = ({ label, options, selected, onToggle, onClear }) => {
     const [open, setOpen] = useState(false);
@@ -328,7 +262,7 @@ const MuseumSection = () => {
     const [selectedCountries, setSelectedCountries] = useState([]);
     const [selectedTypes, setSelectedTypes] = useState([]);
     const [selectedTags, setSelectedTags] = useState([]);
-    const [decadeRange, setDecadeRange] = useState([DECADE_MIN, DECADE_MAX]);
+    const [selectedEras, setSelectedEras] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
     const searchRef = useRef(null);
 
@@ -363,6 +297,13 @@ const MuseumSection = () => {
         return Array.from(set).sort();
     }, [items]);
 
+    /** All unique eras from data */
+    const allEras = useMemo(() => {
+        const set = new Set();
+        items.forEach((d) => d.era?.forEach((e) => set.add(e)));
+        return Array.from(set).sort();
+    }, [items]);
+
     /** Toggle country filter */
     const toggleCountry = useCallback((val) => {
         setSelectedCountries((prev) =>
@@ -384,13 +325,19 @@ const MuseumSection = () => {
         );
     }, []);
 
+    /** Toggle era filter */
+    const toggleEra = useCallback((val) => {
+        setSelectedEras((prev) =>
+            prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
+        );
+    }, []);
+
     /** All active filters */
     const hasActiveFilters = searchQuery.trim() ||
         selectedCountries.length > 0 ||
         selectedTypes.length > 0 ||
         selectedTags.length > 0 ||
-        decadeRange[0] !== DECADE_MIN ||
-        decadeRange[1] !== DECADE_MAX;
+        selectedEras.length > 0;
 
     /** Clear all filters */
     const clearAll = useCallback(() => {
@@ -398,7 +345,7 @@ const MuseumSection = () => {
         setSelectedCountries([]);
         setSelectedTypes([]);
         setSelectedTags([]);
-        setDecadeRange([DECADE_MIN, DECADE_MAX]);
+        setSelectedEras([]);
     }, []);
 
     /** Filtered items */
@@ -414,7 +361,8 @@ const MuseumSection = () => {
                     d.description?.toLowerCase().includes(q) ||
                     d.country?.toLowerCase().includes(q) ||
                     d.type?.some((t) => t.toLowerCase().includes(q)) ||
-                    d.tags?.some((t) => t.toLowerCase().includes(q));
+                    d.tags?.some((t) => t.toLowerCase().includes(q)) ||
+                    d.era?.some((e) => e.toLowerCase().includes(q));
                 if (!match) return false;
             }
 
@@ -433,22 +381,14 @@ const MuseumSection = () => {
                 if (!d.tags?.some((t) => selectedTags.includes(t))) return false;
             }
 
-            // Decade range filter
-            if (decadeRange[0] !== DECADE_MIN || decadeRange[1] !== DECADE_MAX) {
-                // If item has no era data, decide whether to show or hide. 
-                // Usually hide if filtering is active.
-                if (!d.decadeStart && !d.decadeEnd) return false;
-                
-                const dStart = d.decadeStart ?? DECADE_MIN;
-                const dEnd = d.decadeEnd ?? DECADE_MAX;
-                
-                // Check for overlap
-                if (dEnd < decadeRange[0] || dStart > decadeRange[1]) return false;
+            // Era filter
+            if (selectedEras.length > 0) {
+                if (!d.era?.some((e) => selectedEras.includes(e))) return false;
             }
 
             return true;
         });
-    }, [items, searchQuery, selectedCountries, selectedTypes, selectedTags, decadeRange]);
+    }, [items, searchQuery, selectedCountries, selectedTypes, selectedTags, selectedEras]);
 
     // ===== LOADING STATE =====
     if (loading) {
@@ -625,8 +565,14 @@ const MuseumSection = () => {
                         onClear={() => setSelectedTags([])}
                     />
 
-                    {/* Decade slider */}
-                    <DecadeSlider range={decadeRange} onChange={setDecadeRange} />
+                    {/* Era dropdown */}
+                    <SearchableDropdown
+                        label="תקופה"
+                        options={allEras}
+                        selected={selectedEras}
+                        onToggle={toggleEra}
+                        onClear={() => setSelectedEras([])}
+                    />
                 </div>
 
                 {/* Clear all filters */}

@@ -13,6 +13,18 @@ const notion = new Client({
 });
 
 /**
+ * Parse a name like "Hebrew (English)" or "Hebrew" into separate parts.
+ */
+function parseName(raw) {
+    if (!raw) return { nameHe: '', nameEn: '' };
+    const match = raw.match(/^(.+?)\s*\((.+?)\)\s*$/);
+    if (match) {
+        return { nameHe: match[1].trim(), nameEn: match[2].trim() };
+    }
+    return { nameHe: raw.trim(), nameEn: '' };
+}
+
+/**
  * Transform a Notion page into a clean museum object.
  */
 function transformPage(page) {
@@ -23,10 +35,6 @@ function transformPage(page) {
         console.log('--- DEBUG: First Item Properties ---');
         console.log('ID:', page.id);
         console.log('Keys:', Object.keys(p));
-        // Check potential name fields
-        console.log('Name field:', p['Name'] ? 'Found' : 'Missing');
-        console.log('Title field:', p['Title'] ? 'Found' : 'Missing');
-        console.log('שם field:', p['שם'] ? 'Found' : 'Missing');
         global.debugFirstItem = true;
     }
 
@@ -38,6 +46,8 @@ function transformPage(page) {
         p['title']?.title?.[0]?.plain_text || 
         p['שם']?.title?.[0]?.plain_text || 
         '';
+    
+    const { nameHe, nameEn } = parseName(rawName);
     
     // Description: 'הערות', 'תיאור', 'Description'
     const description = 
@@ -52,14 +62,37 @@ function transformPage(page) {
         p['Country']?.select?.name || 
         '';
     
-    // Type: 'תחום', 'סוג', 'תגיות', 'Type', 'Tags'
+    // Type: 'תחום', 'סוג', 'Type'
     const type = 
         p['תחום']?.multi_select?.map(s => s.name) || 
         p['סוג']?.multi_select?.map(s => s.name) || 
-        p['תגיות']?.multi_select?.map(s => s.name) || 
         p['Type']?.multi_select?.map(s => s.name) || 
+        [];
+
+    // Tags: 'תגיות', 'Tags'
+    const tags = 
+        p['תגיות']?.multi_select?.map(s => s.name) || 
         p['Tags']?.multi_select?.map(s => s.name) || 
         [];
+
+    // Era: 'תקופה', 'Era', 'Period'
+    const era = 
+        p['תקופה']?.multi_select?.map(s => s.name) || 
+        p['Era']?.multi_select?.map(s => s.name) || 
+        p['Period']?.multi_select?.map(s => s.name) || 
+        [];
+
+    // Famous Work: 'עבודות בולטות', 'Famous Work'
+    const famousWork = 
+        p['עבודות בולטות']?.rich_text?.[0]?.plain_text || 
+        p['Famous Work']?.rich_text?.[0]?.plain_text || 
+        '';
+
+    // Quote: 'ציטוטים', 'Quote'
+    const quote = 
+        p['ציטוטים']?.rich_text?.[0]?.plain_text || 
+        p['Quote']?.rich_text?.[0]?.plain_text || 
+        '';
                  
     // Link: 'מקורות', 'קישור', 'Link', 'URL'
     const link = 
@@ -84,9 +117,15 @@ function transformPage(page) {
     return {
         id: page.id,
         name: rawName,
+        nameHe,
+        nameEn,
         description,
         country,
         type,
+        tags,
+        era,
+        famousWork,
+        quote,
         link,
         imageUrl,
     };
