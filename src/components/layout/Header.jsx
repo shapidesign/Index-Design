@@ -19,6 +19,7 @@ const navSections = [
   { id: 'tips', label: 'טיפ' },
   { id: 'students', label: 'סטודנט לסטודנט' },
   { id: 'library', label: 'הספרייה' },
+  { id: 'museum', label: 'המוזיאון' },
   { id: 'toolbox', label: 'ארגז כלים' },
   { id: 'ai-tools', label: 'כלי AI ותוכנות' },
 ];

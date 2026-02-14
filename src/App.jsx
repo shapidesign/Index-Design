@@ -10,6 +10,7 @@ import TetrisLoader from '@/components/tetris/TetrisLoader';
 /** Lazy-loaded section components */
 const ToolboxSection = lazy(() => import('@/components/sections/ToolboxSection'));
 const HallOfFameSection = lazy(() => import('@/components/sections/HallOfFameSection'));
+const MuseumSection = lazy(() => import('@/components/sections/MuseumSection'));
 
 /**
  * App - Main Application Component
@@ -236,8 +237,8 @@ const App = () => {
 
       {/* ===== MAIN ===== */}
       <main className="max-w-7xl mx-auto px-4 py-12">
-        {/* Hero + category cards: hidden when toolbox is active */}
-        {activeSection !== 'toolbox' && activeSection !== 'hallOfFame' && (
+        {/* Hero + category cards: hidden when any section is active */}
+        {!activeSection && (
           <>
             <section className="text-center mb-16 py-8">
               {/* Logo "אינדקס" from Figma */}
@@ -258,7 +259,7 @@ const App = () => {
           </>
         )}
 
-        {/* ===== SEARCH BAR (always visible, including toolbox view) ===== */}
+        {/* ===== SEARCH BAR (always visible) ===== */}
         <section className="max-w-xl mx-auto mb-12" ref={searchContainerRef}>
           <div className="relative">
             <div className={cn(
@@ -354,8 +355,8 @@ const App = () => {
           </div>
         </section>
 
-        {/* ===== CATEGORY CARDS (hidden when toolbox is active) ===== */}
-        {activeSection !== 'toolbox' && activeSection !== 'hallOfFame' && (
+        {/* ===== CATEGORY CARDS (hidden when any section is active) ===== */}
+        {!activeSection && (
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredCategories.map((card) => (
               <article
@@ -395,7 +396,7 @@ const App = () => {
           </section>
         )}
 
-        {/* ===== TOOLBOX SECTION (replaces cards when toolbox selected) ===== */}
+        {/* ===== TOOLBOX SECTION ===== */}
         {activeSection === 'toolbox' && (
           <div className="mt-12" id="section-toolbox">
             <div className="flex justify-end mb-4">
@@ -421,7 +422,7 @@ const App = () => {
           </div>
         )}
 
-        {/* ===== HALL OF FAME SECTION (replaces cards when selected) ===== */}
+        {/* ===== HALL OF FAME SECTION ===== */}
         {activeSection === 'hallOfFame' && (
           <div className="mt-12" id="section-hallOfFame">
             <div className="flex justify-end mb-4">
@@ -443,6 +444,32 @@ const App = () => {
             </div>
             <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
               <HallOfFameSection />
+            </Suspense>
+          </div>
+        )}
+
+        {/* ===== MUSEUM SECTION ===== */}
+        {activeSection === 'museum' && (
+          <div className="mt-12" id="section-museum">
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={() => setActiveSection(null)}
+                className={cn(
+                  "px-4 py-2",
+                  "font-shimshon text-sm font-bold text-off-black",
+                  "bg-light-gray",
+                  "border-2 border-off-black",
+                  "shadow-brutalist-xs",
+                  "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                  "transition-all duration-200"
+                )}
+              >
+                חזרה לכל הקטגוריות
+              </button>
+            </div>
+            <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
+              <MuseumSection />
             </Suspense>
           </div>
         )}
