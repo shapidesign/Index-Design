@@ -136,7 +136,8 @@ const Header = ({ activeSection, onSectionChange }) => {
             "text-xs font-bold font-mono text-off-black",
             "rotate-[-2deg]",
             "hover:rotate-0 transition-transform duration-200",
-            "z-50"
+            "z-[60]",
+            "hidden xs:flex" // Hide on very small screens if needed, or keep flex
           )}>
             v{pkg.version}
           </div>
