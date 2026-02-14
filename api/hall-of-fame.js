@@ -142,15 +142,24 @@ async function fetchAllPages(databaseId) {
 
         // 2. Fallback to notion.dataSources.query
         try {
-            console.log(`Resolving Data Source ID for database ${databaseId}...`);
-            const db = await notion.databases.retrieve({ database_id: databaseId });
-            
             let dataSourceId = null;
-            if (db.data_sources && db.data_sources.length > 0) {
-                dataSourceId = db.data_sources[0].id;
-                console.log(`Resolved Data Source ID: ${dataSourceId}`);
-            } else {
-                console.warn(`No data_sources found in metadata for ${databaseId}. Trying original ID...`);
+            
+            // Try to resolve Data Source ID from database metadata
+            try {
+                console.log(`Resolving Data Source ID for database ${databaseId}...`);
+                const db = await notion.databases.retrieve({ database_id: databaseId });
+                
+                if (db.data_sources && db.data_sources.length > 0) {
+                    dataSourceId = db.data_sources[0].id;
+                    console.log(`Resolved Data Source ID: ${dataSourceId}`);
+                }
+            } catch (retrieveError) {
+                console.warn(`notion.databases.retrieve failed for ${databaseId}. Assuming ID is already a Data Source ID. Error: ${retrieveError.message}`);
+            }
+
+            // If retrieval failed or no data source found, use the original ID
+            if (!dataSourceId) {
+                console.warn(`Using original ID ${databaseId} as Data Source ID...`);
                 dataSourceId = databaseId;
             }
 

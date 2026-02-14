@@ -68,20 +68,24 @@ async function fetchAllPages() {
 
         // 2. Fallback to notion.dataSources.query
         try {
-            // First, we need the Data Source ID. The ID in env vars is likely a Database ID.
-            // We need to fetch the database metadata to get the actual Data Source ID.
-            console.log(`Resolving Data Source ID for database ${MUSEUM_DB_ID}...`);
-            const db = await notion.databases.retrieve({ database_id: MUSEUM_DB_ID });
-            
             let dataSourceId = null;
-            if (db.data_sources && db.data_sources.length > 0) {
-                dataSourceId = db.data_sources[0].id;
-                console.log(`Resolved Data Source ID: ${dataSourceId}`);
-            } else {
-                // If no data source ID found, maybe the ID provided IS the data source ID? 
-                // Or maybe the integration doesn't support it.
-                // Let's try using the original ID as a fallback if no data_sources found.
-                console.warn(`No data_sources found in metadata for ${MUSEUM_DB_ID}. Trying original ID...`);
+
+            // Try to resolve Data Source ID from database metadata
+            try {
+                console.log(`Resolving Data Source ID for database ${MUSEUM_DB_ID}...`);
+                const db = await notion.databases.retrieve({ database_id: MUSEUM_DB_ID });
+                
+                if (db.data_sources && db.data_sources.length > 0) {
+                    dataSourceId = db.data_sources[0].id;
+                    console.log(`Resolved Data Source ID: ${dataSourceId}`);
+                }
+            } catch (retrieveError) {
+                console.warn(`notion.databases.retrieve failed for ${MUSEUM_DB_ID}. Assuming ID is already a Data Source ID. Error: ${retrieveError.message}`);
+            }
+
+            // If retrieval failed or no data source found, use the original ID
+            if (!dataSourceId) {
+                console.warn(`Using original ID ${MUSEUM_DB_ID} as Data Source ID...`);
                 dataSourceId = MUSEUM_DB_ID;
             }
 
