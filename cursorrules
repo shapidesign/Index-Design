@@ -12,12 +12,13 @@ You are building a Hebrew RTL, Neo-Brutalist, Tetris-themed resource hub for gra
 - Deployment: Vercel
 - Cost: $0/month (free tier everything)
 
-## WORKFLOW RULES (NEW!)
-1. **Version Tag**: Always ensure the version tag is visible on the top left of the nav bar.
-2. **Push & Deploy Protocol**: After EACH message/task completion:
-   - Ask the user: "Do you want to push and commit to GitHub (and deploy to Vercel)?"
-   - Specify the version number for the update (e.g., "Update for version 0.1.0").
-   - If yes, run the git commands and update the version in `package.json` if needed.
+## WORKFLOW RULES
+1. **Version Tag**: Always ensure the version tag is visible on the top left of the nav bar, styled in a colored box (e.g., yellow) for high visibility.
+2. **Auto-Push Protocol**: After EACH message/task completion:
+   - Automatically increment the patch version in `package.json` (unless a major/minor change is requested).
+   - Automatically run `git add . && git commit -m "Update for version X.Y.Z" && git push`.
+   - Inform the user: "Auto-pushed version X.Y.Z".
+   - If the user wants to revert, they will explicitly ask to "go back to version X.Y.Z".
 
 ## CORE PRINCIPLES
 

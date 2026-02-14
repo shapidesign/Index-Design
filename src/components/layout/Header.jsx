@@ -12,7 +12,7 @@ import pkg from '../../../package.json'; // Import package.json for version
  * - Nav buttons: #EEEEEE fill, rounded-[5px], 4px shadow
  * - Purple hamburger button with white lines
  * - Shimshon pixel font for all nav text
- * - Version tag on top left
+ * - Version tag on top left (Yellow box)
  */
 
 const navSections = [
@@ -119,8 +119,18 @@ const Header = ({ activeSection, onSectionChange }) => {
             )}
           </button>
 
-          {/* Version Tag - Always visible, far left */}
-          <div className="hidden md:flex items-center justify-center px-2 py-1 bg-off-black border border-[#333] rounded text-[10px] text-[#666] font-mono">
+          {/* Version Tag - Always visible, far left, styled box */}
+          <div className={cn(
+            "hidden md:flex items-center justify-center",
+            "px-3 py-1",
+            "bg-tetris-yellow",
+            "border-2 border-off-black",
+            "shadow-[2px_2px_0_#1F1F1F]",
+            "rounded-[4px]",
+            "text-xs font-bold font-mono text-off-black",
+            "rotate-[-2deg]",
+            "hover:rotate-0 transition-transform duration-200"
+          )}>
             v{pkg.version}
           </div>
         </div>
@@ -159,8 +169,18 @@ const Header = ({ activeSection, onSectionChange }) => {
           ))}
           
           {/* Version in Mobile Menu */}
-          <div className="mt-auto pt-6 text-center text-[#666] text-xs font-mono">
-            v{pkg.version}
+          <div className="mt-auto pt-6 flex justify-center">
+            <div className={cn(
+              "inline-flex items-center justify-center",
+              "px-3 py-1",
+              "bg-tetris-yellow",
+              "border-2 border-off-black",
+              "shadow-[2px_2px_0_#1F1F1F]",
+              "rounded-[4px]",
+              "text-xs font-bold font-mono text-off-black"
+            )}>
+              v{pkg.version}
+            </div>
           </div>
         </nav>
       </div>
