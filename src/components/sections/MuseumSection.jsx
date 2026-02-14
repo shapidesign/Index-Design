@@ -4,7 +4,8 @@ import useData from '@/hooks/useData';
 import MuseumCard from '@/components/cards/MuseumCard';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import TetrisShape from '@/components/tetris/TetrisShape';
-import { LayoutGrid, List, ChevronDown, X, Search } from 'lucide-react';
+import { LayoutGrid, List, ChevronDown, X, Search, ExternalLink } from 'lucide-react';
+import { getFlagPath, getRandomThumbnail } from '@/lib/museum';
 
 /**
  * MuseumSection - המוזיאון
@@ -134,13 +135,16 @@ const quickSearches = [
 const MuseumModal = ({ item, onClose }) => {
     if (!item) return null;
 
+    const flagPath = getFlagPath(item.country);
+    const thumbnail = React.useMemo(() => getRandomThumbnail(item.id || item.nameHe || 'modal'), [item.id, item.nameHe]);
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-off-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div 
+            <div
                 className="relative w-full max-w-2xl bg-off-white border-3 border-off-black shadow-brutalist animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
                 dir="rtl"
             >
-                <button 
+                <button
                     onClick={onClose}
                     className="absolute top-4 left-4 p-2 bg-tetris-pink border-2 border-off-black hover:bg-tetris-orange transition-colors z-10"
                 >
@@ -151,18 +155,19 @@ const MuseumModal = ({ item, onClose }) => {
                     {/* Image Side */}
                     <div className="w-full md:w-1/3 h-64 md:h-auto min-h-[300px] bg-light-gray border-b-3 md:border-b-0 md:border-l-3 border-off-black relative overflow-hidden">
                         {item.imageUrl ? (
-                            <img 
-                                src={item.imageUrl} 
-                                alt={item.name} 
+                            <img
+                                src={item.imageUrl}
+                                alt={item.name}
                                 className="w-full h-full object-cover"
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-tetris-blue/10">
-                                <TetrisShape type="T" size={80} color="purple" className="opacity-50" />
+                                <TetrisShape type={thumbnail.type} size={80} color={thumbnail.color} className="opacity-50" />
                             </div>
                         )}
                         {item.country && (
                             <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-off-white border-2 border-off-black shadow-sm">
+                                {flagPath && <img src={flagPath} alt={item.country} className="w-4 h-auto" />}
                                 <span className="text-sm font-bold font-shimshon">{item.country}</span>
                             </div>
                         )}
