@@ -52,29 +52,48 @@ async function fetchAllPages() {
 
     // Helper to query with fallback
     const queryNotion = async (cursor) => {
-        // Try databases.query first (standard integration)
-        try {
-            console.log(`Trying notion.databases.query for ${MUSEUM_DB_ID}...`);
-            return await notion.databases.query({
-                database_id: MUSEUM_DB_ID,
-                page_size: 100,
-                start_cursor: cursor,
-            });
-        } catch (dbError) {
-            console.warn(`notion.databases.query failed for ${MUSEUM_DB_ID}:`, dbError.message);
-            
-            // If that fails, try dataSources.query (for Data Source IDs)
+        // 1. Try databases.query first (standard integration)
+        if (typeof notion.databases.query === 'function') {
             try {
-                console.log(`Falling back to notion.dataSources.query for ${MUSEUM_DB_ID}...`);
-                return await notion.dataSources.query({
-                    data_source_id: MUSEUM_DB_ID,
+                console.log(`Trying notion.databases.query for ${MUSEUM_DB_ID}...`);
+                return await notion.databases.query({
+                    database_id: MUSEUM_DB_ID,
                     page_size: 100,
                     start_cursor: cursor,
                 });
-            } catch (dsError) {
-                console.error(`notion.dataSources.query also failed for ${MUSEUM_DB_ID}:`, dsError.message);
-                throw new Error(`Failed to query Notion for ${MUSEUM_DB_ID}. Databases error: ${dbError.message}. DataSources error: ${dsError.message}`);
+            } catch (dbError) {
+                console.warn(`notion.databases.query failed for ${MUSEUM_DB_ID}:`, dbError.message);
             }
+        }
+
+        // 2. Fallback to notion.dataSources.query
+        try {
+            // First, we need the Data Source ID. The ID in env vars is likely a Database ID.
+            // We need to fetch the database metadata to get the actual Data Source ID.
+            console.log(`Resolving Data Source ID for database ${MUSEUM_DB_ID}...`);
+            const db = await notion.databases.retrieve({ database_id: MUSEUM_DB_ID });
+            
+            let dataSourceId = null;
+            if (db.data_sources && db.data_sources.length > 0) {
+                dataSourceId = db.data_sources[0].id;
+                console.log(`Resolved Data Source ID: ${dataSourceId}`);
+            } else {
+                // If no data source ID found, maybe the ID provided IS the data source ID? 
+                // Or maybe the integration doesn't support it.
+                // Let's try using the original ID as a fallback if no data_sources found.
+                console.warn(`No data_sources found in metadata for ${MUSEUM_DB_ID}. Trying original ID...`);
+                dataSourceId = MUSEUM_DB_ID;
+            }
+
+            console.log(`Querying notion.dataSources.query with ID ${dataSourceId}...`);
+            return await notion.dataSources.query({
+                data_source_id: dataSourceId,
+                page_size: 100,
+                start_cursor: cursor,
+            });
+        } catch (dsError) {
+            console.error(`notion.dataSources.query failed:`, dsError.message);
+            throw new Error(`Failed to query Notion. Error: ${dsError.message}`);
         }
     };
 

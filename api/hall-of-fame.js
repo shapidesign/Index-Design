@@ -126,29 +126,43 @@ async function fetchAllPages(databaseId) {
 
     // Helper to query with fallback
     const queryNotion = async (cursor) => {
-        // Try databases.query first (standard integration)
-        try {
-            console.log(`Trying notion.databases.query for ${databaseId}...`);
-            return await notion.databases.query({
-                database_id: databaseId,
-                page_size: 100,
-                start_cursor: cursor,
-            });
-        } catch (dbError) {
-            console.warn(`notion.databases.query failed for ${databaseId}:`, dbError.message);
-            
-            // If that fails, try dataSources.query (for Data Source IDs)
+        // 1. Try databases.query first (standard integration)
+        if (typeof notion.databases.query === 'function') {
             try {
-                console.log(`Falling back to notion.dataSources.query for ${databaseId}...`);
-                return await notion.dataSources.query({
-                    data_source_id: databaseId,
+                console.log(`Trying notion.databases.query for ${databaseId}...`);
+                return await notion.databases.query({
+                    database_id: databaseId,
                     page_size: 100,
                     start_cursor: cursor,
                 });
-            } catch (dsError) {
-                console.error(`notion.dataSources.query also failed for ${databaseId}:`, dsError.message);
-                throw new Error(`Failed to query Notion for ${databaseId}. Databases error: ${dbError.message}. DataSources error: ${dsError.message}`);
+            } catch (dbError) {
+                console.warn(`notion.databases.query failed for ${databaseId}:`, dbError.message);
             }
+        }
+
+        // 2. Fallback to notion.dataSources.query
+        try {
+            console.log(`Resolving Data Source ID for database ${databaseId}...`);
+            const db = await notion.databases.retrieve({ database_id: databaseId });
+            
+            let dataSourceId = null;
+            if (db.data_sources && db.data_sources.length > 0) {
+                dataSourceId = db.data_sources[0].id;
+                console.log(`Resolved Data Source ID: ${dataSourceId}`);
+            } else {
+                console.warn(`No data_sources found in metadata for ${databaseId}. Trying original ID...`);
+                dataSourceId = databaseId;
+            }
+
+            console.log(`Querying notion.dataSources.query with ID ${dataSourceId}...`);
+            return await notion.dataSources.query({
+                data_source_id: dataSourceId,
+                page_size: 100,
+                start_cursor: cursor,
+            });
+        } catch (dsError) {
+            console.error(`notion.dataSources.query failed for ${databaseId}:`, dsError.message);
+            throw new Error(`Failed to query Notion for ${databaseId}. Error: ${dsError.message}`);
         }
     };
 
