@@ -7,7 +7,8 @@
 import { Client } from '@notionhq/client';
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
-const DATABASE_ID = process.env.NOTION_DATASOURCE_ID;
+// Support both variable names: legacy DATASOURCE_ID and standard RESOURCES_DB
+const DATABASE_ID = process.env.NOTION_DATASOURCE_ID || process.env.NOTION_RESOURCES_DB;
 
 const notion = new Client({
   auth: NOTION_API_KEY,
@@ -129,7 +130,7 @@ export default async function handler(req, res) {
 
   try {
     if (!NOTION_API_KEY || !DATABASE_ID) {
-      throw new Error('Missing Notion configuration (NOTION_API_KEY or NOTION_DATASOURCE_ID)');
+      throw new Error('Missing Notion configuration (NOTION_API_KEY or NOTION_RESOURCES_DB/NOTION_DATASOURCE_ID)');
     }
 
     const pages = await fetchAllPages();

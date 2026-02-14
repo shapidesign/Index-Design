@@ -7,7 +7,8 @@
 import { Client } from '@notionhq/client';
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
-const DS1 = process.env.NOTION_HALL_OF_FAME_DS1;
+// Support both variable names
+const DS1 = process.env.NOTION_HALL_OF_FAME_DS1 || process.env.NOTION_DESIGNERS_DB;
 const DS2 = process.env.NOTION_HALL_OF_FAME_DS2;
 
 const notion = new Client({
@@ -179,7 +180,7 @@ export default async function handler(req, res) {
 
     try {
         if (!NOTION_API_KEY || !DS1) {
-            throw new Error('Missing Notion configuration (NOTION_API_KEY or NOTION_HALL_OF_FAME_DS1)');
+            throw new Error('Missing Notion configuration (NOTION_API_KEY or NOTION_DESIGNERS_DB/NOTION_HALL_OF_FAME_DS1)');
         }
 
         // Fetch from both data sources in parallel, merge & deduplicate
