@@ -156,6 +156,7 @@ Use: Corners, brackets (mirrored)
 
 **Usage:**
 ```jsx
+{% raw %}
 {resources.map((resource, i) => (
   <ResourceCard 
     key={resource.id}
@@ -163,6 +164,7 @@ Use: Corners, brackets (mirrored)
     style={{ animationDelay: `${i * 0.1}s` }}
   />
 ))}
+{% endraw %}
 ```
 
 ---
