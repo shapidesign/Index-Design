@@ -60,13 +60,31 @@ function getPageImage(page) {
     return page?.original?.source || page?.thumbnail?.source || null;
 }
 
-function scorePageCandidate(page, query, intent) {
+function normalizeText(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function includesNormalized(haystack, needle) {
+    const h = normalizeText(haystack);
+    const n = normalizeText(needle);
+    if (!h || !n) return false;
+    return h.includes(n);
+}
+
+function scorePageCandidate(page, query, intent, designerAliases = []) {
     const title = String(page?.title || '').toLowerCase();
     const normalizedQuery = normalizeQuery(query).toLowerCase();
+    const extract = String(page?.extract || '').toLowerCase();
     const categories = (page?.categories || []).map((c) => String(c?.title || '').toLowerCase());
     const categoryText = categories.join(' ');
+    const isDisambiguation = Boolean(page?.pageprops?.disambiguation) || includesNormalized(extract, 'may refer to');
 
     let score = 0;
+
+    if (isDisambiguation) score -= 100;
     if (title === normalizedQuery) score += 5;
     if (title.includes(normalizedQuery)) score += 3;
     if (getPageImage(page)) score += 4;
@@ -100,8 +118,19 @@ function scorePageCandidate(page, query, intent) {
     ];
 
     if (intent === 'work') {
+        const designerMentioned = designerAliases.some((alias) => includesNormalized(extract, alias));
+        if (designerMentioned) score += 10;
         if (artworkSignals.some((signal) => categoryText.includes(signal))) score += 4;
         if (biographySignals.some((signal) => categoryText.includes(signal))) score -= 6;
+
+        // Work pages often mention creator relation in text.
+        if (
+            includesNormalized(extract, 'designed by') ||
+            includesNormalized(extract, 'created by') ||
+            includesNormalized(extract, 'by ')
+        ) {
+            score += 2;
+        }
     } else {
         if (biographySignals.some((signal) => categoryText.includes(signal))) score += 1;
     }
@@ -109,15 +138,16 @@ function scorePageCandidate(page, query, intent) {
     return score;
 }
 
-function extractBestWikipediaImage(data, query, intent) {
+function extractBestWikipediaImage(data, query, intent, designerAliases = []) {
     const pages = data?.query?.pages;
     if (!pages) return null;
 
     const ranked = Object.values(pages)
-        .map((page) => ({ page, score: scorePageCandidate(page, query, intent) }))
+        .map((page) => ({ page, score: scorePageCandidate(page, query, intent, designerAliases) }))
         .sort((a, b) => b.score - a.score);
 
     for (const candidate of ranked) {
+        if (candidate.score < 0) continue;
         const image = getPageImage(candidate.page);
         if (image) return image;
     }
@@ -125,11 +155,12 @@ function extractBestWikipediaImage(data, query, intent) {
     return null;
 }
 
-async function fetchWikipediaImageForQuery(query, intent = 'work') {
+async function fetchWikipediaImageForQuery(query, intent = 'work', designerAliases = []) {
     const normalizedQuery = normalizeQuery(query);
     if (!normalizedQuery) return null;
 
-    const cacheKey = `${intent}:${normalizedQuery.toLowerCase()}`;
+    const aliasKey = designerAliases.map((alias) => normalizeText(alias)).filter(Boolean).sort().join('|');
+    const cacheKey = `${intent}:${normalizedQuery.toLowerCase()}:${aliasKey}`;
     if (WIKI_IMAGE_CACHE.has(cacheKey)) {
         return WIKI_IMAGE_CACHE.get(cacheKey);
     }
@@ -153,17 +184,20 @@ async function fetchWikipediaImageForQuery(query, intent = 'work') {
             const imageUrl = new URL(`https://${lang}.wikipedia.org/w/api.php`);
             imageUrl.searchParams.set('action', 'query');
             imageUrl.searchParams.set('format', 'json');
-            imageUrl.searchParams.set('prop', 'pageimages|categories');
+            imageUrl.searchParams.set('prop', 'pageimages|categories|extracts|pageprops');
             imageUrl.searchParams.set('piprop', 'original|thumbnail');
             imageUrl.searchParams.set('pithumbsize', '1200');
             imageUrl.searchParams.set('cllimit', '30');
+            imageUrl.searchParams.set('exintro', '1');
+            imageUrl.searchParams.set('explaintext', '1');
+            imageUrl.searchParams.set('exchars', '700');
             imageUrl.searchParams.set('pageids', bestMatches.map((m) => String(m.pageid)).join('|'));
 
             const imageRes = await fetch(imageUrl);
             if (!imageRes.ok) continue;
 
             const imageJson = await imageRes.json();
-            const image = extractBestWikipediaImage(imageJson, normalizedQuery, intent);
+            const image = extractBestWikipediaImage(imageJson, normalizedQuery, intent, designerAliases);
             if (image) {
                 WIKI_IMAGE_CACHE.set(cacheKey, image);
                 return image;
@@ -180,9 +214,12 @@ async function fetchWikipediaImageForQuery(query, intent = 'work') {
 async function resolveRepresentativeImage(item) {
     if (item.imageUrl) return item.imageUrl;
     const queries = buildSearchQueries(item);
+    const designerAliases = [item.nameEn, item.nameHe, item.name]
+        .map((alias) => normalizeQuery(alias))
+        .filter(Boolean);
 
     for (const queryObj of queries) {
-        const image = await fetchWikipediaImageForQuery(queryObj.query, queryObj.intent);
+        const image = await fetchWikipediaImageForQuery(queryObj.query, queryObj.intent, designerAliases);
         if (image) return image;
     }
 
