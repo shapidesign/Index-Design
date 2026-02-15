@@ -459,7 +459,7 @@ const App = () => {
               onClick={() => setIsSuggestionModalOpen(true)}
               className={cn(
                 'inline-flex items-center gap-2 px-3 py-2',
-                'bg-tetris-orange text-off-black text-sm font-bold font-shimshon',
+                'bg-tetris-purple text-off-white text-sm font-bold font-shimshon',
                 'border border-[#555555] shadow-brutalist-nav',
                 'hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]',
                 'transition-all duration-200'
@@ -519,7 +519,7 @@ const App = () => {
                   'font-shimshon text-lg',
                   'rounded-[5px]',
                   'border border-[#555555]',
-                  'bg-tetris-orange text-off-black',
+                  'bg-tetris-purple text-off-white',
                   'shadow-brutalist-nav',
                   'transition-all duration-200'
                 )}
@@ -671,29 +671,17 @@ const App = () => {
                           role="option"
                           aria-selected={searchQuery === suggestion.query}
                           onClick={() => handleSuggestionClick(suggestion.query)}
-                          style={{
-                            backgroundColor: searchQuery === suggestion.query
-                              ? suggestion.color
-                              : undefined,
-                            '--suggestion-color': suggestion.color,
-                          }}
-                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = suggestion.color; }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = searchQuery === suggestion.query
-                              ? suggestion.color
-                              : '';
-                          }}
                           className={cn(
                             "px-3 py-1.5",
                             "font-shimshon text-sm",
-                            "text-off-black",
+                            "text-off-white",
+                            "bg-tetris-purple",
                             "border-2 border-off-black",
                             "shadow-brutalist-xs",
                             "transition-all duration-200",
                             "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
                             "active:shadow-none active:translate-x-[2px] active:translate-y-[2px]",
-                            "cursor-pointer",
-                            searchQuery !== suggestion.query && "bg-light-gray"
+                            "cursor-pointer"
                           )}
                         >
                           {suggestion.label}
