@@ -42,8 +42,8 @@ const categories = [
   { id: 'lucky', title: 'עוגיית מזל', desc: 'הפתעה! לחצו וגלו משאב אקראי', color: 'cyan', shape: 'J', isLucky: true },
 ];
 
-/** Non-lucky categories for random selection */
-const regularCategories = categories.filter((c) => !c.isLucky);
+/** Sections that can be selected by the fortune cookie */
+const luckySectionIds = ['toolbox', 'museum', 'library', 'hallOfFame'];
 
 /** Quick suggestions for the search dropdown */
 const quickSuggestions = [
@@ -115,6 +115,7 @@ const App = () => {
   const searchContainerRef = useRef(null);
   const highlightedTargetRef = useRef(null);
   const highlightTimeoutRef = useRef(null);
+  const lastLuckyTargetRef = useRef(null);
 
   /** Initial website loading animation */
   useEffect(() => {
@@ -316,6 +317,10 @@ const App = () => {
   }, [globalSearchItems, searchQuery]);
 
   const displayCategories = categories;
+  const luckyItems = useMemo(
+    () => globalSearchItems.filter((item) => luckySectionIds.includes(item.sectionId) && item.targetId),
+    [globalSearchItems]
+  );
 
   const clearSearchTargetHighlight = useCallback(() => {
     if (highlightTimeoutRef.current) {
@@ -384,17 +389,42 @@ const App = () => {
     return () => window.clearInterval(interval);
   }, [activeSection, pendingNavigation, highlightSearchTarget]);
 
-  /** Pick a random category and scroll/highlight it */
+  /** Pick a random card from lucky-enabled sections */
   const handleFeelingLucky = useCallback(() => {
-    const random = regularCategories[Math.floor(Math.random() * regularCategories.length)];
-    setLuckyHighlight(random.id);
-    setActiveSection(random.id);
-    // Scroll to the card
-    const el = document.getElementById(`card-${random.id}`);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // Clear highlight after animation
-    setTimeout(() => setLuckyHighlight(null), 2000);
-  }, []);
+    clearSearchTargetHighlight();
+
+    if (luckyItems.length > 0) {
+      let pool = luckyItems;
+      if (luckyItems.length > 1 && lastLuckyTargetRef.current) {
+        const filtered = luckyItems.filter((item) => item.targetId !== lastLuckyTargetRef.current);
+        if (filtered.length > 0) pool = filtered;
+      }
+
+      const randomItem = pool[Math.floor(Math.random() * pool.length)];
+      lastLuckyTargetRef.current = randomItem.targetId;
+      setLuckyHighlight(randomItem.sectionId);
+      setActiveSection(randomItem.sectionId);
+      setPendingNavigation({ sectionId: randomItem.sectionId, targetId: randomItem.targetId });
+    } else {
+      // Fallback while data is still loading: open one of the supported sections.
+      let fallbackPool = luckySectionIds;
+      if (luckySectionIds.length > 1 && lastLuckyTargetRef.current?.startsWith('section-')) {
+        const lastSectionId = lastLuckyTargetRef.current.replace('section-', '');
+        const filteredSections = luckySectionIds.filter((sectionId) => sectionId !== lastSectionId);
+        if (filteredSections.length > 0) fallbackPool = filteredSections;
+      }
+
+      const fallbackSectionId = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
+      lastLuckyTargetRef.current = `section-${fallbackSectionId}`;
+      setLuckyHighlight(fallbackSectionId);
+      setPendingNavigation(null);
+      setActiveSection(fallbackSectionId);
+      const el = document.getElementById(`card-${fallbackSectionId}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    window.setTimeout(() => setLuckyHighlight(null), 2000);
+  }, [clearSearchTargetHighlight, luckyItems]);
 
   if (isInitialLoading) {
     return <TetrisLoader fullScreen />;
