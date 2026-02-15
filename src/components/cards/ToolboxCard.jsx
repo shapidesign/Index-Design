@@ -42,11 +42,16 @@ const typeGradientMap = {
 
 /** Secondary accent colors cycled for tags */
 const tagColors = [
+  'bg-tetris-purple',
+  'bg-tetris-orange',
+  'bg-tetris-green',
   'bg-tetris-pink',
   'bg-tetris-yellow',
   'bg-tetris-blue',
   'bg-tetris-cyan',
 ];
+
+const getTagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
 
 /** Check if a string is primarily Latin/English */
 const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
@@ -297,11 +302,11 @@ const ToolboxCard = ({
                 key={tag}
                 className={cn(
                   'inline-block px-2 py-0.5',
-                  'text-xs font-bold text-off-black',
+                  'text-xs font-normal font-shimshon',
                   'border border-off-black',
                   'shadow-[1px_1px_0px_#1F1F1F]',
-                  isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
-                  tagColors[i % tagColors.length]
+                  tagColors[i % tagColors.length],
+                  getTagTextClass(tagColors[i % tagColors.length])
                 )}
               >
                 {tag}
@@ -412,11 +417,11 @@ const ToolboxCard = ({
                 key={tag}
                 className={cn(
                   'inline-block px-2 py-0.5',
-                  'text-xs font-bold text-off-black',
+                  'text-xs font-normal font-shimshon',
                   'border border-off-black',
                   'shadow-[1px_1px_0px_#1F1F1F]',
-                  isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
-                  tagColors[i % tagColors.length]
+                  tagColors[i % tagColors.length],
+                  getTagTextClass(tagColors[i % tagColors.length])
                 )}
               >
                 {tag}
