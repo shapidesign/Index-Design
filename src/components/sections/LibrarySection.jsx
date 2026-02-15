@@ -1,10 +1,10 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import useData from '@/hooks/useData';
 import BookCard from '@/components/cards/BookCard';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import TetrisShape from '@/components/tetris/TetrisShape';
-import { LayoutGrid, List, Search, X } from 'lucide-react';
+import { LayoutGrid, List, Search, X, ChevronDown } from 'lucide-react';
 
 const normalizeText = (value) =>
   String(value || '')
@@ -75,6 +75,109 @@ const YearRangeSlider = ({ bounds, range, onChange }) => {
         </div>
         <span className="text-xs text-dark-gray min-w-[42px] text-right font-pixelify">{maxBound}</span>
       </div>
+    </div>
+  );
+};
+
+const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const visibleOptions = options.filter((tag) =>
+    normalizeText(tag).includes(normalizeText(search))
+  );
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className={cn(
+          'w-full md:w-auto min-w-[220px]',
+          'inline-flex items-center justify-between gap-2',
+          'px-3 py-2 bg-off-white border-2 border-off-black shadow-brutalist-xs',
+          'text-sm font-shimshon',
+          'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+          'transition-all duration-200',
+          selected.length > 0 && 'bg-tetris-cyan/20'
+        )}
+      >
+        <ChevronDown size={14} className={cn('transition-transform', open && 'rotate-180')} />
+        <span className="text-right flex-1">
+          {selected.length > 0 ? `תגיות (${selected.length})` : 'סינון לפי תגיות'}
+        </span>
+      </button>
+
+      {open && (
+        <div
+          className={cn(
+            'absolute right-0 top-full mt-1 z-40',
+            'w-full md:w-[300px]',
+            'bg-off-white border-2 border-off-black shadow-brutalist',
+            'p-2'
+          )}
+        >
+          <div className="flex items-center gap-2 px-2 py-1.5 border border-off-black bg-light-gray mb-2">
+            <Search size={12} className="text-mid-gray" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="חיפוש תגית..."
+              className={cn('w-full bg-transparent text-xs outline-none text-right', getSymbolicFontClass(search))}
+              dir="rtl"
+            />
+          </div>
+
+          <div className="max-h-52 overflow-y-auto flex flex-col gap-1">
+            {visibleOptions.length === 0 ? (
+              <p className="text-xs text-dark-gray font-ibm text-center py-2">לא נמצאו תגיות</p>
+            ) : (
+              visibleOptions.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => onToggle(tag)}
+                  className={cn(
+                    'w-full text-right px-3 py-1.5',
+                    'border border-off-black/30',
+                    'hover:bg-light-gray transition-colors',
+                    'text-xs font-bold',
+                    getSymbolicFontClass(tag),
+                    selected.includes(tag) && 'bg-tetris-yellow/40 border-off-black'
+                  )}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    {selected.includes(tag) ? '✓' : ''}
+                    {tag}
+                  </span>
+                </button>
+              ))
+            )}
+          </div>
+
+          {selected.length > 0 && (
+            <div className="pt-2 mt-2 border-t border-off-black/20 flex justify-end">
+              <button
+                type="button"
+                onClick={onClear}
+                className="text-xs font-shimshon px-2 py-1 border border-off-black bg-light-gray hover:bg-tetris-pink/30 transition-colors"
+              >
+                ניקוי תגיות
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -273,27 +376,13 @@ const LibrarySection = () => {
 
         {allTags.length > 0 && (
           <div className="mt-3 pt-3 border-t-2 border-off-black/20">
-            <p className="text-xs text-dark-gray font-shimshon text-right mb-2">תגיות</p>
-            <div className="flex flex-wrap gap-2 justify-end">
-            {allTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => toggleTag(tag)}
-                className={cn(
-                  'px-3 py-1 text-xs font-bold',
-                  getSymbolicFontClass(tag),
-                  'border-2 border-off-black shadow-brutalist-xs',
-                  'transition-all duration-200',
-                  'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
-                  selectedTags.includes(tag)
-                    ? 'bg-tetris-cyan'
-                    : 'bg-light-gray text-off-black'
-                )}
-              >
-                {tag}
-              </button>
-            ))}
+            <div className="flex justify-end">
+              <TagFilterDropdown
+                options={allTags}
+                selected={selectedTags}
+                onToggle={toggleTag}
+                onClear={() => setSelectedTags([])}
+              />
             </div>
           </div>
         )}
