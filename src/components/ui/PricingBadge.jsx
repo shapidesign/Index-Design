@@ -16,14 +16,17 @@ import { cn } from '@/lib/utils';
 const pricingConfig = {
   'חינם': {
     bg: 'bg-tetris-green',
+    text: 'text-off-black',
     label: 'חינם',
   },
   'חצי חינם (freemium)': {
     bg: 'bg-tetris-orange',
+    text: 'text-off-black',
     label: 'חצי חינם',
   },
   'תשלום/מנוי': {
     bg: 'bg-[#8867FF]',
+    text: 'text-off-white',
     label: 'תשלום/מנוי',
   },
 };
@@ -40,9 +43,10 @@ const PricingBadge = ({ pricing, className }) => {
         'px-2.5 py-1',
         'border-2 border-off-black',
         'shadow-brutalist-xs',
-        'font-shimshon text-xs font-bold text-off-black',
+        'font-shimshon text-xs font-bold',
         'whitespace-nowrap',
         config.bg,
+        config.text,
         className
       )}
       title={pricing}
