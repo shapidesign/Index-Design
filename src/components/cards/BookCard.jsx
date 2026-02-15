@@ -62,7 +62,7 @@ const BookCard = ({
                 <h3 className="text-lg font-bold text-off-black text-right mb-1 break-words">{title}</h3>
                 {year && (
                   <div className="flex justify-end mb-1">
-                    <span className="px-2 py-0.5 text-[11px] font-bold font-pixelify bg-light-gray border border-off-black text-off-black">
+                    <span className="inline-flex w-fit items-center px-1.5 py-0 text-[10px] font-bold font-pixelify bg-light-gray border border-off-black text-off-black leading-tight">
                       {year}
                     </span>
                   </div>
@@ -123,7 +123,7 @@ const BookCard = ({
     <article
       dir="rtl"
       className={cn(
-        'relative p-6',
+        'relative p-6 h-full flex flex-col',
         'bg-off-white',
         'border-3 border-off-black',
         featured
@@ -140,7 +140,7 @@ const BookCard = ({
         </div>
       </div>
 
-      <h3 className="text-xl font-bold text-off-black text-right mb-1">{title}</h3>
+      <h3 className="text-xl font-bold text-off-black text-right mb-1 line-clamp-2 min-h-[56px]">{title}</h3>
       {year && (
         <div className="flex justify-end mb-2">
           <span className="px-2 py-0.5 text-[11px] font-bold font-pixelify bg-light-gray border border-off-black text-off-black">
@@ -148,7 +148,7 @@ const BookCard = ({
           </span>
         </div>
       )}
-      {author && <p className="text-sm text-dark-gray text-right mb-3">{author}</p>}
+      {author && <p className="text-sm text-dark-gray text-right mb-3 line-clamp-1 min-h-[20px]">{author}</p>}
       {category && (
         <div className="mb-3 flex items-center gap-2 justify-end">
           <Badge color="bg-tetris-blue">{category}</Badge>
@@ -156,15 +156,15 @@ const BookCard = ({
       )}
 
       {why && (
-        <div className="mt-3 pt-3 border-t-3 border-light-gray">
-          <p className="text-sm text-off-black text-right leading-relaxed">
+        <div className="mt-3 pt-3 border-t-3 border-light-gray min-h-[112px]">
+          <p className="text-sm text-off-black text-right leading-relaxed line-clamp-4">
             <span className="font-bold">למה לקרוא: </span>{why}
           </p>
         </div>
       )}
 
       {tags.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2 justify-end">
+        <div className="mt-3 flex flex-wrap gap-2 justify-end min-h-[48px] max-h-[48px] overflow-hidden">
           {tags.slice(0, 5).map((tag) => (
             <span
               key={tag}
@@ -180,7 +180,7 @@ const BookCard = ({
       )}
 
       {link && (
-        <div className="mt-4 pt-3 border-t-3 border-light-gray flex justify-end">
+        <div className="mt-auto pt-3 border-t-3 border-light-gray flex justify-end">
           <a
             href={link}
             target="_blank"

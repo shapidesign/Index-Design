@@ -430,9 +430,9 @@ const LibrarySection = () => {
           <p className="text-sm font-ibm text-dark-gray">נסו מילות חיפוש אחרות או הורידו פילטרים.</p>
         </div>
       ) : viewMode === 'gallery' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
           {filteredBooks.map((book) => (
-            <div key={book.id} id={makeBookTargetId(book.id)}>
+            <div key={book.id} id={makeBookTargetId(book.id)} className="h-full">
               <BookCard
                 viewMode="gallery"
                 title={book.title}
@@ -442,6 +442,7 @@ const LibrarySection = () => {
                 tags={book.tags || []}
                 coverUrl={book.coverUrl}
                 link={book.link}
+                className="h-full"
               />
             </div>
           ))}
