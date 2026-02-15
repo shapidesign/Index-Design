@@ -13,6 +13,7 @@ import pkg from '../package.json';
 const ToolboxSection = lazy(() => import('@/components/sections/ToolboxSection'));
 const HallOfFameSection = lazy(() => import('@/components/sections/HallOfFameSection'));
 const MuseumSection = lazy(() => import('@/components/sections/MuseumSection'));
+const LibrarySection = lazy(() => import('@/components/sections/LibrarySection'));
 const MapSection = lazy(() => import('@/components/sections/MapSection'));
 
 /**
@@ -143,20 +144,22 @@ const App = () => {
       try {
         setIsSearchDataLoading(true);
 
-        const [resourcesRes, museumRes, hallRes] = await Promise.all([
+        const [resourcesRes, museumRes, hallRes, booksRes] = await Promise.all([
           fetch('/api/resources'),
           fetch('/api/museum'),
-          fetch('/api/hall-of-fame')
+          fetch('/api/hall-of-fame'),
+          fetch('/api/books')
         ]);
 
-        if (!resourcesRes.ok || !museumRes.ok || !hallRes.ok) {
+        if (!resourcesRes.ok || !museumRes.ok || !hallRes.ok || !booksRes.ok) {
           throw new Error('Failed loading global search data');
         }
 
-        const [resourcesJson, museumJson, hallJson] = await Promise.all([
+        const [resourcesJson, museumJson, hallJson, booksJson] = await Promise.all([
           resourcesRes.json(),
           museumRes.json(),
-          hallRes.json()
+          hallRes.json(),
+          booksRes.json()
         ]);
 
         const resources = (resourcesJson?.results || []).map((item) => ({
@@ -218,6 +221,24 @@ const App = () => {
           targetId: makeTargetId('hallOfFame', item.id)
         }));
 
+        const libraryItems = (booksJson?.results || []).map((item) => ({
+          id: item.id,
+          sectionId: 'library',
+          sectionLabel: 'הספרייה',
+          titleHe: item.title || '',
+          titleEn: '',
+          description: item.description || '',
+          tags: toArray(item.tags),
+          keywords: [
+            item.title,
+            item.author,
+            item.year,
+            item.description,
+            ...toArray(item.tags)
+          ].filter(Boolean),
+          targetId: makeTargetId('library', item.id)
+        }));
+
         const mapItems = [
           {
             id: 'google-my-maps-main',
@@ -244,7 +265,7 @@ const App = () => {
         ];
 
         if (!cancelled) {
-          setGlobalSearchItems([...resources, ...museumItems, ...hallItems, ...mapItems]);
+          setGlobalSearchItems([...resources, ...museumItems, ...hallItems, ...libraryItems, ...mapItems]);
         }
       } catch (error) {
         console.error('Global search index error:', error);
@@ -847,6 +868,32 @@ const App = () => {
             </div>
             <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
               <MuseumSection />
+            </Suspense>
+          </div>
+        )}
+
+        {/* ===== LIBRARY SECTION ===== */}
+        {activeSection === 'library' && (
+          <div className="mt-12" id="section-library">
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={() => setActiveSection(null)}
+                className={cn(
+                  "px-4 py-2",
+                  "font-shimshon text-sm font-bold text-off-black",
+                  "bg-light-gray",
+                  "border-2 border-off-black",
+                  "shadow-brutalist-xs",
+                  "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                  "transition-all duration-200"
+                )}
+              >
+                חזרה לכל הקטגוריות
+              </button>
+            </div>
+            <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
+              <LibrarySection />
             </Suspense>
           </div>
         )}
