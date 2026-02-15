@@ -69,7 +69,7 @@ const BookCard = ({
                 <h3 className="text-lg font-bold text-off-black text-right mb-1 break-words">{title}</h3>
                 {year && (
                   <div className="flex justify-end mb-1">
-                    <span className="inline-flex w-fit items-center px-1.5 py-0 text-[10px] font-bold font-pixelify bg-light-gray border border-off-black text-off-black leading-tight">
+                    <span className="inline-flex w-fit items-center px-3 py-0.5 text-sm font-bold font-pixelify bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
                       {year}
                     </span>
                   </div>
@@ -111,7 +111,8 @@ const BookCard = ({
                   <span
                     key={tag}
                     className={cn(
-                      'px-2 py-0.5 text-[11px] font-bold text-off-black border border-off-black',
+                      'inline-flex items-center justify-center h-6 min-w-[76px] px-2',
+                      'text-[11px] font-bold text-off-black border border-off-black',
                       'shadow-[1px_1px_0px_#1F1F1F]',
                       symbolicFontClass(tag),
                       tagColors[i % tagColors.length]
@@ -152,7 +153,7 @@ const BookCard = ({
       <h3 className="text-xl font-bold text-off-black text-right mb-1 line-clamp-2 min-h-[56px]">{title}</h3>
       {year && (
         <div className="flex justify-end mb-2">
-          <span className="px-2 py-0.5 text-[11px] font-bold font-pixelify bg-light-gray border border-off-black text-off-black">
+          <span className="inline-flex w-fit items-center px-3 py-0.5 text-base font-bold font-pixelify bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
             {year}
           </span>
         </div>
@@ -173,12 +174,13 @@ const BookCard = ({
       )}
 
       {tags.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2 justify-end min-h-[48px] max-h-[48px] overflow-hidden">
+        <div className="mt-3 flex flex-wrap gap-2 justify-end">
           {tags.slice(0, 5).map((tag, i) => (
             <span
               key={tag}
               className={cn(
-                'px-2 py-0.5 text-[11px] font-bold text-off-black border border-off-black',
+                'inline-flex items-center justify-center h-6 min-w-[76px] px-2',
+                'text-[11px] font-bold text-off-black border border-off-black',
                 'shadow-[1px_1px_0px_#1F1F1F]',
                 symbolicFontClass(tag),
                 tagColors[i % tagColors.length]
