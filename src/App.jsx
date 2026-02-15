@@ -983,7 +983,7 @@ const App = () => {
                         {luckyPick.tags.slice(0, 5).map((tag) => (
                           <span
                             key={`${luckyPick.id}-${tag}`}
-                            className="px-2 py-1 bg-light-gray border border-off-black text-xs font-bold"
+                            className="px-2 py-1 bg-light-gray border border-off-black text-xs font-normal font-shimshon"
                           >
                             {tag}
                           </span>

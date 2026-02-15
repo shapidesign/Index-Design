@@ -97,7 +97,7 @@ const MuseumCard = ({
                                 key={tag}
                                 className={cn(
                                     'px-2 py-0.5',
-                                    'text-xs font-bold font-shimshon',
+                                    'text-xs font-normal font-shimshon',
                                     'border border-off-black',
                                     tagColors[i % tagColors.length],
                                     getTagTextClass(tagColors[i % tagColors.length]),
@@ -204,7 +204,7 @@ const MuseumCard = ({
                                 key={tag}
                                 className={cn(
                                     'px-2 py-0.5',
-                                    'text-xs font-bold font-shimshon',
+                                    'text-xs font-normal font-shimshon',
                                     'border border-off-black',
                                     tagColors[i % tagColors.length],
                                     getTagTextClass(tagColors[i % tagColors.length]),

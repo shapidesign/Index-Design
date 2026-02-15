@@ -166,7 +166,7 @@ const GalleryCard = ({
                                     key={style}
                                     className={cn(
                                         'inline-block px-2 py-0.5',
-                                        'text-xs font-bold',
+                                        'text-xs font-normal',
                                         'border border-off-black',
                                         'shadow-[1px_1px_0px_#1F1F1F]',
                                         isEnglish(style) ? 'font-pixelify' : 'font-shimshon',
@@ -191,7 +191,7 @@ const GalleryCard = ({
                                     key={field}
                                     className={cn(
                                         'inline-block px-2 py-0.5',
-                                        'text-xs font-bold',
+                                        'text-xs font-normal',
                                         'border border-off-black',
                                         'shadow-[1px_1px_0px_#1F1F1F]',
                                         isEnglish(field) ? 'font-pixelify' : 'font-shimshon',
@@ -302,7 +302,7 @@ const ListRow = ({
                             key={style}
                             className={cn(
                                 'inline-block px-1.5 py-0.5',
-                                'text-xs font-bold',
+                                'text-xs font-normal',
                                 'border border-off-black',
                                 isEnglish(style) ? 'font-pixelify' : 'font-shimshon',
                                 bgColor,

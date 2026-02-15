@@ -15,7 +15,7 @@ const Badge = ({
     <span
       className={cn(
         'inline-block px-3 py-1',
-        'text-xs font-bold text-off-black',
+        'text-xs font-normal font-shimshon text-off-black',
         'border-2 border-off-black',
         'shadow-brutalist-xs',
         color,

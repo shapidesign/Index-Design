@@ -119,7 +119,7 @@ const BookCard = ({
                     key={tag}
                     className={cn(
                       'inline-flex items-center justify-center h-6 min-w-[76px] px-2',
-                      'text-xs font-bold border border-off-black',
+                      'text-xs font-normal border border-off-black',
                       'shadow-[1px_1px_0px_#1F1F1F]',
                       symbolicFontClass(tag),
                       bgColor,
@@ -193,7 +193,7 @@ const BookCard = ({
               key={tag}
               className={cn(
                 'inline-flex items-center justify-center h-6 min-w-[76px] px-2',
-                'text-xs font-bold border border-off-black',
+                'text-xs font-normal border border-off-black',
                 'shadow-[1px_1px_0px_#1F1F1F]',
                 symbolicFontClass(tag),
                 bgColor,

@@ -171,7 +171,7 @@ const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
                     {selected.includes(tag) && <span className="text-xs font-shimshon">✓</span>}
                     <span
                       className={cn(
-                        'inline-block px-2 py-0.5 text-xs font-bold',
+                        'inline-block px-2 py-0.5 text-xs font-normal font-shimshon',
                         'border border-off-black shadow-[1px_1px_0px_#1F1F1F]',
                         tagColors[i % tagColors.length],
                         getTagTextClass(tagColors[i % tagColors.length])
