@@ -409,6 +409,13 @@ const ToolboxCard = ({
           {name}
         </h3>
 
+        {/* Mobile description fallback (hover overlay is not accessible on touch devices) */}
+        {description && (
+          <p className="text-sm text-dark-gray text-right font-ibm leading-relaxed line-clamp-3 mb-3 md:hidden">
+            {description}
+          </p>
+        )}
+
         {/* Tags — secondary accent colors (cycled) */}
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
