@@ -13,13 +13,14 @@ const COUNTRY_CODE_BY_NAME = {
     'usa': 'us',
     'united states': 'us',
     'u.s.a': 'us',
-    'בריטניה': 'gb',
-    'אנגליה': 'gb',
-    'uk': 'gb',
-    'u.k': 'gb',
-    'united kingdom': 'gb',
-    'great britain': 'gb',
-    'england': 'gb',
+    'בריטניה': 'uk',
+    'אנגליה': 'uk',
+    'הממלכה המאוחדת': 'uk',
+    'uk': 'uk',
+    'u.k': 'uk',
+    'united kingdom': 'uk',
+    'great britain': 'uk',
+    'england': 'uk',
 
     // Europe
     'צרפת': 'fr', 'france': 'fr',
@@ -70,11 +71,17 @@ const COUNTRY_CODE_BY_NAME = {
     'דרום אפריקה': 'za', 'south africa': 'za',
     'איחוד האמירויות': 'ae', 'united arab emirates': 'ae', 'uae': 'ae',
     'ערב הסעודית': 'sa', 'saudi arabia': 'sa',
-    'אירופה': 'eu', 'europe': 'eu'
+    'אירופה': 'eu', 'europe': 'eu',
+    'אסטוניה': 'ee', 'estonia': 'ee'
 };
 
 const AVAILABLE_FLAG_CODES = new Set([
-    'il', 'us', 'gb', 'fr', 'de', 'jp', 'it', 'nl', 'ch', 'es', 'cn', 'eu'
+    'il', 'us', 'gb', 'fr', 'de', 'jp', 'it', 'nl', 'ch', 'es', 'cn', 'eu',
+    'ru', 'hu', 'at', 'dk', 'th', 'br', 'pl', 'ee', 'uk'
+]);
+
+const PNG_FLAG_CODES = new Set([
+    'ru', 'hu', 'at', 'dk', 'th', 'br', 'pl', 'ee', 'uk'
 ]);
 
 const normalizeCountryName = (countryName) =>
@@ -84,16 +91,31 @@ const normalizeCountryName = (countryName) =>
         .replace(/["״׳']/g, '')
         .replace(/\s+/g, ' ');
 
+const splitCountryCandidates = (countryName) =>
+    String(countryName || '')
+        .split(/[\/|,;]+|(?:\s+ו\s+)|(?:\s*&\s*)|(?:\s+and\s+)/i)
+        .map((part) => normalizeCountryName(part))
+        .filter(Boolean);
+
 // Helper to get flag image path by ISO-2 code
 export const getFlagPath = (countryName) => {
     if (!countryName) return '/flags/unknown.svg';
 
     const normalized = normalizeCountryName(countryName);
-    const code = COUNTRY_CODE_BY_NAME[normalized];
+    let code = COUNTRY_CODE_BY_NAME[normalized];
+
+    // Support combined values like "ישראל/ארה\"ב" by picking first known country.
+    if (!code) {
+        const candidates = splitCountryCandidates(countryName);
+        code = candidates
+            .map((candidate) => COUNTRY_CODE_BY_NAME[candidate])
+            .find(Boolean);
+    }
 
     if (!code || !AVAILABLE_FLAG_CODES.has(code)) return '/flags/unknown.svg';
 
-    return `/flags/${code}.svg`;
+    const extension = PNG_FLAG_CODES.has(code) ? 'png' : 'svg';
+    return `/flags/${code}.${extension}`;
 };
 
 // Deterministic random shape and color based on string
