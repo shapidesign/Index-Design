@@ -171,6 +171,7 @@ const App = () => {
           titleHe: item.name || '',
           titleEn: '',
           description: item.description || '',
+          link: item.link || '',
           tags: toArray(item.tags),
           keywords: [
             item.name,
@@ -188,6 +189,7 @@ const App = () => {
           titleHe: item.nameHe || item.name || '',
           titleEn: item.nameEn || '',
           description: item.description || '',
+          link: item.link || '',
           tags: toArray(item.tags),
           keywords: [
             item.name,
@@ -210,6 +212,7 @@ const App = () => {
           titleHe: item.nameHe || item.name || '',
           titleEn: item.nameEn || '',
           description: item.description || '',
+          link: item.link || '',
           tags: [...toArray(item.styles), ...toArray(item.fields)],
           keywords: [
             item.name,
@@ -230,6 +233,7 @@ const App = () => {
           titleHe: item.title || '',
           titleEn: '',
           description: item.description || '',
+          link: item.link || '',
           tags: toArray(item.tags),
           keywords: [
             item.title,
@@ -249,6 +253,7 @@ const App = () => {
             titleHe: 'המפה',
             titleEn: 'Google My Maps',
             description: 'אינדקס מקומות למעצבים: בתי דפוס, חנויות, גלריות ומקומות השראה.',
+            link: '',
             tags: ['מפה', 'Google Maps', 'My Maps', 'מעצבים'],
             keywords: [
               'המפה',
@@ -986,6 +991,45 @@ const App = () => {
                         ))}
                       </div>
                     )}
+                    <div className="mt-6 flex flex-wrap gap-2 justify-end">
+                      {luckyPick.link && (
+                        <a
+                          href={luckyPick.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(
+                            "px-4 py-2",
+                            "font-shimshon text-sm font-bold text-off-black",
+                            "bg-tetris-yellow border-2 border-off-black shadow-brutalist-xs",
+                            "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                            "transition-all duration-200"
+                          )}
+                        >
+                          מעבר לקישור
+                        </a>
+                      )}
+                      {luckyPick.targetId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveSection(luckyPick.sectionId);
+                            setPendingNavigation({
+                              sectionId: luckyPick.sectionId,
+                              targetId: luckyPick.targetId
+                            });
+                          }}
+                          className={cn(
+                            "px-4 py-2",
+                            "font-shimshon text-sm font-bold text-off-black",
+                            "bg-tetris-green border-2 border-off-black shadow-brutalist-xs",
+                            "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                            "transition-all duration-200"
+                          )}
+                        >
+                          פתיחה בכרטיס המלא
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </article>
