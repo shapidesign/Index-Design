@@ -20,6 +20,8 @@ const BookCard = ({
   category,
   className,
 }) => {
+  const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(String(value || ''));
+  const symbolicFontClass = (value) => (isSymbolHeavyText(value) ? 'font-pixelify' : 'font-shimshon');
   const coverAlt = title ? `כריכת הספר ${title}` : 'כריכת ספר';
 
   const coverElement = coverUrl ? (
@@ -58,15 +60,17 @@ const BookCard = ({
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="flex-1 min-w-0">
                 <h3 className="text-lg font-bold text-off-black text-right mb-1 break-words">{title}</h3>
+                {year && (
+                  <div className="flex justify-end mb-1">
+                    <span className="px-2 py-0.5 text-[11px] font-bold font-pixelify bg-light-gray border border-off-black text-off-black">
+                      {year}
+                    </span>
+                  </div>
+                )}
                 {author && <p className="text-sm text-dark-gray text-right mb-1">{author}</p>}
-                {(category || year) && (
+                {category && (
                   <div className="flex flex-wrap gap-2 justify-end">
-                    {category && <Badge color="bg-tetris-blue">{category}</Badge>}
-                    {year && (
-                      <span className="px-2 py-0.5 text-[11px] font-bold font-shimshon bg-light-gray border border-off-black">
-                        {year}
-                      </span>
-                    )}
+                    <Badge color="bg-tetris-blue">{category}</Badge>
                   </div>
                 )}
               </div>
@@ -99,7 +103,10 @@ const BookCard = ({
                 {tags.slice(0, 6).map((tag) => (
                   <span
                     key={tag}
-                    className="px-2 py-0.5 text-[11px] font-bold font-shimshon bg-light-gray border border-off-black"
+                    className={cn(
+                      'px-2 py-0.5 text-[11px] font-bold bg-light-gray border border-off-black',
+                      symbolicFontClass(tag)
+                    )}
                   >
                     {tag}
                   </span>
@@ -134,15 +141,17 @@ const BookCard = ({
       </div>
 
       <h3 className="text-xl font-bold text-off-black text-right mb-1">{title}</h3>
+      {year && (
+        <div className="flex justify-end mb-2">
+          <span className="px-2 py-0.5 text-[11px] font-bold font-pixelify bg-light-gray border border-off-black text-off-black">
+            {year}
+          </span>
+        </div>
+      )}
       {author && <p className="text-sm text-dark-gray text-right mb-3">{author}</p>}
-      {(category || year) && (
+      {category && (
         <div className="mb-3 flex items-center gap-2 justify-end">
-          {category && <Badge color="bg-tetris-blue">{category}</Badge>}
-          {year && (
-            <span className="px-2 py-0.5 text-[11px] font-bold font-shimshon bg-light-gray border border-off-black">
-              {year}
-            </span>
-          )}
+          <Badge color="bg-tetris-blue">{category}</Badge>
         </div>
       )}
 
@@ -159,7 +168,10 @@ const BookCard = ({
           {tags.slice(0, 5).map((tag) => (
             <span
               key={tag}
-              className="px-2 py-0.5 text-[11px] font-bold font-shimshon bg-light-gray border border-off-black"
+              className={cn(
+                'px-2 py-0.5 text-[11px] font-bold bg-light-gray border border-off-black',
+                symbolicFontClass(tag)
+              )}
             >
               {tag}
             </span>

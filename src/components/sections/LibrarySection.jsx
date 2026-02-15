@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import useData from '@/hooks/useData';
 import BookCard from '@/components/cards/BookCard';
@@ -15,11 +15,76 @@ const normalizeText = (value) =>
 const makeBookTargetId = (bookId) =>
   `search-item-library-${String(bookId || '').replace(/[^a-zA-Z0-9_-]/g, '-')}`;
 
+const parseYearsFromText = (value) => {
+  const matches = String(value || '').match(/\b(18|19|20)\d{2}\b/g) || [];
+  const years = matches
+    .map((entry) => Number(entry))
+    .filter((year) => Number.isFinite(year) && year >= 1800 && year <= 2099);
+  return Array.from(new Set(years)).sort((a, b) => a - b);
+};
+
+const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(String(value || ''));
+
+const getSymbolicFontClass = (value) => (isSymbolHeavyText(value) ? 'font-pixelify' : 'font-shimshon');
+
+const YearRangeSlider = ({ bounds, range, onChange }) => {
+  const [minBound, maxBound] = bounds;
+  const [rangeMin, rangeMax] = range;
+  const total = Math.max(1, maxBound - minBound);
+  const leftPercent = ((rangeMin - minBound) / total) * 100;
+  const rightPercent = 100 - ((rangeMax - minBound) / total) * 100;
+
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <label className="text-xs text-dark-gray text-right font-shimshon">טווח שנים</label>
+
+      <div className="flex items-center gap-2" dir="ltr">
+        <span className="text-xs text-dark-gray min-w-[42px] text-left font-pixelify">{minBound}</span>
+        <div className="relative flex-1 h-8 flex items-center">
+          <div className="absolute inset-x-0 h-2 bg-light-gray border-2 border-off-black" />
+          <div
+            className="absolute h-2 bg-tetris-cyan border-y-2 border-off-black"
+            style={{ left: `${leftPercent}%`, right: `${rightPercent}%` }}
+          />
+
+          <input
+            type="range"
+            min={minBound}
+            max={maxBound}
+            value={rangeMin}
+            onChange={(e) => {
+              const next = Math.min(Number(e.target.value), rangeMax);
+              onChange([next, rangeMax]);
+            }}
+            className="absolute inset-x-0 w-full appearance-none bg-transparent pointer-events-none z-10 slider-thumb-interactive"
+            style={{ height: '32px' }}
+          />
+
+          <input
+            type="range"
+            min={minBound}
+            max={maxBound}
+            value={rangeMax}
+            onChange={(e) => {
+              const next = Math.max(Number(e.target.value), rangeMin);
+              onChange([rangeMin, next]);
+            }}
+            className="absolute inset-x-0 w-full appearance-none bg-transparent pointer-events-none z-20 slider-thumb-interactive"
+            style={{ height: '32px' }}
+          />
+        </div>
+        <span className="text-xs text-dark-gray min-w-[42px] text-right font-pixelify">{maxBound}</span>
+      </div>
+    </div>
+  );
+};
+
 const LibrarySection = () => {
   const { data, loading, error, refetch } = useData('/api/books');
   const [viewMode, setViewMode] = useState('gallery');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
+  const [yearRange, setYearRange] = useState([0, 0]);
 
   const books = useMemo(() => data?.results || [], [data]);
 
@@ -34,6 +99,25 @@ const LibrarySection = () => {
     return Array.from(set).sort((a, b) => a.localeCompare(b, 'he'));
   }, [books]);
 
+  const yearBounds = useMemo(() => {
+    const allYears = books.flatMap((book) => parseYearsFromText(book.year));
+    if (allYears.length === 0) return null;
+    return [Math.min(...allYears), Math.max(...allYears)];
+  }, [books]);
+
+  useEffect(() => {
+    if (!yearBounds) return;
+    const [boundMin, boundMax] = yearBounds;
+    setYearRange((prev) => {
+      const [prevMin, prevMax] = prev;
+      if (prevMin === 0 && prevMax === 0) return [boundMin, boundMax];
+      const nextMin = Math.max(boundMin, Math.min(prevMin, boundMax));
+      const nextMax = Math.min(boundMax, Math.max(prevMax, boundMin));
+      if (nextMin > nextMax) return [boundMin, boundMax];
+      return [nextMin, nextMax];
+    });
+  }, [yearBounds]);
+
   const toggleTag = useCallback((tag) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((entry) => entry !== tag) : [...prev, tag]
@@ -43,17 +127,22 @@ const LibrarySection = () => {
   const clearFilters = useCallback(() => {
     setSearchQuery('');
     setSelectedTags([]);
-  }, []);
+    if (yearBounds) setYearRange(yearBounds);
+  }, [yearBounds]);
 
   const filteredBooks = useMemo(() => {
     const query = normalizeText(searchQuery);
+    const isYearFilterActive = Boolean(
+      yearBounds && (yearRange[0] !== yearBounds[0] || yearRange[1] !== yearBounds[1])
+    );
 
     return books
       .map((book) => {
         const title = normalizeText(book.title);
         const author = normalizeText(book.author);
         const description = normalizeText(book.description);
-        const year = normalizeText(book.year);
+        const yearText = normalizeText(book.year);
+        const bookYears = parseYearsFromText(book.year);
         const tags = (book.tags || []).map((tag) => normalizeText(tag));
 
         const hasSelectedTags =
@@ -61,6 +150,16 @@ const LibrarySection = () => {
           selectedTags.every((tag) => tags.includes(normalizeText(tag)));
 
         if (!hasSelectedTags) {
+          return { book, score: -1 };
+        }
+
+        const inYearRange = !yearBounds
+          ? true
+          : bookYears.length === 0
+            ? !isYearFilterActive
+            : bookYears.some((year) => year >= yearRange[0] && year <= yearRange[1]);
+
+        if (!inYearRange) {
           return { book, score: -1 };
         }
 
@@ -73,14 +172,14 @@ const LibrarySection = () => {
         if (title.includes(query) || author.includes(query)) score += 12;
         if (tags.some((tag) => tag.includes(query))) score += 9;
         if (description.includes(query)) score += 6;
-        if (year.includes(query)) score += 2;
+        if (yearText.includes(query)) score += 2;
 
         return { book, score };
       })
       .filter((entry) => entry.score > 0)
       .sort((a, b) => b.score - a.score)
       .map((entry) => entry.book);
-  }, [books, searchQuery, selectedTags]);
+  }, [books, searchQuery, selectedTags, yearBounds, yearRange]);
 
   if (loading) {
     return <TetrisLoader className="min-h-[380px]" />;
@@ -163,7 +262,8 @@ const LibrarySection = () => {
               className={cn(
                 'w-full py-2.5 pr-3 pl-9',
                 'bg-off-white border-2 border-off-black',
-                'font-shimshon text-sm text-right',
+                getSymbolicFontClass(searchQuery),
+                'text-sm text-right',
                 'focus:outline-none focus:shadow-brutalist-xs transition-all'
               )}
               dir="rtl"
@@ -172,14 +272,17 @@ const LibrarySection = () => {
         </div>
 
         {allTags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2 justify-end">
+          <div className="mt-3 pt-3 border-t-2 border-off-black/20">
+            <p className="text-xs text-dark-gray font-shimshon text-right mb-2">תגיות</p>
+            <div className="flex flex-wrap gap-2 justify-end">
             {allTags.map((tag) => (
               <button
                 key={tag}
                 type="button"
                 onClick={() => toggleTag(tag)}
                 className={cn(
-                  'px-3 py-1 text-xs font-bold font-shimshon',
+                  'px-3 py-1 text-xs font-bold',
+                  getSymbolicFontClass(tag),
                   'border-2 border-off-black shadow-brutalist-xs',
                   'transition-all duration-200',
                   'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
@@ -191,10 +294,27 @@ const LibrarySection = () => {
                 {tag}
               </button>
             ))}
+            </div>
           </div>
         )}
 
-        {(searchQuery.trim() || selectedTags.length > 0) && (
+        {yearBounds && (
+          <div className="mt-3 pt-3 border-t-2 border-off-black/20">
+            <div className="flex flex-col md:flex-row md:items-end gap-3">
+              <div className="flex-1">
+                <YearRangeSlider bounds={yearBounds} range={yearRange} onChange={setYearRange} />
+              </div>
+              <div className="md:min-w-[170px]">
+                <p className="text-[11px] text-dark-gray text-right mb-1 font-shimshon">טווח נבחר</p>
+                <p className="text-sm text-off-black text-right border-2 border-off-black bg-light-gray px-3 py-1.5 font-pixelify">
+                  {`${yearRange[0]} - ${yearRange[1]}`}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {(searchQuery.trim() || selectedTags.length > 0 || (yearBounds && (yearRange[0] !== yearBounds[0] || yearRange[1] !== yearBounds[1]))) && (
           <div className="mt-3 flex justify-end">
             <button
               type="button"
