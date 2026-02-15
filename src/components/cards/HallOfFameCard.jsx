@@ -266,12 +266,25 @@ const ListRow = ({
             </div>
 
             {/* Name column */}
-            <div className="min-w-[180px] shrink-0">
-                <h3 className="text-base font-bold text-off-black font-shimshon leading-tight">
+            <div className="min-w-[150px] max-w-[240px] shrink-0">
+                <h3 className="text-base font-bold text-off-black font-shimshon leading-tight line-clamp-2 break-words">
                     {nameHe}
                 </h3>
                 {nameEn && (
-                    <p className="text-xs text-dark-gray font-pixelify mt-0.5">{nameEn}</p>
+                    <p className="text-xs text-dark-gray font-pixelify mt-0.5 line-clamp-1 break-all">{nameEn}</p>
+                )}
+                {era?.length > 0 && (
+                    <span
+                        className={cn(
+                            'inline-block mt-1 px-2 py-0.5',
+                            'text-[11px] font-bold text-off-white',
+                            'border border-off-black',
+                            'font-shimshon',
+                            eraColor
+                        )}
+                    >
+                        {era[0]}
+                    </span>
                 )}
             </div>
 
@@ -279,21 +292,6 @@ const ListRow = ({
             <p className="flex-1 text-sm text-dark-gray font-ibm line-clamp-2 text-right">
                 {description}
             </p>
-
-            {/* Era */}
-            {era?.length > 0 && (
-                <span
-                    className={cn(
-                        'shrink-0 px-2 py-0.5',
-                        'text-[11px] font-bold text-off-white',
-                        'border border-off-black',
-                        'font-shimshon',
-                        eraColor
-                    )}
-                >
-                    {era[0]}
-                </span>
-            )}
 
             {/* Tags */}
             <div className="hidden md:flex flex-wrap gap-1 shrink-0 max-w-[200px] justify-end">

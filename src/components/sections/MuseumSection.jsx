@@ -132,6 +132,13 @@ const quickSearches = [
     'ניו יורק',
 ];
 
+const tagColors = [
+    'bg-tetris-pink',
+    'bg-tetris-yellow',
+    'bg-tetris-blue',
+    'bg-tetris-cyan',
+];
+
 // ===== MUSEUM MODAL COMPONENT =====
 const MuseumModal = ({ item, onClose }) => {
     // All hooks must be called before any conditional return
@@ -265,13 +272,14 @@ const MuseumModal = ({ item, onClose }) => {
                                 <div>
                                     <h4 className="text-sm font-bold font-shimshon text-off-black mb-2">תגיות</h4>
                                     <div className="flex flex-wrap gap-2">
-                                        {item.tags.map((tag) => (
+                                        {item.tags.map((tag, i) => (
                                             <span
                                                 key={tag}
                                                 className={cn(
                                                     'px-2.5 py-1',
                                                     'text-[11px] font-bold font-shimshon text-off-black',
-                                                    'bg-tetris-yellow/30 border border-off-black',
+                                                    'border border-off-black',
+                                                    tagColors[i % tagColors.length],
                                                     'shadow-[1px_1px_0px_#1F1F1F]'
                                                 )}
                                             >

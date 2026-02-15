@@ -5,6 +5,7 @@ import ToolboxCard from '@/components/cards/ToolboxCard';
 import ToolboxFilter from '@/components/ui/ToolboxFilter';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import TetrisShape from '@/components/tetris/TetrisShape';
+import { LayoutGrid, List } from 'lucide-react';
 
 /**
  * ToolboxSection - ארגז הכלים
@@ -22,6 +23,7 @@ const emptyFilters = {
 const ToolboxSection = () => {
   const { data, loading, error, refetch } = useData('/api/resources');
   const [filters, setFilters] = useState(emptyFilters);
+  const [viewMode, setViewMode] = useState('gallery');
 
   // The API returns { results: [...], total: number }
   const resources = data?.results || [];
@@ -140,13 +142,39 @@ const ToolboxSection = () => {
     <section dir="rtl" className="animate-tetris-stack">
       {/* Section header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-off-black font-shimshon">
-          ארגז הכלים
-        </h2>
-        <span className="font-shimshon text-sm text-dark-gray">
-          {filteredResources.length} משאבים
-          {hasActiveFilters && ` (מסוננים מתוך ${resources.length})`}
-        </span>
+        <div className="flex items-center gap-3">
+          <h2 className="text-3xl font-bold text-off-black font-shimshon">
+            ארגז הכלים
+          </h2>
+          <span className="font-shimshon text-sm text-dark-gray">
+            {filteredResources.length} משאבים
+            {hasActiveFilters && ` (מסוננים מתוך ${resources.length})`}
+          </span>
+        </div>
+
+        {/* View toggle */}
+        <div className="flex border-2 border-off-black">
+          <button
+            onClick={() => setViewMode('gallery')}
+            className={cn(
+              'p-2 transition-colors',
+              viewMode === 'gallery' ? 'bg-tetris-purple text-off-white' : 'bg-off-white text-off-black hover:bg-light-gray'
+            )}
+            aria-label="תצוגת גלריה"
+          >
+            <LayoutGrid size={16} />
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={cn(
+              'p-2 border-r-2 border-off-black transition-colors',
+              viewMode === 'list' ? 'bg-tetris-purple text-off-white' : 'bg-off-white text-off-black hover:bg-light-gray'
+            )}
+            aria-label="תצוגת רשימה"
+          >
+            <List size={16} />
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -160,21 +188,41 @@ const ToolboxSection = () => {
 
       {/* Card grid */}
       {filteredResources.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredResources.map((resource) => (
-            <ToolboxCard
-              key={resource.id}
-              itemId={resource.id}
-              name={resource.name}
-              description={resource.description}
-              types={resource.types}
-              tags={resource.tags}
-              link={resource.link}
-              image={resource.image}
-              pricing={resource.pricing}
-            />
-          ))}
-        </div>
+        viewMode === 'gallery' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredResources.map((resource) => (
+              <ToolboxCard
+                key={resource.id}
+                viewMode="gallery"
+                itemId={resource.id}
+                name={resource.name}
+                description={resource.description}
+                types={resource.types}
+                tags={resource.tags}
+                link={resource.link}
+                image={resource.image}
+                pricing={resource.pricing}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {filteredResources.map((resource) => (
+              <ToolboxCard
+                key={resource.id}
+                viewMode="list"
+                itemId={resource.id}
+                name={resource.name}
+                description={resource.description}
+                types={resource.types}
+                tags={resource.tags}
+                link={resource.link}
+                image={resource.image}
+                pricing={resource.pricing}
+              />
+            ))}
+          </div>
+        )
       ) : (
         /* Empty state */
         <div

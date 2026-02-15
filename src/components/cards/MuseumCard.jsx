@@ -4,6 +4,13 @@ import { ExternalLink, MapPin } from 'lucide-react';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import { getFlagPath, getRandomThumbnail } from '@/lib/museum';
 
+const tagColors = [
+    'bg-tetris-pink',
+    'bg-tetris-yellow',
+    'bg-tetris-blue',
+    'bg-tetris-cyan',
+];
+
 const MuseumCard = ({
     viewMode = 'gallery',
     nameHe,
@@ -47,17 +54,17 @@ const MuseumCard = ({
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                        <div className="flex flex-col">
-                            <h3 className="font-shimshon font-bold text-lg truncate text-off-black leading-none">
+                    <div className="flex flex-col gap-1 mb-1">
+                        <div className="flex flex-col min-w-0">
+                            <h3 className="font-shimshon font-bold text-lg text-off-black leading-tight line-clamp-2 break-words">
                                 {nameHe}
                             </h3>
                             {nameEn && (
-                                <span className="text-xs font-pixelify text-mid-gray truncate">{nameEn}</span>
+                                <span className="text-xs font-pixelify text-mid-gray line-clamp-1 break-all">{nameEn}</span>
                             )}
                         </div>
                         {country && (
-                            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-light-gray border border-off-black rounded text-[10px] mr-auto">
+                            <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-light-gray border border-off-black rounded text-[10px]">
                                 {flagPath && <img src={flagPath} alt={country} className="w-3 h-auto" />}
                                 <span className="font-ibm truncate max-w-[80px]">{country}</span>
                             </div>
@@ -80,13 +87,14 @@ const MuseumCard = ({
                 {/* Tags */}
                 {tags.length > 0 && (
                     <div className="hidden md:flex items-center gap-1 flex-wrap">
-                        {tags.slice(0, 3).map((tag) => (
+                        {tags.slice(0, 3).map((tag, i) => (
                             <span
                                 key={tag}
                                 className={cn(
                                     'px-2 py-0.5',
                                     'text-[10px] font-bold font-shimshon text-off-black',
-                                    'bg-tetris-yellow/30 border border-off-black',
+                                    'border border-off-black',
+                                    tagColors[i % tagColors.length],
                                     'shadow-[1px_1px_0px_#1F1F1F]'
                                 )}
                             >
@@ -185,13 +193,14 @@ const MuseumCard = ({
                 {/* Tags */}
                 {tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
-                        {tags.slice(0, 4).map((tag) => (
+                        {tags.slice(0, 4).map((tag, i) => (
                             <span
                                 key={tag}
                                 className={cn(
                                     'px-2 py-0.5',
                                     'text-[10px] font-bold font-shimshon text-off-black',
-                                    'bg-tetris-yellow/30 border border-off-black',
+                                    'border border-off-black',
+                                    tagColors[i % tagColors.length],
                                     'shadow-[1px_1px_0px_#1F1F1F]'
                                 )}
                             >

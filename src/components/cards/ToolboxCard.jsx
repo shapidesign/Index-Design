@@ -210,6 +210,7 @@ const ToolboxCard = ({
   link,
   image,
   pricing,
+  viewMode = 'gallery',
   className,
 }) => {
   const [imgError, setImgError] = useState(false);
@@ -225,6 +226,97 @@ const ToolboxCard = ({
       ? link
       : `https://${link}`
     : '#';
+
+  if (viewMode === 'list') {
+    return (
+      <a
+        id={itemId ? `search-item-toolbox-${String(itemId).replace(/[^a-zA-Z0-9_-]/g, '-')}` : undefined}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        dir="rtl"
+        aria-label={`${name} - ${pricing || ''}`}
+        className={cn(
+          'flex items-start gap-4 p-3',
+          'bg-off-white',
+          'border-3 border-off-black',
+          'shadow-brutalist-xs',
+          'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+          'transition-all duration-200',
+          'group overflow-hidden',
+          'focus-visible:outline-3 focus-visible:outline-tetris-yellow focus-visible:outline-offset-2',
+          className
+        )}
+      >
+        <div className="w-20 h-14 shrink-0 border-2 border-off-black overflow-hidden bg-light-gray">
+          {showImage ? (
+            <img
+              src={displayImage}
+              alt={`תצוגה מקדימה של ${name}`}
+              loading="lazy"
+              decoding="async"
+              onError={() => setImgError(true)}
+              className="w-full h-full object-cover object-top"
+            />
+          ) : (
+            <PlaceholderImage name={name} types={types} />
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3 mb-1 min-w-0">
+            <h3
+              className={cn(
+                'text-lg font-bold text-off-black text-right leading-tight line-clamp-2 break-words min-w-0 flex-1',
+                isEnglish(name) ? 'font-pixelify' : 'font-shimshon'
+              )}
+            >
+              {name}
+            </h3>
+            {pricing && <PricingBadge pricing={pricing} />}
+          </div>
+
+          {description && (
+            <p className="text-sm text-dark-gray text-right font-ibm line-clamp-1 mb-2">
+              {description}
+            </p>
+          )}
+
+          <div className="flex flex-wrap gap-1.5 items-center">
+            {types.slice(0, 2).map((type) => (
+              <Badge
+                key={type}
+                color={typeColorMap[type] || 'bg-light-gray'}
+                className={isEnglish(type) ? 'font-pixelify' : ''}
+              >
+                {type}
+              </Badge>
+            ))}
+            {tags.slice(0, 4).map((tag, i) => (
+              <span
+                key={tag}
+                className={cn(
+                  'inline-block px-2 py-0.5',
+                  'text-[11px] font-bold text-off-black',
+                  'border border-off-black',
+                  'shadow-[1px_1px_0px_#1F1F1F]',
+                  isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
+                  tagColors[i % tagColors.length]
+                )}
+              >
+                {tag}
+              </span>
+            ))}
+            {tags.length > 4 && (
+              <span className="text-[11px] font-shimshon text-mid-gray">
+                +{tags.length - 4}
+              </span>
+            )}
+          </div>
+        </div>
+      </a>
+    );
+  }
 
   return (
     <a
