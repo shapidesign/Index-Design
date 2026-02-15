@@ -411,20 +411,6 @@ const App = () => {
             >
               v{pkg.version}
             </span>
-            <button
-              type="button"
-              onClick={() => setIsSuggestionModalOpen(true)}
-              className={cn(
-                'inline-flex items-center gap-2 px-3 py-2',
-                'bg-tetris-cyan text-off-black text-sm font-bold font-shimshon',
-                'border border-[#555555] shadow-brutalist-nav',
-                'hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]',
-                'transition-all duration-200'
-              )}
-            >
-              <MessageSquare size={14} />
-              <span>שליחת הצעה</span>
-            </button>
             <nav className="flex items-center gap-2">
               {navSections.map((section) => (
                 <button
@@ -447,6 +433,20 @@ const App = () => {
                 </button>
               ))}
             </nav>
+            <button
+              type="button"
+              onClick={() => setIsSuggestionModalOpen(true)}
+              className={cn(
+                'inline-flex items-center gap-2 px-3 py-2',
+                'bg-tetris-orange text-off-black text-sm font-bold font-shimshon',
+                'border border-[#555555] shadow-brutalist-nav',
+                'hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]',
+                'transition-all duration-200'
+              )}
+            >
+              <MessageSquare size={14} />
+              <span>שליחת הצעה</span>
+            </button>
           </div>
 
           {/* Mobile/Tablet left-side controls: version + hamburger */}
@@ -498,7 +498,7 @@ const App = () => {
                   'font-shimshon text-lg',
                   'rounded-[5px]',
                   'border border-[#555555]',
-                  'bg-tetris-cyan text-off-black',
+                  'bg-tetris-orange text-off-black',
                   'shadow-brutalist-nav',
                   'transition-all duration-200'
                 )}
