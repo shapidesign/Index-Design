@@ -261,14 +261,6 @@ const MuseumModal = ({ item, onClose }) => {
                                 </div>
                             )}
 
-                            {item.quote && (
-                                <div className="bg-tetris-yellow/20 p-4 border-r-4 border-tetris-yellow">
-                                    <p className="text-sm font-bold font-shimshon text-off-black italic">
-                                        &ldquo;{item.quote}&rdquo;
-                                    </p>
-                                </div>
-                            )}
-
                             {item.tags?.length > 0 && (
                                 <div>
                                     <h4 className="text-sm font-bold font-shimshon text-off-black mb-2">תגיות</h4>
@@ -431,8 +423,6 @@ const MuseumSection = () => {
 
                     if (d.description?.toLowerCase().includes(q)) score += 4;
                     if (d.famousWork?.toLowerCase().includes(q)) score += 3;
-                    if (d.quote?.toLowerCase().includes(q)) score += 3;
-
                     if (d.nameHe?.toLowerCase().includes(q)) score += 2;
                     if (d.nameEn?.toLowerCase().includes(q)) score += 2;
                     if (d.name?.toLowerCase().includes(q)) score += 2;

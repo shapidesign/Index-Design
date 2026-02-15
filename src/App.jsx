@@ -190,7 +190,6 @@ const App = () => {
             item.nameEn,
             item.description,
             item.famousWork,
-            item.quote,
             item.country,
             ...toArray(item.tags),
             ...toArray(item.type),
