@@ -42,8 +42,8 @@ const MuseumCard = ({
                 className={cn(
                 'group relative flex items-center gap-4 p-3',
                 'bg-off-white border-2 border-off-black',
-                'shadow-brutalist-xs hover:shadow-brutalist-sm',
-                'transition-all duration-200 hover:translate-x-[2px] hover:translate-y-[-2px]',
+                'shadow-brutalist-xs hover:shadow-none',
+                'transition-all duration-200 hover:translate-x-[3px] hover:translate-y-[3px]',
                 'overflow-hidden cursor-pointer'
             )}>
                 {/* Image Thumbnail */}
@@ -145,7 +145,7 @@ const MuseumCard = ({
             'group relative flex flex-col h-full',
             'bg-off-white border-3 border-off-black',
             'shadow-brutalist hover:shadow-brutalist-sm',
-            'transition-all duration-200 hover:translate-x-[4px] hover:translate-y-[-4px]',
+            'transition-all duration-200 hover:translate-x-[3px] hover:translate-y-[3px]',
             'overflow-hidden cursor-pointer'
         )}>
             {/* Image Container */}
