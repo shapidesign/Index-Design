@@ -10,11 +10,40 @@ import MessageSuggestionModal from '@/components/ui/MessageSuggestionModal';
 import pkg from '../package.json';
 
 /** Lazy-loaded section components */
-const ToolboxSection = lazy(() => import('@/components/sections/ToolboxSection'));
-const HallOfFameSection = lazy(() => import('@/components/sections/HallOfFameSection'));
-const MuseumSection = lazy(() => import('@/components/sections/MuseumSection'));
-const LibrarySection = lazy(() => import('@/components/sections/LibrarySection'));
-const MapSection = lazy(() => import('@/components/sections/MapSection'));
+const CHUNK_RELOAD_FLAG = 'chunk-reload-attempted';
+
+const lazyWithChunkRecovery = (importer) =>
+  lazy(async () => {
+    try {
+      const mod = await importer();
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem(CHUNK_RELOAD_FLAG);
+      }
+      return mod;
+    } catch (error) {
+      const message = String(error?.message || '');
+      const isChunkFetchError =
+        message.includes('Failed to fetch dynamically imported module') ||
+        message.includes('Importing a module script failed');
+
+      if (typeof window !== 'undefined' && isChunkFetchError) {
+        const alreadyReloaded = window.sessionStorage.getItem(CHUNK_RELOAD_FLAG) === 'true';
+        if (!alreadyReloaded) {
+          window.sessionStorage.setItem(CHUNK_RELOAD_FLAG, 'true');
+          window.location.reload();
+          return new Promise(() => {});
+        }
+      }
+
+      throw error;
+    }
+  });
+
+const ToolboxSection = lazyWithChunkRecovery(() => import('@/components/sections/ToolboxSection'));
+const HallOfFameSection = lazyWithChunkRecovery(() => import('@/components/sections/HallOfFameSection'));
+const MuseumSection = lazyWithChunkRecovery(() => import('@/components/sections/MuseumSection'));
+const LibrarySection = lazyWithChunkRecovery(() => import('@/components/sections/LibrarySection'));
+const MapSection = lazyWithChunkRecovery(() => import('@/components/sections/MapSection'));
 
 /**
  * App - Main Application Component
