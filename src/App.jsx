@@ -632,7 +632,7 @@ const App = () => {
                 <span className="text-tetris-purple">משאבי עיצוב לסטודנט</span>
               </h1>
               <p className="text-lg text-dark-gray max-w-2xl mx-auto font-ibm text-balance">
-                כל מה שסטודנט לעיצוב גרפי צריך - כלים, טיפוגרפיה, מוקאפים, טיפים מסטודנטים ומיקומים מקומיים
+                כל מה שסטודנט לעיצוב צריך - כלים, טיפוגרפיה, מוקאפים, טיפים מסטודנטים ומיקומים מקומיים
               </p>
             </section>
           </>
