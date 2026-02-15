@@ -109,9 +109,24 @@ const resolveStatusName = (propertyMeta) => {
 const resolveParentAndProperties = async (notionId) => {
   try {
     const db = await notion.databases.retrieve({ database_id: notionId });
+    const dbProps = db.properties || {};
+
+    // If database properties are empty (common in newer Notion data-source model),
+    // resolve the first linked data source and use its schema instead.
+    if (Object.keys(dbProps).length === 0 && Array.isArray(db.data_sources) && db.data_sources.length > 0) {
+      const primaryDataSourceId = db.data_sources[0]?.id;
+      if (primaryDataSourceId) {
+        const ds = await notion.dataSources.retrieve({ data_source_id: primaryDataSourceId });
+        return {
+          parent: { data_source_id: primaryDataSourceId },
+          properties: ds.properties || {}
+        };
+      }
+    }
+
     return {
       parent: { database_id: notionId },
-      properties: db.properties || {}
+      properties: dbProps
     };
   } catch (databaseError) {
     try {
