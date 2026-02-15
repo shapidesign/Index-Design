@@ -421,11 +421,11 @@ const App = () => {
         highlightSearchTarget(target);
         window.clearInterval(interval);
         setPendingNavigation(null);
-      } else if (attempts >= 15) {
+      } else if (attempts >= 40) {
         window.clearInterval(interval);
         setPendingNavigation(null);
       }
-    }, 120);
+    }, 200);
 
     return () => window.clearInterval(interval);
   }, [activeSection, pendingNavigation, highlightSearchTarget]);
