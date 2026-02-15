@@ -6,6 +6,7 @@ import logoIcon from '@/assets/svg/logo-icon.svg';
 import { Menu, Dice5 } from 'lucide-react';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
+import pkg from '../package.json';
 
 /** Lazy-loaded section components */
 const ToolboxSection = lazy(() => import('@/components/sections/ToolboxSection'));
@@ -154,6 +155,19 @@ const App = () => {
 
           {/* Desktop Nav - left side in RTL */}
           <div className="hidden lg:flex items-center gap-2">
+            <span
+              className={cn(
+                'inline-block px-3 py-1',
+                'bg-tetris-yellow',
+                'text-off-black text-xs font-bold font-mono',
+                'border-2 border-off-white',
+                'shadow-brutalist-nav'
+              )}
+              aria-label={`גרסה ${pkg.version}`}
+              title={`גרסה ${pkg.version}`}
+            >
+              v{pkg.version}
+            </span>
             <nav className="flex items-center gap-2">
               {navSections.map((section) => (
                 <button
@@ -178,24 +192,38 @@ const App = () => {
             </nav>
           </div>
 
-          {/* Mobile/Tablet: hamburger only */}
-          <button
-            className={cn(
-              'lg:hidden',
-              'w-[34px] h-[34px]',
-              'flex items-center justify-center',
-              'bg-tetris-purple',
-              'rounded-[5px]',
-              'border-[1.7px] border-[#555555]',
-              'shadow-brutalist-hamburger',
-              'transition-all duration-200',
-              'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
-            )}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? 'סגור תפריט' : 'פתח תפריט'}
-          >
-            <Menu size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
-          </button>
+          {/* Mobile/Tablet left-side controls: version + hamburger */}
+          <div className="lg:hidden flex items-center gap-2">
+            <span
+              className={cn(
+                'inline-block px-2 py-1',
+                'bg-tetris-yellow',
+                'text-off-black text-[10px] leading-none font-bold font-mono',
+                'border-2 border-off-white',
+                'shadow-brutalist-xs'
+              )}
+              aria-label={`גרסה ${pkg.version}`}
+              title={`גרסה ${pkg.version}`}
+            >
+              v{pkg.version}
+            </span>
+            <button
+              className={cn(
+                'w-[34px] h-[34px]',
+                'flex items-center justify-center',
+                'bg-tetris-purple',
+                'rounded-[5px]',
+                'border-[1.7px] border-[#555555]',
+                'shadow-brutalist-hamburger',
+                'transition-all duration-200',
+                'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
+              )}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? 'סגור תפריט' : 'פתח תפריט'}
+            >
+              <Menu size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu Overlay */}
