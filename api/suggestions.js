@@ -36,6 +36,15 @@ const normalizeUrl = (value) => {
   return value.startsWith('http') ? value : `https://${value}`;
 };
 
+const findPropertyByType = (properties, types, excludedKeys = []) => {
+  const excluded = new Set(excludedKeys.filter(Boolean));
+  for (const [key, meta] of Object.entries(properties || {})) {
+    if (excluded.has(key)) continue;
+    if (types.includes(meta?.type)) return [key, meta];
+  }
+  return [null, null];
+};
+
 const findProperty = (properties, candidates) => {
   for (const candidate of candidates) {
     if (properties[candidate]) return [candidate, properties[candidate]];
@@ -80,6 +89,27 @@ const resolveStatusName = (propertyMeta) => {
   return null;
 };
 
+const resolveParentAndProperties = async (notionId) => {
+  try {
+    const db = await notion.databases.retrieve({ database_id: notionId });
+    return {
+      parent: { database_id: notionId },
+      properties: db.properties || {}
+    };
+  } catch (databaseError) {
+    try {
+      const ds = await notion.dataSources.retrieve({ data_source_id: notionId });
+      return {
+        parent: { data_source_id: notionId },
+        properties: ds.properties || {}
+      };
+    } catch (dataSourceError) {
+      dataSourceError.database_error = databaseError;
+      throw dataSourceError;
+    }
+  }
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -117,14 +147,18 @@ export default async function handler(req, res) {
       }
     }
 
-    const db = await notion.databases.retrieve({ database_id: NOTION_SUGGESTIONS_DB });
-    const props = db.properties || {};
+    const { parent, properties: props } = await resolveParentAndProperties(NOTION_SUGGESTIONS_DB);
 
-    const [nameKey, nameMeta] = findProperty(props, ['שם', 'Name']);
+    let [nameKey, nameMeta] = findProperty(props, ['שם', 'Name']);
+    if (!nameKey) [nameKey, nameMeta] = findPropertyByType(props, ['title']);
+
     const [emailKey, emailMeta] = findProperty(props, ['אימייל', 'Email']);
-    const [messageKey, messageMeta] = findProperty(props, ['הודעה', 'Message', 'Suggestion']);
+    let [messageKey, messageMeta] = findProperty(props, ['הודעה', 'Message', 'Suggestion', 'הצעה']);
+    if (!messageKey) [messageKey, messageMeta] = findPropertyByType(props, ['rich_text'], [nameKey]);
+
     const [urlKey, urlMeta] = findProperty(props, ['קישור', 'URL', 'Link']);
-    const [statusKey, statusMeta] = findProperty(props, ['סטטוס', 'Status']);
+    let [statusKey, statusMeta] = findProperty(props, ['סטטוס', 'Status']);
+    if (!statusKey) [statusKey, statusMeta] = findPropertyByType(props, ['status', 'select']);
 
     if (!nameKey || !messageKey) {
       return res.status(500).json({ error: 'מבנה מסד הנתונים ב-Notion לא תואם לשדות החובה.' });
@@ -166,13 +200,29 @@ export default async function handler(req, res) {
     }
 
     await notion.pages.create({
-      parent: { database_id: NOTION_SUGGESTIONS_DB },
+      parent,
       properties: notionProperties
     });
 
     return res.status(200).json({ ok: true });
   } catch (error) {
     console.error('Error creating suggestion:', error);
+
+    const notionErrorCode = error?.code || error?.body?.code || '';
+    if (notionErrorCode === 'object_not_found') {
+      return res.status(500).json({
+        error: 'הגישה למסד ההצעות ב-Notion נכשלה. ודאו שהאינטגרציה מחוברת למסד הנתונים.',
+        message: error.message
+      });
+    }
+
+    if (notionErrorCode === 'validation_error') {
+      return res.status(500).json({
+        error: 'שדות מסד הנתונים ב-Notion אינם תואמים לטופס ההצעה.',
+        message: error.message
+      });
+    }
+
     return res.status(500).json({
       error: 'אירעה שגיאה בשליחת ההצעה. נסו שוב בעוד מספר דקות.',
       message: error.message
