@@ -12,6 +12,7 @@ import pkg from '../package.json';
 const ToolboxSection = lazy(() => import('@/components/sections/ToolboxSection'));
 const HallOfFameSection = lazy(() => import('@/components/sections/HallOfFameSection'));
 const MuseumSection = lazy(() => import('@/components/sections/MuseumSection'));
+const MapSection = lazy(() => import('@/components/sections/MapSection'));
 
 /**
  * App - Main Application Component
@@ -214,8 +215,33 @@ const App = () => {
           targetId: makeTargetId('hallOfFame', item.id)
         }));
 
+        const mapItems = [
+          {
+            id: 'google-my-maps-main',
+            sectionId: 'map',
+            sectionLabel: 'המפה',
+            titleHe: 'המפה',
+            titleEn: 'Google My Maps',
+            description: 'אינדקס מקומות למעצבים: בתי דפוס, חנויות, גלריות ומקומות השראה.',
+            tags: ['מפה', 'Google Maps', 'My Maps', 'מעצבים'],
+            keywords: [
+              'המפה',
+              'מפה',
+              'מיקומים שימושיים',
+              'אינדקס מקומות',
+              'בתי דפוס',
+              'חנויות אמנות',
+              'גלריות',
+              'השראה',
+              'google maps',
+              'my maps'
+            ],
+            targetId: 'section-map'
+          }
+        ];
+
         if (!cancelled) {
-          setGlobalSearchItems([...resources, ...museumItems, ...hallItems]);
+          setGlobalSearchItems([...resources, ...museumItems, ...hallItems, ...mapItems]);
         }
       } catch (error) {
         console.error('Global search index error:', error);
@@ -282,6 +308,11 @@ const App = () => {
     const sectionEl = document.getElementById(`section-${pendingNavigation.sectionId}`);
     if (sectionEl) {
       sectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    if (!pendingNavigation.targetId || pendingNavigation.targetId === `section-${pendingNavigation.sectionId}`) {
+      setPendingNavigation(null);
+      return;
     }
 
     let attempts = 0;
@@ -753,6 +784,32 @@ const App = () => {
             </div>
             <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
               <MuseumSection />
+            </Suspense>
+          </div>
+        )}
+
+        {/* ===== MAP SECTION ===== */}
+        {activeSection === 'map' && (
+          <div className="mt-12" id="section-map">
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={() => setActiveSection(null)}
+                className={cn(
+                  "px-4 py-2",
+                  "font-shimshon text-sm font-bold text-off-black",
+                  "bg-light-gray",
+                  "border-2 border-off-black",
+                  "shadow-brutalist-xs",
+                  "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                  "transition-all duration-200"
+                )}
+              >
+                חזרה לכל הקטגוריות
+              </button>
+            </div>
+            <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
+              <MapSection />
             </Suspense>
           </div>
         )}
