@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { X, Send, Link as LinkIcon } from 'lucide-react';
 
+const CATEGORY_OPTIONS = ['טיפ', 'מעצב', 'סטודיו', 'אתר', 'ספר', 'מפה'];
+
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 const isValidUrl = (value) => {
@@ -26,6 +28,7 @@ const normalizeUrl = (value) => {
 const MessageSuggestionModal = ({ open, onClose }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [category, setCategory] = useState('');
   const [message, setMessage] = useState('');
   const [url, setUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -49,15 +52,17 @@ const MessageSuggestionModal = ({ open, onClose }) => {
     if (!name.trim()) return 'יש להזין שם מלא';
     if (!email.trim()) return 'יש להזין אימייל';
     if (!isValidEmail(email.trim())) return 'כתובת אימייל לא תקינה';
+    if (!category) return 'יש לבחור קטגוריה';
     if (!message.trim()) return 'יש להזין הודעה';
-    if (message.trim().length < 8) return 'ההודעה קצרה מדי';
+    if (message.trim().length < 5) return 'ההודעה קצרה מדי (מינימום 5 תווים)';
     if (!isValidUrl(url.trim())) return 'הקישור שהוזן אינו תקין';
     return '';
-  }, [name, email, message, url]);
+  }, [name, email, category, message, url]);
 
   const resetForm = () => {
     setName('');
     setEmail('');
+    setCategory('');
     setMessage('');
     setUrl('');
   };
@@ -80,6 +85,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
+          category,
           message: message.trim(),
           url: normalizeUrl(url.trim())
         })
@@ -162,6 +168,22 @@ const MessageSuggestionModal = ({ open, onClose }) => {
               placeholder="name@example.com"
               autoComplete="email"
             />
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-bold font-shimshon text-off-black">קטגוריה *</span>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="mt-1 w-full px-3 py-2 bg-off-white border-2 border-off-black text-right font-shimshon outline-none"
+            >
+              <option value="">בחרו קטגוריה</option>
+              {CATEGORY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="block">

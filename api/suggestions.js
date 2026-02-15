@@ -13,6 +13,7 @@ const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 5;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ALLOWED_CATEGORIES = ['טיפ', 'מעצב', 'סטודיו', 'אתר', 'ספר', 'מפה'];
 
 const getClientIp = (req) => {
   const forwarded = req.headers['x-forwarded-for'];
@@ -133,12 +134,16 @@ export default async function handler(req, res) {
 
     const name = String(req.body?.name || '').trim();
     const email = String(req.body?.email || '').trim();
+    const category = String(req.body?.category || '').trim();
     const message = String(req.body?.message || '').trim();
     const url = normalizeUrl(String(req.body?.url || '').trim());
 
     if (!name) return res.status(400).json({ error: 'יש להזין שם מלא.' });
     if (!email || !EMAIL_RE.test(email)) return res.status(400).json({ error: 'יש להזין אימייל תקין.' });
-    if (!message || message.length < 8) return res.status(400).json({ error: 'ההודעה קצרה מדי.' });
+    if (!category || !ALLOWED_CATEGORIES.includes(category)) {
+      return res.status(400).json({ error: 'יש לבחור קטגוריה תקינה.' });
+    }
+    if (!message || message.length < 5) return res.status(400).json({ error: 'ההודעה קצרה מדי (מינימום 5 תווים).' });
     if (url) {
       try {
         new URL(url);
@@ -159,8 +164,10 @@ export default async function handler(req, res) {
     const [urlKey, urlMeta] = findProperty(props, ['קישור', 'URL', 'Link']);
     let [statusKey, statusMeta] = findProperty(props, ['סטטוס', 'Status']);
     if (!statusKey) [statusKey, statusMeta] = findPropertyByType(props, ['status', 'select']);
+    let [categoryKey, categoryMeta] = findProperty(props, ['קטגוריה', 'Category', 'סוג']);
+    if (!categoryKey) [categoryKey, categoryMeta] = findPropertyByType(props, ['select', 'multi_select'], [statusKey]);
 
-    if (!nameKey || !messageKey) {
+    if (!nameKey || !messageKey || !categoryKey) {
       return res.status(500).json({ error: 'מבנה מסד הנתונים ב-Notion לא תואם לשדות החובה.' });
     }
 
@@ -171,6 +178,17 @@ export default async function handler(req, res) {
 
     const messagePayload = buildTextValue(messageMeta, message);
     if (messagePayload) notionProperties[messageKey] = messagePayload;
+
+    if (categoryKey && categoryMeta) {
+      if (categoryMeta.type === 'select') {
+        notionProperties[categoryKey] = { select: { name: category } };
+      } else if (categoryMeta.type === 'multi_select') {
+        notionProperties[categoryKey] = { multi_select: [{ name: category }] };
+      } else {
+        const categoryTextPayload = buildTextValue(categoryMeta, category);
+        if (categoryTextPayload) notionProperties[categoryKey] = categoryTextPayload;
+      }
+    }
 
     if (emailKey && emailMeta) {
       const emailPayload =
