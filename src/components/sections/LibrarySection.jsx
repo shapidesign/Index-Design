@@ -27,6 +27,13 @@ const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(Strin
 
 const getSymbolicFontClass = (value) => (isSymbolHeavyText(value) ? 'font-pixelify' : 'font-shimshon');
 
+const tagColors = [
+  'bg-tetris-pink',
+  'bg-tetris-yellow',
+  'bg-tetris-blue',
+  'bg-tetris-cyan',
+];
+
 const YearRangeSlider = ({ bounds, range, onChange }) => {
   const [minBound, maxBound] = bounds;
   const [rangeMin, rangeMax] = range;
@@ -142,23 +149,30 @@ const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
             {visibleOptions.length === 0 ? (
               <p className="text-xs text-dark-gray font-ibm text-center py-2">לא נמצאו תגיות</p>
             ) : (
-              visibleOptions.map((tag) => (
+              visibleOptions.map((tag, i) => (
                 <button
                   key={tag}
                   type="button"
                   onClick={() => onToggle(tag)}
                   className={cn(
-                    'w-full text-right px-3 py-1.5',
-                    'border border-off-black/30',
-                    'hover:bg-light-gray transition-colors',
-                    'text-xs font-bold',
+                    'w-full text-right px-2 py-1.5',
+                    'transition-all duration-150',
+                    'hover:translate-x-[1px] hover:translate-y-[1px]',
                     getSymbolicFontClass(tag),
-                    selected.includes(tag) && 'bg-tetris-yellow/40 border-off-black'
+                    selected.includes(tag) ? 'bg-light-gray border border-off-black' : 'bg-transparent border border-transparent'
                   )}
                 >
-                  <span className="inline-flex items-center gap-2">
-                    {selected.includes(tag) ? '✓' : ''}
-                    {tag}
+                  <span className="inline-flex items-center gap-2 justify-end w-full">
+                    {selected.includes(tag) && <span className="text-[10px] font-shimshon">✓</span>}
+                    <span
+                      className={cn(
+                        'inline-block px-2 py-0.5 text-[11px] font-bold text-off-black',
+                        'border border-off-black shadow-[1px_1px_0px_#1F1F1F]',
+                        tagColors[i % tagColors.length]
+                      )}
+                    >
+                      #{tag}
+                    </span>
                   </span>
                 </button>
               ))

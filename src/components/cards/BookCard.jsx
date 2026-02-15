@@ -3,6 +3,13 @@ import { cn } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
 import { ExternalLink } from 'lucide-react';
 
+const tagColors = [
+  'bg-tetris-pink',
+  'bg-tetris-yellow',
+  'bg-tetris-blue',
+  'bg-tetris-cyan',
+];
+
 /**
  * BookCard - כרטיס ספר
  * Displays a book recommendation with cover, author, and description
@@ -100,15 +107,17 @@ const BookCard = ({
 
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 justify-end mt-3">
-                {tags.slice(0, 6).map((tag) => (
+                {tags.slice(0, 6).map((tag, i) => (
                   <span
                     key={tag}
                     className={cn(
-                      'px-2 py-0.5 text-[11px] font-bold bg-light-gray border border-off-black',
-                      symbolicFontClass(tag)
+                      'px-2 py-0.5 text-[11px] font-bold text-off-black border border-off-black',
+                      'shadow-[1px_1px_0px_#1F1F1F]',
+                      symbolicFontClass(tag),
+                      tagColors[i % tagColors.length]
                     )}
                   >
-                    {tag}
+                    #{tag}
                   </span>
                 ))}
               </div>
@@ -165,15 +174,17 @@ const BookCard = ({
 
       {tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2 justify-end min-h-[48px] max-h-[48px] overflow-hidden">
-          {tags.slice(0, 5).map((tag) => (
+          {tags.slice(0, 5).map((tag, i) => (
             <span
               key={tag}
               className={cn(
-                'px-2 py-0.5 text-[11px] font-bold bg-light-gray border border-off-black',
-                symbolicFontClass(tag)
+                'px-2 py-0.5 text-[11px] font-bold text-off-black border border-off-black',
+                'shadow-[1px_1px_0px_#1F1F1F]',
+                symbolicFontClass(tag),
+                tagColors[i % tagColors.length]
               )}
             >
-              {tag}
+              #{tag}
             </span>
           ))}
         </div>
