@@ -16,6 +16,16 @@ const tagColors = [
 
 const getTagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
 
+/** Build a URL-based screenshot thumbnail as a fallback when no image is available */
+const getLinkThumbnail = (url) => {
+    if (!url) return null;
+    try {
+        return `https://image.thum.io/get/width/600/${url}`;
+    } catch {
+        return null;
+    }
+};
+
 const MuseumCard = ({
     viewMode = 'gallery',
     nameHe,
@@ -34,6 +44,9 @@ const MuseumCard = ({
     // Memoize the random thumbnail to keep it stable
     const thumbnail = React.useMemo(() => getRandomThumbnail(id || nameHe || 'default'), [id, nameHe]);
 
+    // Use imageUrl if available, otherwise fall back to a URL screenshot thumbnail
+    const displayImage = imageUrl || getLinkThumbnail(link);
+
     if (viewMode === 'list') {
         return (
             <div 
@@ -48,8 +61,8 @@ const MuseumCard = ({
             )}>
                 {/* Image Thumbnail */}
                 <div className="w-16 h-16 shrink-0 border-2 border-off-black overflow-hidden bg-light-gray relative">
-                    {imageUrl ? (
-                        <img src={imageUrl} alt={nameHe} className="w-full h-full object-cover opacity-70" />
+                    {displayImage ? (
+                        <img src={displayImage} alt={nameHe} className="w-full h-full object-cover opacity-70" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-off-white">
                             <TetrisShape type={thumbnail.type} size={24} color={thumbnail.color} />
@@ -150,9 +163,9 @@ const MuseumCard = ({
         )}>
             {/* Image Container */}
             <div className="relative h-48 border-b-3 border-off-black overflow-hidden bg-light-gray group-hover:bg-tetris-blue/10 transition-colors">
-                {imageUrl ? (
+                {displayImage ? (
                     <img
-                        src={imageUrl}
+                        src={displayImage}
                         alt={nameHe}
                         className="w-full h-full object-cover opacity-70 transition-transform duration-500 group-hover:scale-105"
                     />

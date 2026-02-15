@@ -8,6 +8,16 @@ import TetrisShape from '@/components/tetris/TetrisShape';
 import { LayoutGrid, List, ChevronDown, X, Search, ExternalLink } from 'lucide-react';
 import { getFlagPath, getRandomThumbnail } from '@/lib/museum';
 
+/** URL-based screenshot thumbnail fallback */
+const getLinkThumbnail = (url) => {
+    if (!url) return null;
+    try {
+        return `https://image.thum.io/get/width/600/${url}`;
+    } catch {
+        return null;
+    }
+};
+
 /**
  * MuseumSection - המוזיאון
  * Fetches museum locations from Notion and renders a card gallery/list
@@ -208,11 +218,11 @@ const MuseumModal = ({ item, onClose }) => {
                 <div className="flex flex-col md:flex-row">
                     {/* Image Side */}
                     <div className="w-full md:w-2/5 h-56 md:h-auto md:min-h-[420px] bg-light-gray border-b-3 md:border-b-0 md:border-s-3 border-off-black relative overflow-hidden">
-                        {item.imageUrl ? (
+                        {(item.imageUrl || getLinkThumbnail(item.link)) ? (
                             <img
-                                src={item.imageUrl}
+                                src={item.imageUrl || getLinkThumbnail(item.link)}
                                 alt={item.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover opacity-70"
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-tetris-blue/10">
