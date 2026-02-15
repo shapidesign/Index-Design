@@ -1,12 +1,27 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { ExternalLink, MapPinned } from 'lucide-react';
+import pinArtStore from '../../../Pins/p1-2.png';
+import pinPrintShop from '../../../Pins/p2-2.png';
 
 const GOOGLE_MAPS_EMBED_URL =
   'https://www.google.com/maps/d/u/0/embed?mid=1F_s6PIi59T-J0hgTAwJAzbzG9Ru_Kgo&ehbc=2E312F&noprof=1';
 
 const GOOGLE_MAPS_EDIT_URL =
   'https://www.google.com/maps/d/u/0/edit?mid=1F_s6PIi59T-J0hgTAwJAzbzG9Ru_Kgo&usp=sharing';
+
+const MAP_LEGEND_ITEMS = [
+  {
+    id: 'art-stores',
+    label: 'חנויות יצירה ואומנות',
+    image: pinArtStore
+  },
+  {
+    id: 'print-shops',
+    label: 'בתי דפוס',
+    image: pinPrintShop
+  }
+];
 
 /**
  * MapSection - המפה
@@ -38,6 +53,29 @@ const MapSection = () => {
             כאן תמצאו את כל המקומות השימושיים לסטודנטים לעיצוב - בתי דפוס, חנויות, גלריות,
             מקומות השראה ועוד.
           </p>
+        </div>
+
+        <div className="mb-4 border-3 border-off-black bg-light-gray p-3 md:p-4 shadow-brutalist-sm">
+          <h3 className="text-sm md:text-base font-bold text-off-black font-shimshon text-right mb-3">
+            מקרא
+          </h3>
+          <div className="flex flex-wrap justify-end gap-3 md:gap-4">
+            {MAP_LEGEND_ITEMS.map((item) => (
+              <div
+                key={item.id}
+                className="inline-flex items-center gap-2 border-2 border-off-black bg-off-white px-3 py-2"
+              >
+                <span className="text-sm font-shimshon text-off-black">{item.label}</span>
+                <img
+                  src={item.image}
+                  alt={`סמל ${item.label}`}
+                  className="w-8 h-8 object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="border-3 border-off-black bg-light-gray shadow-brutalist-sm overflow-hidden">
