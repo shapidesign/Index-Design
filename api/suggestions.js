@@ -72,6 +72,22 @@ const buildTextValue = (propertyMeta, value) => {
   return null;
 };
 
+const buildParagraphBlock = (title, value) => {
+  if (!value) return null;
+  return {
+    object: 'block',
+    type: 'paragraph',
+    paragraph: {
+      rich_text: [
+        {
+          type: 'text',
+          text: { content: `${title}: ${value}` }
+        }
+      ]
+    }
+  };
+};
+
 const resolveStatusName = (propertyMeta) => {
   const pendingMatcher = /pending|ממתין|חדש|new/i;
 
@@ -167,7 +183,7 @@ export default async function handler(req, res) {
     let [categoryKey, categoryMeta] = findProperty(props, ['קטגוריה', 'Category', 'סוג']);
     if (!categoryKey) [categoryKey, categoryMeta] = findPropertyByType(props, ['select', 'multi_select'], [statusKey]);
 
-    if (!nameKey || !messageKey || !categoryKey) {
+    if (!nameKey) {
       return res.status(500).json({ error: 'מבנה מסד הנתונים ב-Notion לא תואם לשדות החובה.' });
     }
 
@@ -177,7 +193,7 @@ export default async function handler(req, res) {
     if (namePayload) notionProperties[nameKey] = namePayload;
 
     const messagePayload = buildTextValue(messageMeta, message);
-    if (messagePayload) notionProperties[messageKey] = messagePayload;
+    if (messagePayload && messageKey) notionProperties[messageKey] = messagePayload;
 
     if (categoryKey && categoryMeta) {
       if (categoryMeta.type === 'select') {
@@ -217,9 +233,17 @@ export default async function handler(req, res) {
       }
     }
 
+    const fallbackChildren = [
+      !categoryKey ? buildParagraphBlock('קטגוריה', category) : null,
+      !messageKey || !messagePayload ? buildParagraphBlock('הודעה', message) : null,
+      !emailKey ? buildParagraphBlock('אימייל', email) : null,
+      url && !urlKey ? buildParagraphBlock('קישור', url) : null
+    ].filter(Boolean);
+
     await notion.pages.create({
       parent,
-      properties: notionProperties
+      properties: notionProperties,
+      children: fallbackChildren
     });
 
     return res.status(200).json({ ok: true });
