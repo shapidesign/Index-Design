@@ -12,6 +12,202 @@ const notion = new Client({
   auth: NOTION_API_KEY,
 });
 
+const WIKI_LANGS = ['en', 'he'];
+const WIKI_IMAGE_CACHE = new Map();
+
+function normalizeQuery(value) {
+    return String(value || '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function splitFamousWork(value) {
+    if (!value) return [];
+    return String(value)
+        .split(/[;,|/]|(?:\s+(?:and|ו)\s+)/gi)
+        .map((part) => normalizeQuery(part))
+        .filter((part) => part.length >= 2)
+        .slice(0, 3);
+}
+
+function buildSearchQueries(item) {
+    const famousWorks = splitFamousWork(item.famousWork);
+    const candidates = [];
+
+    famousWorks.forEach((work) => {
+        candidates.push({ query: work, intent: 'work' });
+        if (item.nameEn) candidates.push({ query: `${work} ${item.nameEn}`, intent: 'work' });
+    });
+
+    if (item.nameEn) candidates.push({ query: item.nameEn, intent: 'person' });
+    if (item.nameHe) candidates.push({ query: item.nameHe, intent: 'person' });
+    if (item.name) candidates.push({ query: item.name, intent: 'person' });
+
+    const deduped = [];
+    const seen = new Set();
+    candidates.forEach((candidate) => {
+        const normalized = normalizeQuery(candidate.query);
+        const key = normalized.toLowerCase();
+        if (!normalized || seen.has(key)) return;
+        seen.add(key);
+        deduped.push({ query: normalized, intent: candidate.intent });
+    });
+
+    return deduped;
+}
+
+function getPageImage(page) {
+    return page?.original?.source || page?.thumbnail?.source || null;
+}
+
+function scorePageCandidate(page, query, intent) {
+    const title = String(page?.title || '').toLowerCase();
+    const normalizedQuery = normalizeQuery(query).toLowerCase();
+    const categories = (page?.categories || []).map((c) => String(c?.title || '').toLowerCase());
+    const categoryText = categories.join(' ');
+
+    let score = 0;
+    if (title === normalizedQuery) score += 5;
+    if (title.includes(normalizedQuery)) score += 3;
+    if (getPageImage(page)) score += 4;
+
+    const biographySignals = [
+        'births',
+        'deaths',
+        'living people',
+        'people',
+        'biography',
+        'ביוגרפיה',
+        'ילידי',
+        'נפטרים'
+    ];
+
+    const artworkSignals = [
+        'paintings',
+        'artworks',
+        'posters',
+        'logos',
+        'typefaces',
+        'albums',
+        'book covers',
+        'works',
+        'graphic design',
+        'יצירות',
+        'ציורים',
+        'כרזות',
+        'לוגואים',
+        'פונטים'
+    ];
+
+    if (intent === 'work') {
+        if (artworkSignals.some((signal) => categoryText.includes(signal))) score += 4;
+        if (biographySignals.some((signal) => categoryText.includes(signal))) score -= 6;
+    } else {
+        if (biographySignals.some((signal) => categoryText.includes(signal))) score += 1;
+    }
+
+    return score;
+}
+
+function extractBestWikipediaImage(data, query, intent) {
+    const pages = data?.query?.pages;
+    if (!pages) return null;
+
+    const ranked = Object.values(pages)
+        .map((page) => ({ page, score: scorePageCandidate(page, query, intent) }))
+        .sort((a, b) => b.score - a.score);
+
+    for (const candidate of ranked) {
+        const image = getPageImage(candidate.page);
+        if (image) return image;
+    }
+
+    return null;
+}
+
+async function fetchWikipediaImageForQuery(query, intent = 'work') {
+    const normalizedQuery = normalizeQuery(query);
+    if (!normalizedQuery) return null;
+
+    const cacheKey = `${intent}:${normalizedQuery.toLowerCase()}`;
+    if (WIKI_IMAGE_CACHE.has(cacheKey)) {
+        return WIKI_IMAGE_CACHE.get(cacheKey);
+    }
+
+    for (const lang of WIKI_LANGS) {
+        try {
+            const searchUrl = new URL(`https://${lang}.wikipedia.org/w/api.php`);
+            searchUrl.searchParams.set('action', 'query');
+            searchUrl.searchParams.set('format', 'json');
+            searchUrl.searchParams.set('list', 'search');
+            searchUrl.searchParams.set('srsearch', normalizedQuery);
+            searchUrl.searchParams.set('srlimit', '5');
+
+            const searchRes = await fetch(searchUrl);
+            if (!searchRes.ok) continue;
+
+            const searchJson = await searchRes.json();
+            const bestMatches = searchJson?.query?.search || [];
+            if (bestMatches.length === 0) continue;
+
+            const imageUrl = new URL(`https://${lang}.wikipedia.org/w/api.php`);
+            imageUrl.searchParams.set('action', 'query');
+            imageUrl.searchParams.set('format', 'json');
+            imageUrl.searchParams.set('prop', 'pageimages|categories');
+            imageUrl.searchParams.set('piprop', 'original|thumbnail');
+            imageUrl.searchParams.set('pithumbsize', '1200');
+            imageUrl.searchParams.set('cllimit', '30');
+            imageUrl.searchParams.set('pageids', bestMatches.map((m) => String(m.pageid)).join('|'));
+
+            const imageRes = await fetch(imageUrl);
+            if (!imageRes.ok) continue;
+
+            const imageJson = await imageRes.json();
+            const image = extractBestWikipediaImage(imageJson, normalizedQuery, intent);
+            if (image) {
+                WIKI_IMAGE_CACHE.set(cacheKey, image);
+                return image;
+            }
+        } catch (error) {
+            console.warn(`Wikipedia image lookup failed for "${normalizedQuery}" in ${lang}:`, error.message);
+        }
+    }
+
+    WIKI_IMAGE_CACHE.set(cacheKey, null);
+    return null;
+}
+
+async function resolveRepresentativeImage(item) {
+    if (item.imageUrl) return item.imageUrl;
+    const queries = buildSearchQueries(item);
+
+    for (const queryObj of queries) {
+        const image = await fetchWikipediaImageForQuery(queryObj.query, queryObj.intent);
+        if (image) return image;
+    }
+
+    return null;
+}
+
+async function enrichItemsWithWikiImages(items, concurrency = 4) {
+    const safeConcurrency = Math.max(1, Math.min(concurrency, 8));
+    const enriched = new Array(items.length);
+    let index = 0;
+
+    const worker = async () => {
+        while (index < items.length) {
+            const current = index;
+            index += 1;
+            const item = items[current];
+            const imageUrl = await resolveRepresentativeImage(item);
+            enriched[current] = { ...item, imageUrl };
+        }
+    };
+
+    await Promise.all(Array.from({ length: safeConcurrency }, () => worker()));
+    return enriched;
+}
+
 /**
  * Parse a name like "Hebrew (English)" or "Hebrew" into separate parts.
  */
@@ -234,12 +430,14 @@ export default async function handler(req, res) {
             .map(transformPage)
             .filter(item => item.name); // Filter out empty entries
 
+        const enrichedItems = await enrichItemsWithWikiImages(items);
+
         // Cache for 5 minutes
         res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
 
         return res.status(200).json({
-            results: items,
-            total: items.length,
+            results: enrichedItems,
+            total: enrichedItems.length,
         });
     } catch (error) {
         console.error('Error fetching museum data:', error);
