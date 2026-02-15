@@ -3,9 +3,10 @@ import { cn } from '@/lib/utils';
 import logoDark from '@/assets/svg/logo-dark.svg';
 import logoHero from '@/assets/svg/logo-hero-purple.svg';
 import logoIcon from '@/assets/svg/logo-icon.svg';
-import { Menu, Dice5 } from 'lucide-react';
+import { Menu, MessageSquare } from 'lucide-react';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
+import MessageSuggestionModal from '@/components/ui/MessageSuggestionModal';
 import pkg from '../package.json';
 
 /** Lazy-loaded section components */
@@ -109,7 +110,10 @@ const App = () => {
   const [globalSearchItems, setGlobalSearchItems] = useState([]);
   const [isSearchDataLoading, setIsSearchDataLoading] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
+  const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
   const searchContainerRef = useRef(null);
+  const highlightedTargetRef = useRef(null);
+  const highlightTimeoutRef = useRef(null);
 
   /** Initial website loading animation */
   useEffect(() => {
@@ -293,14 +297,41 @@ const App = () => {
 
   const displayCategories = categories;
 
+  const clearSearchTargetHighlight = useCallback(() => {
+    if (highlightTimeoutRef.current) {
+      window.clearTimeout(highlightTimeoutRef.current);
+      highlightTimeoutRef.current = null;
+    }
+
+    if (highlightedTargetRef.current) {
+      highlightedTargetRef.current.classList.remove('search-focus-target');
+      highlightedTargetRef.current = null;
+    }
+  }, []);
+
+  const highlightSearchTarget = useCallback((targetEl) => {
+    if (!targetEl) return;
+    clearSearchTargetHighlight();
+    targetEl.classList.add('search-focus-target');
+    highlightedTargetRef.current = targetEl;
+    highlightTimeoutRef.current = window.setTimeout(() => {
+      clearSearchTargetHighlight();
+    }, 2200);
+  }, [clearSearchTargetHighlight]);
+
+  useEffect(() => {
+    return () => clearSearchTargetHighlight();
+  }, [clearSearchTargetHighlight]);
+
   const handleResultSelect = useCallback((result) => {
     if (!result) return;
+    clearSearchTargetHighlight();
     setSearchQuery(result.titleHe || result.titleEn || '');
     setSearchFocused(false);
     setActiveResultIndex(-1);
     setActiveSection(result.sectionId);
     setPendingNavigation({ sectionId: result.sectionId, targetId: result.targetId });
-  }, []);
+  }, [clearSearchTargetHighlight]);
 
   useEffect(() => {
     if (!pendingNavigation?.sectionId || activeSection !== pendingNavigation.sectionId) return;
@@ -321,6 +352,7 @@ const App = () => {
       attempts += 1;
       if (target) {
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        highlightSearchTarget(target);
         window.clearInterval(interval);
         setPendingNavigation(null);
       } else if (attempts >= 15) {
@@ -330,7 +362,7 @@ const App = () => {
     }, 120);
 
     return () => window.clearInterval(interval);
-  }, [activeSection, pendingNavigation]);
+  }, [activeSection, pendingNavigation, highlightSearchTarget]);
 
   /** Pick a random category and scroll/highlight it */
   const handleFeelingLucky = useCallback(() => {
@@ -380,6 +412,20 @@ const App = () => {
             >
               v{pkg.version}
             </span>
+            <button
+              type="button"
+              onClick={() => setIsSuggestionModalOpen(true)}
+              className={cn(
+                'inline-flex items-center gap-2 px-3 py-2',
+                'bg-tetris-cyan text-off-black text-sm font-bold font-shimshon',
+                'border border-[#555555] shadow-brutalist-nav',
+                'hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]',
+                'transition-all duration-200'
+              )}
+            >
+              <MessageSquare size={14} />
+              <span>שליחת הצעה</span>
+            </button>
             <nav className="flex items-center gap-2">
               {navSections.map((section) => (
                 <button
@@ -442,6 +488,24 @@ const App = () => {
         {mobileMenuOpen && (
           <div className="lg:hidden fixed inset-0 top-[65px] bg-off-black z-40 p-6 overflow-y-auto">
             <nav className="flex flex-col gap-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSuggestionModalOpen(true);
+                  setMobileMenuOpen(false);
+                }}
+                className={cn(
+                  'px-6 py-4 text-right',
+                  'font-shimshon text-lg',
+                  'rounded-[5px]',
+                  'border border-[#555555]',
+                  'bg-tetris-cyan text-off-black',
+                  'shadow-brutalist-nav',
+                  'transition-all duration-200'
+                )}
+              >
+                שליחת הצעה
+              </button>
               {navSections.map((section) => (
                 <button
                   key={section.id}
@@ -818,11 +882,33 @@ const App = () => {
       {/* ===== FOOTER ===== */}
       <footer className="border-t-3 border-off-black bg-off-black text-off-white mt-16">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
+          <div className="mb-5 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setIsSuggestionModalOpen(true)}
+              className={cn(
+                'inline-flex items-center gap-2 px-4 py-2',
+                'bg-tetris-green text-off-black text-sm font-bold font-shimshon',
+                'border-2 border-off-white',
+                'shadow-brutalist-xs',
+                'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                'transition-all duration-200'
+              )}
+            >
+              <MessageSquare size={15} />
+              <span>רוצים להציע תוכן לאתר?</span>
+            </button>
+          </div>
           <p className="text-sm text-dark-gray font-ibm">
             נבנה על ידי יהונתן שפירא, 2026
           </p>
         </div>
       </footer>
+
+      <MessageSuggestionModal
+        open={isSuggestionModalOpen}
+        onClose={() => setIsSuggestionModalOpen(false)}
+      />
     </div>
   );
 };

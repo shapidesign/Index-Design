@@ -1,0 +1,181 @@
+import { Client } from '@notionhq/client';
+
+const NOTION_API_KEY = process.env.NOTION_API_KEY;
+const NOTION_SUGGESTIONS_DB =
+  process.env.NOTION_SUGGESTIONS_DB ||
+  process.env.NOTION_SUGGESTIONS_DATABASE_ID ||
+  '3081fb04f583808aa223f31fd2b98669';
+
+const notion = new Client({ auth: NOTION_API_KEY });
+
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 5;
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const getClientIp = (req) => {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string' && forwarded.length > 0) {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress || 'unknown';
+};
+
+const isRateLimited = (ip) => {
+  const now = Date.now();
+  const record = rateLimitStore.get(ip) || [];
+  const fresh = record.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
+  fresh.push(now);
+  rateLimitStore.set(ip, fresh);
+  return fresh.length > RATE_LIMIT_MAX_REQUESTS;
+};
+
+const normalizeUrl = (value) => {
+  if (!value) return '';
+  return value.startsWith('http') ? value : `https://${value}`;
+};
+
+const findProperty = (properties, candidates) => {
+  for (const candidate of candidates) {
+    if (properties[candidate]) return [candidate, properties[candidate]];
+  }
+  return [null, null];
+};
+
+const buildTextValue = (propertyMeta, value) => {
+  if (!propertyMeta || !value) return null;
+  const content = String(value);
+
+  if (propertyMeta.type === 'title') {
+    return { title: [{ text: { content } }] };
+  }
+  if (propertyMeta.type === 'rich_text') {
+    return { rich_text: [{ text: { content } }] };
+  }
+  if (propertyMeta.type === 'email') {
+    return { email: content };
+  }
+  if (propertyMeta.type === 'url') {
+    return { url: content };
+  }
+  return null;
+};
+
+const resolveStatusName = (propertyMeta) => {
+  const pendingMatcher = /pending|ממתין|חדש|new/i;
+
+  if (propertyMeta.type === 'status') {
+    const options = propertyMeta.status?.options || [];
+    const preferred = options.find((opt) => pendingMatcher.test(opt.name));
+    return preferred?.name || options[0]?.name || null;
+  }
+
+  if (propertyMeta.type === 'select') {
+    const options = propertyMeta.select?.options || [];
+    const preferred = options.find((opt) => pendingMatcher.test(opt.name));
+    return preferred?.name || options[0]?.name || null;
+  }
+
+  return null;
+};
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  try {
+    if (!NOTION_API_KEY) {
+      throw new Error('Configuration Error: NOTION_API_KEY is missing.');
+    }
+    if (!NOTION_SUGGESTIONS_DB) {
+      throw new Error('Configuration Error: NOTION_SUGGESTIONS_DB is missing.');
+    }
+
+    const ip = getClientIp(req);
+    if (isRateLimited(ip)) {
+      return res.status(429).json({ error: 'יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.' });
+    }
+
+    const name = String(req.body?.name || '').trim();
+    const email = String(req.body?.email || '').trim();
+    const message = String(req.body?.message || '').trim();
+    const url = normalizeUrl(String(req.body?.url || '').trim());
+
+    if (!name) return res.status(400).json({ error: 'יש להזין שם מלא.' });
+    if (!email || !EMAIL_RE.test(email)) return res.status(400).json({ error: 'יש להזין אימייל תקין.' });
+    if (!message || message.length < 8) return res.status(400).json({ error: 'ההודעה קצרה מדי.' });
+    if (url) {
+      try {
+        new URL(url);
+      } catch {
+        return res.status(400).json({ error: 'הקישור שהוזן אינו תקין.' });
+      }
+    }
+
+    const db = await notion.databases.retrieve({ database_id: NOTION_SUGGESTIONS_DB });
+    const props = db.properties || {};
+
+    const [nameKey, nameMeta] = findProperty(props, ['שם', 'Name']);
+    const [emailKey, emailMeta] = findProperty(props, ['אימייל', 'Email']);
+    const [messageKey, messageMeta] = findProperty(props, ['הודעה', 'Message', 'Suggestion']);
+    const [urlKey, urlMeta] = findProperty(props, ['קישור', 'URL', 'Link']);
+    const [statusKey, statusMeta] = findProperty(props, ['סטטוס', 'Status']);
+
+    if (!nameKey || !messageKey) {
+      return res.status(500).json({ error: 'מבנה מסד הנתונים ב-Notion לא תואם לשדות החובה.' });
+    }
+
+    const notionProperties = {};
+
+    const namePayload = buildTextValue(nameMeta, name);
+    if (namePayload) notionProperties[nameKey] = namePayload;
+
+    const messagePayload = buildTextValue(messageMeta, message);
+    if (messagePayload) notionProperties[messageKey] = messagePayload;
+
+    if (emailKey && emailMeta) {
+      const emailPayload =
+        emailMeta.type === 'email'
+          ? { email }
+          : buildTextValue(emailMeta, email);
+      if (emailPayload) notionProperties[emailKey] = emailPayload;
+    }
+
+    if (url && urlKey && urlMeta) {
+      const urlPayload =
+        urlMeta.type === 'url'
+          ? { url }
+          : buildTextValue(urlMeta, url);
+      if (urlPayload) notionProperties[urlKey] = urlPayload;
+    }
+
+    if (statusKey && statusMeta) {
+      const statusName = resolveStatusName(statusMeta);
+      if (statusName) {
+        if (statusMeta.type === 'status') {
+          notionProperties[statusKey] = { status: { name: statusName } };
+        } else if (statusMeta.type === 'select') {
+          notionProperties[statusKey] = { select: { name: statusName } };
+        }
+      }
+    }
+
+    await notion.pages.create({
+      parent: { database_id: NOTION_SUGGESTIONS_DB },
+      properties: notionProperties
+    });
+
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error('Error creating suggestion:', error);
+    return res.status(500).json({
+      error: 'אירעה שגיאה בשליחת ההצעה. נסו שוב בעוד מספר דקות.',
+      message: error.message
+    });
+  }
+}
