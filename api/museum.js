@@ -12,8 +12,7 @@ const notion = new Client({
   auth: NOTION_API_KEY,
 });
 
-const WIKI_LANGS = ['en', 'he'];
-const WIKI_IMAGE_CACHE = new Map();
+const WIKI_SUMMARY_IMAGE_CACHE = new Map();
 
 function normalizeQuery(value) {
     return String(value || '')
@@ -30,196 +29,129 @@ function splitFamousWork(value) {
         .slice(0, 3);
 }
 
-function buildSearchQueries(item) {
-    const famousWorks = splitFamousWork(item.famousWork);
-    const candidates = [];
-
-    famousWorks.forEach((work) => {
-        candidates.push({ query: work, intent: 'work' });
-        if (item.nameEn) candidates.push({ query: `${work} ${item.nameEn}`, intent: 'work' });
-    });
-
-    if (item.nameEn) candidates.push({ query: item.nameEn, intent: 'person' });
-    if (item.nameHe) candidates.push({ query: item.nameHe, intent: 'person' });
-    if (item.name) candidates.push({ query: item.name, intent: 'person' });
-
-    const deduped = [];
-    const seen = new Set();
-    candidates.forEach((candidate) => {
-        const normalized = normalizeQuery(candidate.query);
-        const key = normalized.toLowerCase();
-        if (!normalized || seen.has(key)) return;
-        seen.add(key);
-        deduped.push({ query: normalized, intent: candidate.intent });
-    });
-
-    return deduped;
-}
-
-function getPageImage(page) {
-    return page?.original?.source || page?.thumbnail?.source || null;
-}
-
-function normalizeText(value) {
+function normalizeDesignerKey(value) {
     return String(value || '')
         .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[()"'.]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
 }
 
-function includesNormalized(haystack, needle) {
-    const h = normalizeText(haystack);
-    const n = normalizeText(needle);
-    if (!h || !n) return false;
-    return h.includes(n);
+function normalizeWorkKey(value) {
+    return String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[()"'.]/g, ' ')
+        .replace(/[-–—]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 }
 
-function scorePageCandidate(page, query, intent, designerAliases = []) {
-    const title = String(page?.title || '').toLowerCase();
-    const normalizedQuery = normalizeQuery(query).toLowerCase();
-    const extract = String(page?.extract || '').toLowerCase();
-    const categories = (page?.categories || []).map((c) => String(c?.title || '').toLowerCase());
-    const categoryText = categories.join(' ');
-    const isDisambiguation = Boolean(page?.pageprops?.disambiguation) || includesNormalized(extract, 'may refer to');
+const THUMBNAIL_OVERRIDES = [
+    {
+        designers: ['milton glaser', 'מילטון גלייזר'],
+        works: ['i love ny', 'i heart ny', 'i ♥ ny'],
+        wikipediaTitle: 'I_Love_New_York',
+    },
+    {
+        designers: ['paul rand', 'פול ראנד'],
+        works: ['ibm', 'ibm logo'],
+        wikipediaTitle: 'IBM_logo',
+    },
+    {
+        designers: ['susan kare', 'סוזן קייר', 'סוזן קאר'],
+        works: ['happy mac', 'macintosh icons', 'מק שמח', 'אייקוני מקינטוש'],
+        wikipediaTitle: 'Happy_Mac',
+    },
+    {
+        designers: ['piet mondrian', 'פיט מונדריאן'],
+        works: ['composition with red, blue and yellow', 'קומפוזיציה עם אדום, כחול וצהוב'],
+        wikipediaTitle: 'Composition_with_Red_Blue_and_Yellow',
+    },
+    {
+        designers: ['kazimir malevich', "קזימיר מלביץ"],
+        works: ['black square', 'ריבוע שחור'],
+        wikipediaTitle: 'Black_Square_(painting)',
+    },
+    {
+        designers: ['saul bass', 'סול בס'],
+        works: ['the man with the golden arm', 'האיש בעל זרוע הזהב'],
+        wikipediaTitle: 'The_Man_with_the_Golden_Arm',
+    },
+    {
+        designers: ['massimo vignelli', 'מאסימו ויניילי'],
+        works: ['new york city subway map', 'מפת הרכבת התחתית של ניו יורק'],
+        wikipediaTitle: 'New_York_City_Subway_map',
+    },
+    {
+        designers: ['jony ive', "גוני אייב", "ג'וני אייב", 'ג׳וני אייב'],
+        works: ['imac', 'apple imac', 'אפל imac'],
+        wikipediaTitle: 'IMac_G3',
+    },
+    {
+        designers: ['dieter rams', 'דיטר ראמס'],
+        works: ['braun sk4', 'פטיפון braun sk4'],
+        wikipediaTitle: 'Braun_SK4',
+    },
+];
 
-    let score = 0;
+async function fetchWikipediaSummaryImage(title) {
+    const normalizedTitle = normalizeQuery(title);
+    if (!normalizedTitle) return null;
 
-    if (isDisambiguation) score -= 100;
-    if (title === normalizedQuery) score += 5;
-    if (title.includes(normalizedQuery)) score += 3;
-    if (getPageImage(page)) score += 4;
+    const cacheKey = normalizedTitle.toLowerCase();
+    if (WIKI_SUMMARY_IMAGE_CACHE.has(cacheKey)) {
+        return WIKI_SUMMARY_IMAGE_CACHE.get(cacheKey);
+    }
 
-    const biographySignals = [
-        'births',
-        'deaths',
-        'living people',
-        'people',
-        'biography',
-        'ביוגרפיה',
-        'ילידי',
-        'נפטרים'
-    ];
-
-    const artworkSignals = [
-        'paintings',
-        'artworks',
-        'posters',
-        'logos',
-        'typefaces',
-        'albums',
-        'book covers',
-        'works',
-        'graphic design',
-        'יצירות',
-        'ציורים',
-        'כרזות',
-        'לוגואים',
-        'פונטים'
-    ];
-
-    if (intent === 'work') {
-        const designerMentioned = designerAliases.some((alias) => includesNormalized(extract, alias));
-        if (designerMentioned) score += 10;
-        if (artworkSignals.some((signal) => categoryText.includes(signal))) score += 4;
-        if (biographySignals.some((signal) => categoryText.includes(signal))) score -= 6;
-
-        // Work pages often mention creator relation in text.
-        if (
-            includesNormalized(extract, 'designed by') ||
-            includesNormalized(extract, 'created by') ||
-            includesNormalized(extract, 'by ')
-        ) {
-            score += 2;
+    try {
+        const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(normalizedTitle)}`;
+        const res = await fetch(url, {
+            headers: {
+                Accept: 'application/json',
+            },
+        });
+        if (!res.ok) {
+            WIKI_SUMMARY_IMAGE_CACHE.set(cacheKey, null);
+            return null;
         }
-    } else {
-        if (biographySignals.some((signal) => categoryText.includes(signal))) score += 1;
-    }
 
-    return score;
+        const json = await res.json();
+        const image = json?.originalimage?.source || json?.thumbnail?.source || null;
+        WIKI_SUMMARY_IMAGE_CACHE.set(cacheKey, image);
+        return image;
+    } catch (error) {
+        console.warn(`Wikipedia summary image lookup failed for "${normalizedTitle}":`, error.message);
+        WIKI_SUMMARY_IMAGE_CACHE.set(cacheKey, null);
+        return null;
+    }
 }
 
-function extractBestWikipediaImage(data, query, intent, designerAliases = []) {
-    const pages = data?.query?.pages;
-    if (!pages) return null;
+function doesOverrideMatch(item, override) {
+    const designerKeys = [item.nameEn, item.nameHe, item.name]
+        .map((name) => normalizeDesignerKey(name))
+        .filter(Boolean);
 
-    const ranked = Object.values(pages)
-        .map((page) => ({ page, score: scorePageCandidate(page, query, intent, designerAliases) }))
-        .sort((a, b) => b.score - a.score);
+    const workKeys = splitFamousWork(item.famousWork).map((work) => normalizeWorkKey(work));
+    const normalizedOverrideDesigners = (override.designers || []).map((name) => normalizeDesignerKey(name));
+    const normalizedOverrideWorks = (override.works || []).map((work) => normalizeWorkKey(work));
 
-    for (const candidate of ranked) {
-        if (candidate.score < 0) continue;
-        const image = getPageImage(candidate.page);
-        if (image) return image;
-    }
+    const designerMatches = normalizedOverrideDesigners.some((designer) => designerKeys.includes(designer));
+    if (!designerMatches) return false;
 
-    return null;
-}
-
-async function fetchWikipediaImageForQuery(query, intent = 'work', designerAliases = []) {
-    const normalizedQuery = normalizeQuery(query);
-    if (!normalizedQuery) return null;
-
-    const aliasKey = designerAliases.map((alias) => normalizeText(alias)).filter(Boolean).sort().join('|');
-    const cacheKey = `${intent}:${normalizedQuery.toLowerCase()}:${aliasKey}`;
-    if (WIKI_IMAGE_CACHE.has(cacheKey)) {
-        return WIKI_IMAGE_CACHE.get(cacheKey);
-    }
-
-    for (const lang of WIKI_LANGS) {
-        try {
-            const searchUrl = new URL(`https://${lang}.wikipedia.org/w/api.php`);
-            searchUrl.searchParams.set('action', 'query');
-            searchUrl.searchParams.set('format', 'json');
-            searchUrl.searchParams.set('list', 'search');
-            searchUrl.searchParams.set('srsearch', normalizedQuery);
-            searchUrl.searchParams.set('srlimit', '5');
-
-            const searchRes = await fetch(searchUrl);
-            if (!searchRes.ok) continue;
-
-            const searchJson = await searchRes.json();
-            const bestMatches = searchJson?.query?.search || [];
-            if (bestMatches.length === 0) continue;
-
-            const imageUrl = new URL(`https://${lang}.wikipedia.org/w/api.php`);
-            imageUrl.searchParams.set('action', 'query');
-            imageUrl.searchParams.set('format', 'json');
-            imageUrl.searchParams.set('prop', 'pageimages|categories|extracts|pageprops');
-            imageUrl.searchParams.set('piprop', 'original|thumbnail');
-            imageUrl.searchParams.set('pithumbsize', '1200');
-            imageUrl.searchParams.set('cllimit', '30');
-            imageUrl.searchParams.set('exintro', '1');
-            imageUrl.searchParams.set('explaintext', '1');
-            imageUrl.searchParams.set('exchars', '700');
-            imageUrl.searchParams.set('pageids', bestMatches.map((m) => String(m.pageid)).join('|'));
-
-            const imageRes = await fetch(imageUrl);
-            if (!imageRes.ok) continue;
-
-            const imageJson = await imageRes.json();
-            const image = extractBestWikipediaImage(imageJson, normalizedQuery, intent, designerAliases);
-            if (image) {
-                WIKI_IMAGE_CACHE.set(cacheKey, image);
-                return image;
-            }
-        } catch (error) {
-            console.warn(`Wikipedia image lookup failed for "${normalizedQuery}" in ${lang}:`, error.message);
-        }
-    }
-
-    WIKI_IMAGE_CACHE.set(cacheKey, null);
-    return null;
+    if (normalizedOverrideWorks.length === 0) return true;
+    return normalizedOverrideWorks.some((work) => workKeys.some((itemWork) => itemWork.includes(work) || work.includes(itemWork)));
 }
 
 async function resolveRepresentativeImage(item) {
     if (item.imageUrl) return item.imageUrl;
-    const queries = buildSearchQueries(item);
-    const designerAliases = [item.nameEn, item.nameHe, item.name]
-        .map((alias) => normalizeQuery(alias))
-        .filter(Boolean);
 
-    for (const queryObj of queries) {
-        const image = await fetchWikipediaImageForQuery(queryObj.query, queryObj.intent, designerAliases);
+    for (const override of THUMBNAIL_OVERRIDES) {
+        if (!doesOverrideMatch(item, override)) continue;
+        const image = override.imageUrl || (override.wikipediaTitle ? await fetchWikipediaSummaryImage(override.wikipediaTitle) : null);
         if (image) return image;
     }
 

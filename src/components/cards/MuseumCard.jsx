@@ -37,7 +37,7 @@ const MuseumCard = ({
                 {/* Image Thumbnail */}
                 <div className="w-16 h-16 shrink-0 border-2 border-off-black overflow-hidden bg-light-gray relative">
                     {imageUrl ? (
-                        <img src={imageUrl} alt={nameHe} className="w-full h-full object-cover" />
+                        <img src={imageUrl} alt={nameHe} className="w-full h-full object-cover opacity-70" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-off-white">
                             <TetrisShape type={thumbnail.type} size={24} color={thumbnail.color} />
@@ -140,7 +140,7 @@ const MuseumCard = ({
                     <img
                         src={imageUrl}
                         alt={nameHe}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="w-full h-full object-cover opacity-70 transition-transform duration-500 group-hover:scale-105"
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-off-white">
