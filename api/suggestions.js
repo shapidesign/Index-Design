@@ -169,6 +169,7 @@ export default async function handler(req, res) {
     }
 
     const { parent, properties: props } = await resolveParentAndProperties(NOTION_SUGGESTIONS_DB);
+    const parentType = parent?.database_id ? 'database_id' : parent?.data_source_id ? 'data_source_id' : 'unknown';
 
     let [nameKey, nameMeta] = findProperty(props, ['שם', 'Name']);
     if (!nameKey) [nameKey, nameMeta] = findPropertyByType(props, ['title']);
@@ -184,7 +185,16 @@ export default async function handler(req, res) {
     if (!categoryKey) [categoryKey, categoryMeta] = findPropertyByType(props, ['select', 'multi_select'], [statusKey]);
 
     if (!nameKey) {
-      return res.status(500).json({ error: 'מבנה מסד הנתונים ב-Notion לא תואם לשדות החובה.' });
+      return res.status(500).json({
+        error: 'מבנה מסד הנתונים ב-Notion לא תואם לשדות החובה.',
+        debug: {
+          parentType,
+          nameKey,
+          messageKey,
+          categoryKey,
+          availablePropertyKeys: Object.keys(props || {})
+        }
+      });
     }
 
     const notionProperties = {};
