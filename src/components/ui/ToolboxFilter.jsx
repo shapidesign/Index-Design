@@ -140,7 +140,7 @@ const ToolboxFilter = ({
       {availableTypes.length > 0 && (
         <div className="mb-3">
           <p className="font-shimshon text-xs text-dark-gray mb-2">סוג</p>
-          <div className="flex flex-wrap gap-2 overflow-x-auto pb-1">
+          <div className="flex flex-wrap gap-2 pb-1 pe-1 overflow-visible">
             {availableTypes.map((type) => (
               <FilterChip
                 key={type}
@@ -158,7 +158,7 @@ const ToolboxFilter = ({
       {availableTags.length > 0 && (
         <div>
           <p className="font-shimshon text-xs text-dark-gray mb-2">תגיות</p>
-          <div className="flex flex-wrap gap-2 overflow-x-auto pb-1">
+          <div className="flex flex-wrap gap-2 pb-1 pe-1 overflow-visible">
             {availableTags.map((tag, i) => (
               <FilterChip
                 key={tag}

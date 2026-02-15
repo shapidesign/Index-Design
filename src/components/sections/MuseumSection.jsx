@@ -326,6 +326,7 @@ const MuseumModal = ({ item, onClose }) => {
 // ===== MAIN SECTION =====
 const MuseumSection = () => {
     const { data, loading, error, refetch } = useData('/api/museum');
+    const [bootLoading, setBootLoading] = useState(true);
     const [viewMode, setViewMode] = useState('gallery');
     const [searchQuery, setSearchQuery] = useState('');
     const [searchFocused, setSearchFocused] = useState(false);
@@ -337,6 +338,15 @@ const MuseumSection = () => {
     const searchRef = useRef(null);
 
     const items = data?.results || [];
+
+    // Keep a short, guaranteed loader window to avoid flashing partially rendered cards.
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            setBootLoading(false);
+        }, 450);
+
+        return () => window.clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -467,7 +477,8 @@ const MuseumSection = () => {
     }, [items, searchQuery, selectedCountries, selectedTypes, selectedTags, selectedEras]);
 
     // ===== LOADING STATE =====
-    if (loading) {
+    const isDataReady = Array.isArray(data?.results);
+    if (loading || bootLoading || (!error && !isDataReady)) {
         return <TetrisLoader className="min-h-[400px]" />;
     }
 
