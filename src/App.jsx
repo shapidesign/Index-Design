@@ -28,7 +28,7 @@ const navSections = [
   { id: 'map', label: 'המפה' },
   { id: 'tips', label: 'טיפים' },
   { id: 'hallOfFame', label: 'היכל התהילה' },
-  { id: 'lucky', label: 'עוגיית מזל' },
+  { id: 'lucky', label: 'הפתעה' },
 ];
 
 /** Category cards with matching tetris shape icons */
@@ -39,7 +39,7 @@ const categories = [
   { id: 'map', title: 'המפה', desc: 'מיקומים שימושיים לסטודנטים', color: 'green', shape: 'O' },
   { id: 'tips', title: 'טיפים', desc: 'טיפים וביקורות מסטודנטים', color: 'pink', shape: 'S' },
   { id: 'hallOfFame', title: 'היכל התהילה', desc: 'מעצבים ויצירות שחובה להכיר', color: 'yellow', shape: 'Z' },
-  { id: 'lucky', title: 'עוגיית מזל', desc: 'הפתעה! לחצו וגלו משאב אקראי', color: 'cyan', shape: 'J', isLucky: true },
+  { id: 'lucky', title: 'הפתעה', desc: 'דף הפתעה עם כרטיס אקראי במיוחד בשבילך', color: 'cyan', shape: 'J', isLucky: true },
 ];
 
 /** Sections that can be selected by the fortune cookie */
@@ -112,6 +112,7 @@ const App = () => {
   const [isSearchDataLoading, setIsSearchDataLoading] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
+  const [luckyPick, setLuckyPick] = useState(null);
   const searchContainerRef = useRef(null);
   const highlightedTargetRef = useRef(null);
   const highlightTimeoutRef = useRef(null);
@@ -389,9 +390,11 @@ const App = () => {
     return () => window.clearInterval(interval);
   }, [activeSection, pendingNavigation, highlightSearchTarget]);
 
-  /** Pick a random card from lucky-enabled sections */
+  /** Pick a random card for the dedicated surprise page */
   const handleFeelingLucky = useCallback(() => {
     clearSearchTargetHighlight();
+    setPendingNavigation(null);
+    setActiveSection('lucky');
 
     if (luckyItems.length > 0) {
       let pool = luckyItems;
@@ -402,25 +405,11 @@ const App = () => {
 
       const randomItem = pool[Math.floor(Math.random() * pool.length)];
       lastLuckyTargetRef.current = randomItem.targetId;
+      setLuckyPick(randomItem);
       setLuckyHighlight(randomItem.sectionId);
-      setActiveSection(randomItem.sectionId);
-      setPendingNavigation({ sectionId: randomItem.sectionId, targetId: randomItem.targetId });
     } else {
-      // Fallback while data is still loading: open one of the supported sections.
-      let fallbackPool = luckySectionIds;
-      if (luckySectionIds.length > 1 && lastLuckyTargetRef.current?.startsWith('section-')) {
-        const lastSectionId = lastLuckyTargetRef.current.replace('section-', '');
-        const filteredSections = luckySectionIds.filter((sectionId) => sectionId !== lastSectionId);
-        if (filteredSections.length > 0) fallbackPool = filteredSections;
-      }
-
-      const fallbackSectionId = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
-      lastLuckyTargetRef.current = `section-${fallbackSectionId}`;
-      setLuckyHighlight(fallbackSectionId);
-      setPendingNavigation(null);
-      setActiveSection(fallbackSectionId);
-      const el = document.getElementById(`card-${fallbackSectionId}`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setLuckyPick(null);
+      setLuckyHighlight(null);
     }
 
     window.setTimeout(() => setLuckyHighlight(null), 2000);
@@ -913,6 +902,94 @@ const App = () => {
             <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
               <LibrarySection />
             </Suspense>
+          </div>
+        )}
+
+        {/* ===== SURPRISE SECTION ===== */}
+        {activeSection === 'lucky' && (
+          <div className="mt-12" id="section-lucky">
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={() => setActiveSection(null)}
+                className={cn(
+                  "px-4 py-2",
+                  "font-shimshon text-sm font-bold text-off-black",
+                  "bg-light-gray",
+                  "border-2 border-off-black",
+                  "shadow-brutalist-xs",
+                  "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                  "transition-all duration-200"
+                )}
+              >
+                חזרה לכל הקטגוריות
+              </button>
+            </div>
+
+            <section className="max-w-2xl mx-auto">
+              <article
+                className={cn(
+                  "p-6 md:p-8",
+                  "bg-off-white border-3 border-off-black",
+                  "shadow-brutalist",
+                  "transition-all duration-200",
+                  luckyHighlight && "animate-line-clear"
+                )}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                  <span className="inline-flex px-3 py-1 bg-tetris-cyan border-2 border-off-black text-sm font-bold">
+                    הפתעה
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleFeelingLucky}
+                    className={cn(
+                      "px-4 py-2",
+                      "font-shimshon text-sm font-bold text-off-black",
+                      "bg-tetris-cyan border-2 border-off-black shadow-brutalist-xs",
+                      "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                      "transition-all duration-200"
+                    )}
+                  >
+                    עוד הפתעה
+                  </button>
+                </div>
+
+                {!luckyPick ? (
+                  <div className="text-right">
+                    <h3 className="text-2xl font-bold text-off-black mb-2">מכין לך כרטיס הפתעה...</h3>
+                    <p className="text-dark-gray font-ibm">נסה שוב בעוד רגע, או לחץ על "עוד הפתעה".</p>
+                  </div>
+                ) : (
+                  <div className="text-right">
+                    <p className="text-xs font-bold text-dark-gray mb-2">{luckyPick.sectionLabel}</p>
+                    <h3 className="text-3xl font-bold text-off-black mb-2">
+                      {luckyPick.titleHe || luckyPick.titleEn}
+                    </h3>
+                    {luckyPick.titleEn && luckyPick.titleEn !== luckyPick.titleHe && (
+                      <p className="text-sm text-mid-gray font-pixelify mb-3">{luckyPick.titleEn}</p>
+                    )}
+                    {luckyPick.description && (
+                      <p className="text-base text-dark-gray font-ibm leading-relaxed mb-4">
+                        {luckyPick.description}
+                      </p>
+                    )}
+                    {luckyPick.tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-2 justify-end">
+                        {luckyPick.tags.slice(0, 5).map((tag) => (
+                          <span
+                            key={`${luckyPick.id}-${tag}`}
+                            className="px-2 py-1 bg-light-gray border border-off-black text-xs font-bold"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </article>
+            </section>
           </div>
         )}
 
