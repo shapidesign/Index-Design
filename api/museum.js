@@ -56,8 +56,9 @@ function transformPage(page) {
         p['Description']?.rich_text?.[0]?.plain_text || 
         '';
     
-    // Country: 'מדינה/אזור', 'Country'
+    // Country: 'מדינה', 'מדינה/אזור', 'Country'
     const country = 
+        p['מדינה']?.select?.name || 
         p['מדינה/אזור']?.select?.name || 
         p['Country']?.select?.name || 
         '';

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import useData from '@/hooks/useData';
 import MuseumCard from '@/components/cards/MuseumCard';
@@ -157,14 +158,17 @@ const MuseumModal = ({ item, onClose }) => {
 
     if (!item) return null;
 
-    return (
+    return createPortal(
         <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-off-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-off-black/80 backdrop-blur-sm"
             onClick={onClose}
+            role="dialog"
+            aria-modal="true"
+            aria-label={item.nameHe ? `מידע על ${item.nameHe}` : 'פרטי יצירה'}
         >
             <div
                 className={cn(
-                    'relative w-full max-w-2xl',
+                    'relative w-full max-w-5xl',
                     'bg-off-white',
                     'border-3 border-off-black',
                     'shadow-brutalist',
@@ -177,9 +181,11 @@ const MuseumModal = ({ item, onClose }) => {
                 <button
                     onClick={onClose}
                     className={cn(
-                        'absolute top-3 left-3 p-2',
+                        'absolute top-3 left-3 p-2.5',
                         'bg-tetris-pink border-2 border-off-black',
-                        'hover:bg-tetris-orange transition-colors',
+                        'shadow-brutalist-xs',
+                        'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                        'hover:bg-tetris-orange transition-all duration-200',
                         'z-10 cursor-pointer'
                     )}
                     aria-label="סגור"
@@ -189,7 +195,7 @@ const MuseumModal = ({ item, onClose }) => {
 
                 <div className="flex flex-col md:flex-row">
                     {/* Image Side */}
-                    <div className="w-full md:w-1/3 h-48 md:h-auto md:min-h-[300px] bg-light-gray border-b-3 md:border-b-0 md:border-l-3 border-off-black relative overflow-hidden">
+                    <div className="w-full md:w-2/5 h-56 md:h-auto md:min-h-[420px] bg-light-gray border-b-3 md:border-b-0 md:border-l-3 border-off-black relative overflow-hidden">
                         {item.imageUrl ? (
                             <img
                                 src={item.imageUrl}
@@ -266,9 +272,17 @@ const MuseumModal = ({ item, onClose }) => {
                             {item.tags?.length > 0 && (
                                 <div>
                                     <h4 className="text-sm font-bold font-shimshon text-off-black mb-2">תגיות</h4>
-                                    <div className="flex flex-wrap gap-1.5">
+                                    <div className="flex flex-wrap gap-2">
                                         {item.tags.map((tag) => (
-                                            <span key={tag} className="text-xs text-mid-gray font-ibm bg-light-gray px-2 py-0.5 rounded border border-off-black/20">
+                                            <span
+                                                key={tag}
+                                                className={cn(
+                                                    'px-2.5 py-1',
+                                                    'text-[11px] font-bold font-shimshon text-off-black',
+                                                    'bg-tetris-yellow/30 border border-off-black',
+                                                    'shadow-[1px_1px_0px_#1F1F1F]'
+                                                )}
+                                            >
                                                 #{tag}
                                             </span>
                                         ))}
@@ -298,7 +312,8 @@ const MuseumModal = ({ item, onClose }) => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
@@ -399,44 +414,52 @@ const MuseumSection = () => {
 
     /** Filtered items */
     const filteredItems = useMemo(() => {
-        return items.filter((d) => {
-            // Search query
-            if (searchQuery.trim()) {
-                const q = searchQuery.trim().toLowerCase();
-                const match =
-                    d.name?.toLowerCase().includes(q) ||
-                    d.nameHe?.toLowerCase().includes(q) ||
-                    d.nameEn?.toLowerCase().includes(q) ||
-                    d.description?.toLowerCase().includes(q) ||
-                    d.country?.toLowerCase().includes(q) ||
-                    d.type?.some((t) => t.toLowerCase().includes(q)) ||
-                    d.tags?.some((t) => t.toLowerCase().includes(q)) ||
-                    d.era?.some((e) => e.toLowerCase().includes(q));
-                if (!match) return false;
-            }
+        const q = searchQuery.trim().toLowerCase();
+        const hasQuery = Boolean(q);
 
-            // Country filter
-            if (selectedCountries.length > 0) {
-                if (!selectedCountries.includes(d.country)) return false;
-            }
+        const scored = items
+            .map((d) => {
+                let score = 0;
 
-            // Type filter
-            if (selectedTypes.length > 0) {
-                if (!d.type?.some((t) => selectedTypes.includes(t))) return false;
-            }
+                if (hasQuery) {
+                    const tags = d.tags || [];
+                    const exactTag = tags.some((tag) => tag?.toLowerCase() === q);
+                    const partialTag = tags.some((tag) => tag?.toLowerCase().includes(q));
 
-            // Tag filter
-            if (selectedTags.length > 0) {
-                if (!d.tags?.some((t) => selectedTags.includes(t))) return false;
-            }
+                    if (exactTag) score += 7;
+                    else if (partialTag) score += 5;
 
-            // Era filter
-            if (selectedEras.length > 0) {
-                if (!d.era?.some((e) => selectedEras.includes(e))) return false;
-            }
+                    if (d.description?.toLowerCase().includes(q)) score += 4;
+                    if (d.famousWork?.toLowerCase().includes(q)) score += 3;
+                    if (d.quote?.toLowerCase().includes(q)) score += 3;
 
-            return true;
-        });
+                    if (d.nameHe?.toLowerCase().includes(q)) score += 2;
+                    if (d.nameEn?.toLowerCase().includes(q)) score += 2;
+                    if (d.name?.toLowerCase().includes(q)) score += 2;
+
+                    if (d.type?.some((t) => t.toLowerCase().includes(q))) score += 1.5;
+                    if (d.era?.some((e) => e.toLowerCase().includes(q))) score += 1.5;
+                    if (d.country?.toLowerCase().includes(q)) score += 1;
+                }
+
+                return { d, score };
+            })
+            .filter(({ d, score }) => {
+                if (hasQuery && score <= 0) return false;
+
+                if (selectedCountries.length > 0 && !selectedCountries.includes(d.country)) return false;
+                if (selectedTypes.length > 0 && !d.type?.some((t) => selectedTypes.includes(t))) return false;
+                if (selectedTags.length > 0 && !d.tags?.some((t) => selectedTags.includes(t))) return false;
+                if (selectedEras.length > 0 && !d.era?.some((e) => selectedEras.includes(e))) return false;
+
+                return true;
+            });
+
+        if (hasQuery) {
+            scored.sort((a, b) => b.score - a.score);
+        }
+
+        return scored.map(({ d }) => d);
     }, [items, searchQuery, selectedCountries, selectedTypes, selectedTags, selectedEras]);
 
     // ===== LOADING STATE =====
@@ -544,7 +567,7 @@ const MuseumSection = () => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onFocus={() => setSearchFocused(true)}
-                            placeholder="חיפוש מוזיאונים, מדינות, סוגים..."
+                            placeholder="חיפוש לפי תגיות, תיאור, שם, מדינה או סוג..."
                             className="w-full bg-transparent text-sm font-shimshon outline-none text-right"
                             dir="rtl"
                         />
@@ -658,6 +681,7 @@ const MuseumSection = () => {
                                 description={item.description}
                                 country={item.country}
                                 type={item.type}
+                                tags={item.tags}
                                 link={item.link}
                                 imageUrl={item.imageUrl}
                                 onClick={() => setSelectedItem(item)}
@@ -676,6 +700,7 @@ const MuseumSection = () => {
                                 description={item.description}
                                 country={item.country}
                                 type={item.type}
+                                tags={item.tags}
                                 link={item.link}
                                 imageUrl={item.imageUrl}
                                 onClick={() => setSelectedItem(item)}

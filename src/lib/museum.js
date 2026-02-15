@@ -3,87 +3,97 @@
  * Shared logic for flag mapping and random thumbnail generation
  */
 
-// Helper to get flag image path
+const COUNTRY_CODE_BY_NAME = {
+    // Israel / US / UK
+    'ישראל': 'il',
+    'israel': 'il',
+    'ארה"ב': 'us',
+    'ארהב': 'us',
+    'ארצות הברית': 'us',
+    'usa': 'us',
+    'united states': 'us',
+    'u.s.a': 'us',
+    'בריטניה': 'gb',
+    'אנגליה': 'gb',
+    'uk': 'gb',
+    'u.k': 'gb',
+    'united kingdom': 'gb',
+    'great britain': 'gb',
+    'england': 'gb',
+
+    // Europe
+    'צרפת': 'fr', 'france': 'fr',
+    'גרמניה': 'de', 'germany': 'de',
+    'איטליה': 'it', 'italy': 'it',
+    'הולנד': 'nl', 'netherlands': 'nl',
+    'שוויץ': 'ch', 'switzerland': 'ch',
+    'ספרד': 'es', 'spain': 'es',
+    'רוסיה': 'ru', 'russia': 'ru',
+    'שוודיה': 'se', 'sweden': 'se',
+    'נורווגיה': 'no', 'norway': 'no',
+    'דנמרק': 'dk', 'denmark': 'dk',
+    'פינלנד': 'fi', 'finland': 'fi',
+    'פולין': 'pl', 'poland': 'pl',
+    'אוסטריה': 'at', 'austria': 'at',
+    'בלגיה': 'be', 'belgium': 'be',
+    'פורטוגל': 'pt', 'portugal': 'pt',
+    'יוון': 'gr', 'greece': 'gr',
+    'טורקיה': 'tr', 'turkey': 'tr',
+    'צכיה': 'cz', 'צ׳כיה': 'cz', 'czech republic': 'cz', 'czechia': 'cz',
+    'הונגריה': 'hu', 'hungary': 'hu',
+    'רומניה': 'ro', 'romania': 'ro',
+    'אוקראינה': 'ua', 'ukraine': 'ua',
+
+    // Americas
+    'קנדה': 'ca', 'canada': 'ca',
+    'ברזיל': 'br', 'brazil': 'br',
+    'ארגנטינה': 'ar', 'argentina': 'ar',
+    'מקסיקו': 'mx', 'mexico': 'mx',
+    'צילה': 'cl', 'צ׳ילה': 'cl', 'chile': 'cl',
+    'קולומביה': 'co', 'colombia': 'co',
+    'פרו': 'pe', 'peru': 'pe',
+
+    // Asia/Pacific
+    'יפן': 'jp', 'japan': 'jp',
+    'סין': 'cn', 'china': 'cn',
+    'אוסטרליה': 'au', 'australia': 'au',
+    'הודו': 'in', 'india': 'in',
+    'דרום קוריאה': 'kr', 'south korea': 'kr', 'korea': 'kr',
+    'טייוואן': 'tw', 'taiwan': 'tw',
+    'תאילנד': 'th', 'thailand': 'th',
+    'וייטנאם': 'vn', 'vietnam': 'vn',
+    'סינגפור': 'sg', 'singapore': 'sg',
+    'ניו זילנד': 'nz', 'new zealand': 'nz',
+
+    // Middle East / Africa / supra-national
+    'מצרים': 'eg', 'egypt': 'eg',
+    'דרום אפריקה': 'za', 'south africa': 'za',
+    'איחוד האמירויות': 'ae', 'united arab emirates': 'ae', 'uae': 'ae',
+    'ערב הסעודית': 'sa', 'saudi arabia': 'sa',
+    'אירופה': 'eu', 'europe': 'eu'
+};
+
+const AVAILABLE_FLAG_CODES = new Set([
+    'il', 'us', 'gb', 'fr', 'de', 'jp', 'it', 'nl', 'ch', 'es', 'cn', 'eu'
+]);
+
+const normalizeCountryName = (countryName) =>
+    String(countryName || '')
+        .trim()
+        .toLowerCase()
+        .replace(/["״׳']/g, '')
+        .replace(/\s+/g, ' ');
+
+// Helper to get flag image path by ISO-2 code
 export const getFlagPath = (countryName) => {
-    if (!countryName) return null;
+    if (!countryName) return '/flags/unknown.svg';
 
-    // Map Hebrew/English country names to flag codes
-    const countryMap = {
-        'ישראל': 'il',
-        'Israel': 'il',
-        'ארה"ב': 'us',
-        'USA': 'us',
-        'United States': 'us',
-        'בריטניה': 'uk',
-        'UK': 'uk',
-        'United Kingdom': 'uk',
-        'צרפת': 'fr',
-        'France': 'fr',
-        'גרמניה': 'de',
-        'Germany': 'de',
-        'יפן': 'jp',
-        'Japan': 'jp',
-        'איטליה': 'it',
-        'Italy': 'it',
-        'הולנד': 'nl',
-        'Netherlands': 'nl',
-        'שוויץ': 'ch',
-        'Switzerland': 'ch',
-        'ספרד': 'es',
-        'Spain': 'es',
-        'סין': 'cn',
-        'China': 'cn',
-        'אירופה': 'eu',
-        'Europe': 'eu',
+    const normalized = normalizeCountryName(countryName);
+    const code = COUNTRY_CODE_BY_NAME[normalized];
 
-        // Europe
-        'רוסיה': 'ru', 'Russia': 'ru',
-        'שוודיה': 'se', 'Sweden': 'se',
-        'נורווגיה': 'no', 'Norway': 'no',
-        'דנמרק': 'dk', 'Denmark': 'dk',
-        'פינלנד': 'fi', 'Finland': 'fi',
-        'פולין': 'pl', 'Poland': 'pl',
-        'אוסטריה': 'at', 'Austria': 'at',
-        'בלגיה': 'be', 'Belgium': 'be',
-        'פורטוגל': 'pt', 'Portugal': 'pt',
-        'יוון': 'gr', 'Greece': 'gr',
-        'טורקיה': 'tr', 'Turkey': 'tr',
-        'צ׳כיה': 'cz', 'Czech Republic': 'cz',
-        'הונגריה': 'hu', 'Hungary': 'hu',
-        'רומניה': 'ro', 'Romania': 'ro',
-        'אוקראינה': 'ua', 'Ukraine': 'ua',
+    if (!code || !AVAILABLE_FLAG_CODES.has(code)) return '/flags/unknown.svg';
 
-        // Americas
-        'קנדה': 'ca', 'Canada': 'ca',
-        'ברזיל': 'br', 'Brazil': 'br',
-        'ארגנטינה': 'ar', 'Argentina': 'ar',
-        'מקסיקו': 'mx', 'Mexico': 'mx',
-        'צ׳ילה': 'cl', 'Chile': 'cl',
-        'קולומביה': 'co', 'Colombia': 'co',
-        'פרו': 'pe', 'Peru': 'pe',
-
-        // Asia/Pacific
-        'אוסטרליה': 'au', 'Australia': 'au',
-        'הודו': 'in', 'India': 'in',
-        'דרום קוריאה': 'kr', 'South Korea': 'kr',
-        'טייוואן': 'tw', 'Taiwan': 'tw',
-        'תאילנד': 'th', 'Thailand': 'th',
-        'וייטנאם': 'vn', 'Vietnam': 'vn',
-        'סינגפור': 'sg', 'Singapore': 'sg',
-        'ניו זילנד': 'nz', 'New Zealand': 'nz',
-
-        // Middle East/Africa
-        'מצרים': 'eg', 'Egypt': 'eg',
-        'דרום אפריקה': 'za', 'South Africa': 'za',
-        'איחוד האמירויות': 'ae', 'UAE': 'ae', 'United Arab Emirates': 'ae',
-        'ערב הסעודית': 'sa', 'Saudi Arabia': 'sa',
-    };
-
-    const code = countryMap[countryName];
-    if (!code) return null;
-
-    // Use the specific paths provided
-    return `/flags/${code}.png`;
+    return `/flags/${code}.svg`;
 };
 
 // Deterministic random shape and color based on string
