@@ -133,27 +133,63 @@ const quickSearches = [
 
 // ===== MUSEUM MODAL COMPONENT =====
 const MuseumModal = ({ item, onClose }) => {
+    // All hooks must be called before any conditional return
+    const flagPath = item ? getFlagPath(item.country) : null;
+    const thumbnail = useMemo(
+        () => getRandomThumbnail(item?.id || item?.nameHe || 'modal'),
+        [item?.id, item?.nameHe]
+    );
+
+    // Escape key handler
+    useEffect(() => {
+        if (!item) return;
+        const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handleEsc);
+        return () => document.removeEventListener('keydown', handleEsc);
+    }, [item, onClose]);
+
+    // Body scroll lock
+    useEffect(() => {
+        if (!item) return;
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, [item]);
+
     if (!item) return null;
 
-    const flagPath = getFlagPath(item.country);
-    const thumbnail = React.useMemo(() => getRandomThumbnail(item.id || item.nameHe || 'modal'), [item.id, item.nameHe]);
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-off-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-off-black/80 backdrop-blur-sm"
+            onClick={onClose}
+        >
             <div
-                className="relative w-full max-w-2xl bg-off-white border-3 border-off-black shadow-brutalist animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
+                className={cn(
+                    'relative w-full max-w-2xl',
+                    'bg-off-white',
+                    'border-3 border-off-black',
+                    'shadow-brutalist',
+                    'max-h-[90vh] overflow-y-auto'
+                )}
                 dir="rtl"
+                onClick={(e) => e.stopPropagation()}
             >
+                {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 left-4 p-2 bg-tetris-pink border-2 border-off-black hover:bg-tetris-orange transition-colors z-10"
+                    className={cn(
+                        'absolute top-3 left-3 p-2',
+                        'bg-tetris-pink border-2 border-off-black',
+                        'hover:bg-tetris-orange transition-colors',
+                        'z-10 cursor-pointer'
+                    )}
+                    aria-label="סגור"
                 >
                     <X size={20} />
                 </button>
 
                 <div className="flex flex-col md:flex-row">
                     {/* Image Side */}
-                    <div className="w-full md:w-1/3 h-64 md:h-auto min-h-[300px] bg-light-gray border-b-3 md:border-b-0 md:border-l-3 border-off-black relative overflow-hidden">
+                    <div className="w-full md:w-1/3 h-48 md:h-auto md:min-h-[300px] bg-light-gray border-b-3 md:border-b-0 md:border-l-3 border-off-black relative overflow-hidden">
                         {item.imageUrl ? (
                             <img
                                 src={item.imageUrl}
@@ -162,11 +198,11 @@ const MuseumModal = ({ item, onClose }) => {
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-tetris-blue/10">
-                                <TetrisShape type={thumbnail.type} size={80} color={thumbnail.color} className="opacity-50" />
+                                <TetrisShape type={thumbnail.type} size={48} color={thumbnail.color} className="opacity-60" />
                             </div>
                         )}
                         {item.country && (
-                            <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-off-white border-2 border-off-black shadow-sm">
+                            <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 bg-off-white border-2 border-off-black shadow-sm">
                                 {flagPath && <img src={flagPath} alt={item.country} className="w-4 h-auto" />}
                                 <span className="text-sm font-bold font-shimshon">{item.country}</span>
                             </div>
@@ -175,14 +211,18 @@ const MuseumModal = ({ item, onClose }) => {
 
                     {/* Content Side */}
                     <div className="flex-1 p-6 md:p-8">
-                        <div className="mb-6">
-                            <h2 className="text-3xl font-bold font-shimshon text-off-black mb-1">{item.nameHe}</h2>
+                        {/* Name */}
+                        <div className="mb-5">
+                            <h2 className="text-2xl md:text-3xl font-bold font-shimshon text-off-black mb-1">
+                                {item.nameHe || item.name}
+                            </h2>
                             {item.nameEn && (
-                                <h3 className="text-xl font-pixelify text-mid-gray">{item.nameEn}</h3>
+                                <h3 className="text-lg font-pixelify text-mid-gray">{item.nameEn}</h3>
                             )}
                         </div>
 
-                        <div className="flex flex-wrap gap-2 mb-6">
+                        {/* Type + Era Tags */}
+                        <div className="flex flex-wrap gap-2 mb-5">
                             {item.type?.map((t) => (
                                 <span key={t} className="px-3 py-1 text-xs font-bold font-shimshon bg-tetris-cyan/30 border border-off-black">
                                     {t}
@@ -195,13 +235,16 @@ const MuseumModal = ({ item, onClose }) => {
                             ))}
                         </div>
 
-                        <div className="space-y-4 mb-8">
-                            <div>
-                                <h4 className="text-sm font-bold font-shimshon text-off-black mb-1">תיאור</h4>
-                                <p className="text-sm text-dark-gray font-ibm leading-relaxed">
-                                    {item.description}
-                                </p>
-                            </div>
+                        {/* Details */}
+                        <div className="space-y-4 mb-6">
+                            {item.description && (
+                                <div>
+                                    <h4 className="text-sm font-bold font-shimshon text-off-black mb-1">תיאור</h4>
+                                    <p className="text-sm text-dark-gray font-ibm leading-relaxed">
+                                        {item.description}
+                                    </p>
+                                </div>
+                            )}
 
                             {item.famousWork && (
                                 <div>
@@ -213,13 +256,13 @@ const MuseumModal = ({ item, onClose }) => {
                             )}
 
                             {item.quote && (
-                                <div className="bg-tetris-yellow/20 p-4 border-l-4 border-tetris-yellow">
+                                <div className="bg-tetris-yellow/20 p-4 border-r-4 border-tetris-yellow">
                                     <p className="text-sm font-bold font-shimshon text-off-black italic">
-                                        "{item.quote}"
+                                        &ldquo;{item.quote}&rdquo;
                                     </p>
                                 </div>
                             )}
-                            
+
                             {item.tags?.length > 0 && (
                                 <div>
                                     <h4 className="text-sm font-bold font-shimshon text-off-black mb-2">תגיות</h4>
@@ -234,21 +277,22 @@ const MuseumModal = ({ item, onClose }) => {
                             )}
                         </div>
 
+                        {/* Website Link */}
                         {item.link && (
                             <a
                                 href={item.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className={cn(
-                                    'inline-flex items-center gap-2 px-6 py-3',
+                                    'inline-flex items-center gap-2 px-5 py-2.5',
                                     'bg-off-black text-off-white',
-                                    'font-bold font-shimshon',
-                                    'hover:bg-tetris-purple transition-colors',
-                                    'border-2 border-transparent hover:border-off-black'
+                                    'font-bold font-shimshon text-sm',
+                                    'border-2 border-off-black',
+                                    'hover:bg-tetris-purple transition-colors'
                                 )}
                             >
                                 <span>לאתר</span>
-                                <ExternalLink size={16} />
+                                <ExternalLink size={14} />
                             </a>
                         )}
                     </div>

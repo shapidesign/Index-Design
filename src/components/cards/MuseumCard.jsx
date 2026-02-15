@@ -119,7 +119,7 @@ const MuseumCard = ({
                     <div className="w-full h-full flex items-center justify-center bg-off-white">
                         <TetrisShape 
                             type={thumbnail.type} 
-                            size={60} 
+                            size={32} 
                             color={thumbnail.color} 
                             className="opacity-80 group-hover:scale-110 transition-transform duration-300" 
                         />
