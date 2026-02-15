@@ -297,7 +297,7 @@ const ToolboxCard = ({
                 key={tag}
                 className={cn(
                   'inline-block px-2 py-0.5',
-                  'text-[11px] font-bold text-off-black',
+                  'text-xs font-bold text-off-black',
                   'border border-off-black',
                   'shadow-[1px_1px_0px_#1F1F1F]',
                   isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
@@ -308,7 +308,7 @@ const ToolboxCard = ({
               </span>
             ))}
             {tags.length > 4 && (
-              <span className="text-[11px] font-shimshon text-mid-gray">
+              <span className="text-xs font-shimshon text-mid-gray">
                 +{tags.length - 4}
               </span>
             )}
@@ -412,7 +412,7 @@ const ToolboxCard = ({
                 key={tag}
                 className={cn(
                   'inline-block px-2 py-0.5',
-                  'text-[11px] font-bold text-off-black',
+                  'text-xs font-bold text-off-black',
                   'border border-off-black',
                   'shadow-[1px_1px_0px_#1F1F1F]',
                   isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',

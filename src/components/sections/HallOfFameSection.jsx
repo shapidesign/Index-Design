@@ -81,7 +81,7 @@ const DecadeSlider = ({ range, onChange }) => {
             {/* Decade markers — reversed for RTL (newest left, oldest right) */}
             <div className="flex justify-between px-1" dir="ltr">
                 {DECADES.filter((_, i) => i % 3 === 0).reverse().map((d) => (
-                    <span key={d} className="text-[9px] font-pixelify text-mid-gray">{d}</span>
+                    <span key={d} className="text-xs font-pixelify text-mid-gray">{d}</span>
                 ))}
             </div>
         </div>
@@ -130,7 +130,7 @@ const SearchableDropdown = ({ label, options, selected, onToggle, onClear }) => 
                 {selected.length > 0 && (
                     <button
                         onClick={(e) => { e.stopPropagation(); onClear(); }}
-                        className="shrink-0 p-0.5 hover:bg-tetris-pink/30 rounded-sm"
+                        className="shrink-0 p-0.5 hover:bg-tetris-pink/30"
                     >
                         <X size={12} />
                     </button>
@@ -427,7 +427,7 @@ const HallOfFameSection = () => {
                             'bg-off-white border-2 border-off-black shadow-brutalist',
                             'animate-tetris-stack'
                         )}>
-                            <p className="text-[10px] font-shimshon text-dark-gray mb-2 text-right">חיפוש מהיר</p>
+                            <p className="text-xs font-shimshon text-dark-gray mb-2 text-right">חיפוש מהיר</p>
                             <div className="flex flex-wrap gap-1.5 justify-end">
                                 {quickSearches.map((q) => (
                                     <button

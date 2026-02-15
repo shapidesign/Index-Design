@@ -31,7 +31,7 @@ const fieldColors = [
 
 /** Map style colors to text colors for contrast */
 const needsWhiteText = (colorClass) =>
-    ['bg-tetris-purple', 'bg-tetris-orange', 'bg-tetris-green', 'bg-tetris-pink', 'bg-tetris-blue'].includes(colorClass);
+    colorClass === 'bg-tetris-purple';
 
 /** Era → muted accent */
 const eraColor = 'bg-tetris-purple';
@@ -191,7 +191,7 @@ const GalleryCard = ({
                                     key={field}
                                     className={cn(
                                         'inline-block px-2 py-0.5',
-                                        'text-[11px] font-bold',
+                                        'text-xs font-bold',
                                         'border border-off-black',
                                         'shadow-[1px_1px_0px_#1F1F1F]',
                                         isEnglish(field) ? 'font-pixelify' : 'font-shimshon',
@@ -276,8 +276,8 @@ const ListRow = ({
                 {era?.length > 0 && (
                     <span
                         className={cn(
-                            'inline-block mt-1 px-2 py-0.5',
-                            'text-[11px] font-bold text-off-white',
+                            'inline-flex w-fit items-center mt-1 px-1.5 py-0',
+                            'text-xs font-bold text-off-white leading-tight',
                             'border border-off-black',
                             'font-shimshon',
                             eraColor
@@ -302,7 +302,7 @@ const ListRow = ({
                             key={style}
                             className={cn(
                                 'inline-block px-1.5 py-0.5',
-                                'text-[10px] font-bold',
+                                'text-xs font-bold',
                                 'border border-off-black',
                                 isEnglish(style) ? 'font-pixelify' : 'font-shimshon',
                                 bgColor,

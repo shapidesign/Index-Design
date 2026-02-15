@@ -8,7 +8,7 @@ import logoDark from '@/assets/svg/logo-dark.svg';
  * Sticky navigation header with dark bg for differentiation:
  * - Dark bg-off-black navbar
  * - Logo on the right (RTL) - white version for dark bg
- * - Nav buttons: #EEEEEE fill, rounded-[5px], 4px shadow
+ * - Nav buttons: #EEEEEE fill, square edges, 4px shadow
  * - Purple hamburger button with white lines
  * - Shimshon pixel font for all nav text
  */
@@ -64,12 +64,11 @@ const Header = ({ activeSection, onSectionChange }) => {
                   className={cn(
                     'px-4 py-2',
                     'text-sm font-shimshon',
-                    'rounded-[5px]',
-                    'border border-[#555555]',
+                    'border border-dark-gray',
                     'transition-all duration-200',
                     activeSection === section.id
                       ? 'bg-tetris-purple text-off-white shadow-none translate-x-[4px] translate-y-[4px]'
-                      : 'bg-btn-gray text-[#050505] shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+                      : 'bg-btn-gray text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
                   )}
                 >
                   {section.label}
@@ -83,15 +82,14 @@ const Header = ({ activeSection, onSectionChange }) => {
                 'w-[34px] h-[34px]',
                 'flex items-center justify-center',
                 'bg-tetris-purple',
-                'rounded-[5px]',
-                'border-[1.7px] border-[#555555]',
+                'border-[1.7px] border-dark-gray',
                 'shadow-brutalist-hamburger',
                 'transition-all duration-200',
                 'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
               )}
               aria-label="תפריט נוסף"
             >
-              <Menu size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
+              <Menu size={18} strokeWidth={1.7} className="text-off-white" />
             </button>
           </div>
 
@@ -102,8 +100,7 @@ const Header = ({ activeSection, onSectionChange }) => {
               'w-[34px] h-[34px]',
               'flex items-center justify-center',
               'bg-tetris-purple',
-              'rounded-[5px]',
-              'border-[1.7px] border-[#555555]',
+              'border-[1.7px] border-dark-gray',
               'shadow-brutalist-hamburger',
               'transition-all duration-200',
               'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
@@ -112,9 +109,9 @@ const Header = ({ activeSection, onSectionChange }) => {
             aria-label={mobileMenuOpen ? 'סגור תפריט' : 'פתח תפריט'}
           >
             {mobileMenuOpen ? (
-              <X size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
+              <X size={18} strokeWidth={1.7} className="text-off-white" />
             ) : (
-              <Menu size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
+              <Menu size={18} strokeWidth={1.7} className="text-off-white" />
             )}
           </button>
         </div>
@@ -139,13 +136,12 @@ const Header = ({ activeSection, onSectionChange }) => {
               className={cn(
                 'px-6 py-4 text-right',
                 'font-shimshon text-lg',
-                'rounded-[5px]',
-                'border border-[#555555]',
+                'border border-dark-gray',
                 'shadow-brutalist-nav',
                 'transition-all duration-200',
                 activeSection === section.id
                   ? 'bg-tetris-purple text-off-white shadow-none'
-                  : 'bg-btn-gray text-[#050505]'
+                  : 'bg-btn-gray text-off-black'
               )}
             >
               {section.label}

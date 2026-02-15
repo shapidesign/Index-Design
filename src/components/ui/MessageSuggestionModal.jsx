@@ -165,7 +165,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full px-3 py-2 bg-off-white border-2 border-off-black text-right font-ibm outline-none"
-              placeholder="name@example.com"
+              placeholder="לדוגמה: name@example.com"
               autoComplete="email"
             />
           </label>
@@ -205,7 +205,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 className="w-full bg-transparent text-right font-ibm outline-none"
-                placeholder="https://..."
+                placeholder="לדוגמה: https://example.com"
               />
             </div>
           </label>

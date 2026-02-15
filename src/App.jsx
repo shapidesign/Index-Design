@@ -38,7 +38,7 @@ const categories = [
   { id: 'library', title: 'הספרייה', desc: 'ספרים וחומרי לימוד מומלצים', color: 'blue', shape: 'I' },
   { id: 'map', title: 'המפה', desc: 'מיקומים שימושיים לסטודנטים', color: 'green', shape: 'O' },
   { id: 'tips', title: 'טיפים', desc: 'טיפים וביקורות מסטודנטים', color: 'pink', shape: 'S' },
-  { id: 'hallOfFame', title: 'היכל התהילה', desc: 'מעצבים ויצירות שחובה להכיר', color: 'yellow', shape: 'Z' },
+  { id: 'hallOfFame', title: 'היכל התהילה', desc: 'מאסטרים, זרמים ושפות חזותיות שחובה ללמוד', color: 'yellow', shape: 'Z' },
   { id: 'lucky', title: 'הפתעה', desc: 'דף הפתעה עם כרטיס אקראי במיוחד בשבילך', color: 'cyan', shape: 'J', isLucky: true },
 ];
 
@@ -146,22 +146,25 @@ const App = () => {
       try {
         setIsSearchDataLoading(true);
 
-        const [resourcesRes, museumRes, hallRes, booksRes] = await Promise.all([
-          fetch('/api/resources'),
-          fetch('/api/museum'),
-          fetch('/api/hall-of-fame'),
-          fetch('/api/books')
-        ]);
-
-        if (!resourcesRes.ok || !museumRes.ok || !hallRes.ok || !booksRes.ok) {
-          throw new Error('Failed loading global search data');
-        }
+        const fetchJsonOrEmpty = async (url, label) => {
+          try {
+            const res = await fetch(url);
+            if (!res.ok) {
+              console.info(`Global search source unavailable: ${label} (${res.status})`);
+              return { results: [] };
+            }
+            return await res.json();
+          } catch (error) {
+            console.info(`Global search source failed: ${label}`, error);
+            return { results: [] };
+          }
+        };
 
         const [resourcesJson, museumJson, hallJson, booksJson] = await Promise.all([
-          resourcesRes.json(),
-          museumRes.json(),
-          hallRes.json(),
-          booksRes.json()
+          fetchJsonOrEmpty('/api/resources', 'resources'),
+          fetchJsonOrEmpty('/api/museum', 'museum'),
+          fetchJsonOrEmpty('/api/hall-of-fame', 'hall-of-fame'),
+          fetchJsonOrEmpty('/api/books', 'books')
         ]);
 
         const resources = (resourcesJson?.results || []).map((item) => ({
@@ -425,7 +428,7 @@ const App = () => {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-off-white text-off-black font-shimshon">
+    <div dir="rtl" className="min-h-screen bg-off-white text-off-black font-shimshon animate-app-fade-in">
 
       {/* ===== NAVBAR - Dark for differentiation ===== */}
       <header className="sticky top-0 z-50 bg-off-black border-b-3 border-off-black">
@@ -464,14 +467,13 @@ const App = () => {
                   className={cn(
                     'px-3 py-2',
                     'text-sm font-shimshon whitespace-nowrap',
-                    'rounded-[5px]',
-                    'border border-[#555555]',
+                    'border border-dark-gray',
                     'transition-all duration-200',
                     section.id === 'lucky'
                       ? 'bg-tetris-cyan text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
                       : activeSection === section.id
                         ? 'bg-tetris-green text-off-black shadow-brutalist-nav'
-                        : 'bg-btn-gray text-[#050505] shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+                        : 'bg-btn-gray text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
                   )}
                 >
                   {section.label}
@@ -484,7 +486,7 @@ const App = () => {
               className={cn(
                 'inline-flex items-center gap-2 px-3 py-2',
                 'bg-tetris-purple text-off-white text-sm font-bold font-shimshon',
-                'border border-[#555555] shadow-brutalist-nav',
+                'border border-dark-gray shadow-brutalist-nav',
                 'hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]',
                 'transition-all duration-200'
               )}
@@ -500,7 +502,7 @@ const App = () => {
               className={cn(
                 'inline-block px-2 py-1',
                 'bg-tetris-yellow',
-                'text-off-black text-[10px] leading-none font-bold font-mono',
+                'text-off-black text-xs leading-none font-bold font-mono',
                 'border-2 border-off-white',
                 'shadow-brutalist-xs'
               )}
@@ -514,8 +516,7 @@ const App = () => {
                 'w-[34px] h-[34px]',
                 'flex items-center justify-center',
                 'bg-tetris-purple',
-                'rounded-[5px]',
-                'border-[1.7px] border-[#555555]',
+                'border-[1.7px] border-dark-gray',
                 'shadow-brutalist-hamburger',
                 'transition-all duration-200',
                 'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
@@ -523,7 +524,7 @@ const App = () => {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? 'סגור תפריט' : 'פתח תפריט'}
             >
-              <Menu size={18} strokeWidth={1.7} className="text-[#EEEEEE]" />
+              <Menu size={18} strokeWidth={1.7} className="text-off-white" />
             </button>
           </div>
         </div>
@@ -541,8 +542,7 @@ const App = () => {
                 className={cn(
                   'px-6 py-4 text-right',
                   'font-shimshon text-lg',
-                  'rounded-[5px]',
-                  'border border-[#555555]',
+                  'border border-dark-gray',
                   'bg-tetris-purple text-off-white',
                   'shadow-brutalist-nav',
                   'transition-all duration-200'
@@ -564,15 +564,14 @@ const App = () => {
                   className={cn(
                     'px-6 py-4 text-right',
                     'font-shimshon text-lg',
-                    'rounded-[5px]',
-                    'border border-[#555555]',
+                    'border border-dark-gray',
                     'shadow-brutalist-nav',
                     'transition-all duration-200',
                     section.id === 'lucky'
                       ? 'bg-tetris-cyan text-off-black'
                       : activeSection === section.id
                         ? 'bg-tetris-green text-off-black shadow-brutalist-nav'
-                        : 'bg-btn-gray text-[#050505]'
+                        : 'bg-btn-gray text-off-black'
                   )}
                 >
                   {section.label}
@@ -737,7 +736,7 @@ const App = () => {
                             )}
                           >
                             <div className="flex items-start justify-between gap-2">
-                              <span className="text-[11px] font-shimshon px-2 py-0.5 bg-off-white border border-off-black">
+                              <span className="text-xs font-shimshon px-2 py-0.5 bg-off-white border border-off-black">
                                 {result.sectionLabel}
                               </span>
                               <div className="flex-1">

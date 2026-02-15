@@ -56,7 +56,7 @@ const SearchableDropdown = ({ label, options, selected, onToggle, onClear }) => 
                 {selected.length > 0 && (
                     <button
                         onClick={(e) => { e.stopPropagation(); onClear(); }}
-                        className="shrink-0 p-0.5 hover:bg-tetris-pink/30 rounded-sm"
+                        className="shrink-0 p-0.5 hover:bg-tetris-pink/30"
                     >
                         <X size={12} />
                     </button>
@@ -133,11 +133,16 @@ const quickSearches = [
 ];
 
 const tagColors = [
+    'bg-tetris-purple',
+    'bg-tetris-orange',
+    'bg-tetris-green',
     'bg-tetris-pink',
     'bg-tetris-yellow',
     'bg-tetris-blue',
     'bg-tetris-cyan',
 ];
+
+const getTagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
 
 // ===== MUSEUM MODAL COMPONENT =====
 const MuseumModal = ({ item, onClose }) => {
@@ -215,7 +220,7 @@ const MuseumModal = ({ item, onClose }) => {
                             </div>
                         )}
                         {item.country && (
-                            <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 bg-off-white border-2 border-off-black shadow-sm">
+                            <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 bg-off-white border-2 border-off-black shadow-brutalist-xs">
                                 {flagPath && <img src={flagPath} alt={item.country} className="w-4 h-auto" />}
                                 <span className="text-sm font-bold font-shimshon">{item.country}</span>
                             </div>
@@ -277,13 +282,14 @@ const MuseumModal = ({ item, onClose }) => {
                                                 key={tag}
                                                 className={cn(
                                                     'px-2.5 py-1',
-                                                    'text-[11px] font-bold font-shimshon text-off-black',
+                                                    'text-xs font-bold font-shimshon',
                                                     'border border-off-black',
                                                     tagColors[i % tagColors.length],
+                                                    getTagTextClass(tagColors[i % tagColors.length]),
                                                     'shadow-[1px_1px_0px_#1F1F1F]'
                                                 )}
                                             >
-                                                #{tag}
+                                                {tag}
                                             </span>
                                         ))}
                                     </div>
@@ -583,7 +589,7 @@ const MuseumSection = () => {
                             'bg-off-white border-2 border-off-black shadow-brutalist',
                             'animate-tetris-stack'
                         )}>
-                            <p className="text-[10px] font-shimshon text-dark-gray mb-2 text-right">חיפוש מהיר</p>
+                            <p className="text-xs font-shimshon text-dark-gray mb-2 text-right">חיפוש מהיר</p>
                             <div className="flex flex-wrap gap-1.5 justify-end">
                                 {quickSearches.map((q) => (
                                     <button

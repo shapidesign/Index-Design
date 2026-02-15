@@ -64,8 +64,8 @@
   --shadow-brutalist: 6px 6px 0px #1F1F1F;
   --shadow-brutalist-sm: 3px 3px 0px #1F1F1F;
   --shadow-brutalist-xs: 2px 2px 0px #1F1F1F;
-  --shadow-brutalist-nav: 4px 4px 0px #000000;
-  --shadow-brutalist-hamburger: 3.4px 3.4px 0px #000000;
+  --shadow-brutalist-nav: 4px 4px 0px #1F1F1F;
+  --shadow-brutalist-hamburger: 3.4px 3.4px 0px #1F1F1F;
 
   /* Animation Timings */
   --timing-micro: 0.1s;
@@ -197,6 +197,16 @@
   }
 }
 
+@keyframes app-fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
 @keyframes line-clear {
 
   0%,
@@ -303,6 +313,10 @@
 
 .animate-pulse-shadow {
   animation: pulse-shadow 2s ease-in-out infinite;
+}
+
+.animate-app-fade-in {
+  animation: app-fade-in var(--timing-slow) var(--ease-smooth) both;
 }
 
 /* Search result target highlight (temporary card focus stroke) */

@@ -4,6 +4,9 @@ import Badge from '@/components/ui/Badge';
 import { ExternalLink } from 'lucide-react';
 
 const tagColors = [
+  'bg-tetris-purple',
+  'bg-tetris-orange',
+  'bg-tetris-green',
   'bg-tetris-pink',
   'bg-tetris-yellow',
   'bg-tetris-blue',
@@ -29,6 +32,7 @@ const BookCard = ({
 }) => {
   const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(String(value || ''));
   const symbolicFontClass = (value) => (isSymbolHeavyText(value) ? 'font-pixelify' : 'font-shimshon');
+  const tagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
   const coverAlt = title ? `כריכת הספר ${title}` : 'כריכת ספר';
 
   const coverElement = coverUrl ? (
@@ -108,18 +112,24 @@ const BookCard = ({
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 justify-end mt-3">
                 {tags.slice(0, 6).map((tag, i) => (
+                  (() => {
+                    const bgColor = tagColors[i % tagColors.length];
+                    return (
                   <span
                     key={tag}
                     className={cn(
                       'inline-flex items-center justify-center h-6 min-w-[76px] px-2',
-                      'text-[11px] font-bold text-off-black border border-off-black',
+                      'text-xs font-bold border border-off-black',
                       'shadow-[1px_1px_0px_#1F1F1F]',
                       symbolicFontClass(tag),
-                      tagColors[i % tagColors.length]
+                      bgColor,
+                      tagTextClass(bgColor)
                     )}
                   >
-                    #{tag}
+                    {tag}
                   </span>
+                    );
+                  })()
                 ))}
               </div>
             )}
@@ -176,18 +186,24 @@ const BookCard = ({
       {tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2 justify-end">
           {tags.slice(0, 5).map((tag, i) => (
+            (() => {
+              const bgColor = tagColors[i % tagColors.length];
+              return (
             <span
               key={tag}
               className={cn(
                 'inline-flex items-center justify-center h-6 min-w-[76px] px-2',
-                'text-[11px] font-bold text-off-black border border-off-black',
+                'text-xs font-bold border border-off-black',
                 'shadow-[1px_1px_0px_#1F1F1F]',
                 symbolicFontClass(tag),
-                tagColors[i % tagColors.length]
+                bgColor,
+                tagTextClass(bgColor)
               )}
             >
-              #{tag}
+              {tag}
             </span>
+              );
+            })()
           ))}
         </div>
       )}

@@ -15,6 +15,9 @@ dotenv.config(); // fallback to .env
 import express from 'express';
 import resourcesHandler from './api/resources.js';
 import hallOfFameHandler from './api/hall-of-fame.js';
+import museumHandler from './api/museum.js';
+import booksHandler from './api/books.js';
+import suggestionsHandler from './api/suggestions.js';
 
 const app = express();
 const PORT = 3000;
@@ -38,6 +41,9 @@ function wrapHandler(handler) {
 // API routes
 app.all('/api/resources', wrapHandler(resourcesHandler));
 app.all('/api/hall-of-fame', wrapHandler(hallOfFameHandler));
+app.all('/api/museum', wrapHandler(museumHandler));
+app.all('/api/books', wrapHandler(booksHandler));
+app.all('/api/suggestions', wrapHandler(suggestionsHandler));
 
 app.listen(PORT, () => {
   console.log(`🎮 Dev API server running at http://localhost:${PORT}`);

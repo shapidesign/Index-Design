@@ -38,9 +38,8 @@ const PricingBadge = ({ pricing, className }) => {
       className={cn(
         'inline-flex items-center',
         'px-2.5 py-1',
-        'rounded-[5px]',
         'border-2 border-off-black',
-        'shadow-[4px_4px_0px_#1F1F1F]',
+        'shadow-brutalist-xs',
         'font-shimshon text-xs font-bold text-off-black',
         'whitespace-nowrap',
         config.bg,

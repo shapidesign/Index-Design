@@ -28,11 +28,16 @@ const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(Strin
 const getSymbolicFontClass = (value) => (isSymbolHeavyText(value) ? 'font-pixelify' : 'font-shimshon');
 
 const tagColors = [
+  'bg-tetris-purple',
+  'bg-tetris-orange',
+  'bg-tetris-green',
   'bg-tetris-pink',
   'bg-tetris-yellow',
   'bg-tetris-blue',
   'bg-tetris-cyan',
 ];
+
+const getTagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
 
 const YearRangeSlider = ({ bounds, range, onChange }) => {
   const [minBound, maxBound] = bounds;
@@ -163,15 +168,16 @@ const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
                   )}
                 >
                   <span className="inline-flex items-center gap-2 justify-end w-full">
-                    {selected.includes(tag) && <span className="text-[10px] font-shimshon">✓</span>}
+                    {selected.includes(tag) && <span className="text-xs font-shimshon">✓</span>}
                     <span
                       className={cn(
-                        'inline-block px-2 py-0.5 text-[11px] font-bold text-off-black',
+                        'inline-block px-2 py-0.5 text-xs font-bold',
                         'border border-off-black shadow-[1px_1px_0px_#1F1F1F]',
-                        tagColors[i % tagColors.length]
+                        tagColors[i % tagColors.length],
+                        getTagTextClass(tagColors[i % tagColors.length])
                       )}
                     >
-                      #{tag}
+                      {tag}
                     </span>
                   </span>
                 </button>
@@ -377,7 +383,7 @@ const LibrarySection = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="חיפוש לפי שם ספר, מחבר, תיאור או תגית..."
               className={cn(
-                'w-full py-2.5 pr-3 pl-9',
+                'w-full py-2.5 pe-3 ps-9',
                 'bg-off-white border-2 border-off-black',
                 getSymbolicFontClass(searchQuery),
                 'text-sm text-right',
@@ -408,7 +414,7 @@ const LibrarySection = () => {
                 <YearRangeSlider bounds={yearBounds} range={yearRange} onChange={setYearRange} />
               </div>
               <div className="md:min-w-[170px]">
-                <p className="text-[11px] text-dark-gray text-right mb-1 font-shimshon">טווח נבחר</p>
+                <p className="text-xs text-dark-gray text-right mb-1 font-shimshon">טווח נבחר</p>
                 <p className="text-sm text-off-black text-right border-2 border-off-black bg-light-gray px-3 py-1.5 font-pixelify">
                   {`${yearRange[0]} - ${yearRange[1]}`}
                 </p>
