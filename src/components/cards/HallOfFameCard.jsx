@@ -114,9 +114,9 @@ const GalleryCard = ({
                         <span
                             className={cn(
                                 'inline-block px-2.5 py-1',
-                                'text-sm font-bold text-off-white',
+                                'text-sm font-normal text-off-white',
                                 'border-2 border-off-black',
-                                'shadow-[2px_2px_0px_#1F1F1F]',
+                                'shadow-brutalist-xs',
                                 'font-shimshon',
                                 eraColor
                             )}
@@ -168,7 +168,7 @@ const GalleryCard = ({
                                         'inline-block px-2 py-0.5',
                                         'text-xs font-normal',
                                         'border border-off-black',
-                                        'shadow-[1px_1px_0px_#1F1F1F]',
+                                        'shadow-brutalist-xs',
                                         isEnglish(style) ? 'font-pixelify' : 'font-shimshon',
                                         bgColor,
                                         needsWhiteText(bgColor) ? 'text-off-white' : 'text-off-black'
@@ -193,7 +193,7 @@ const GalleryCard = ({
                                         'inline-block px-2 py-0.5',
                                         'text-xs font-normal',
                                         'border border-off-black',
-                                        'shadow-[1px_1px_0px_#1F1F1F]',
+                                        'shadow-brutalist-xs',
                                         isEnglish(field) ? 'font-pixelify' : 'font-shimshon',
                                         bgColor,
                                         needsWhiteText(bgColor) ? 'text-off-white' : 'text-off-black'
@@ -277,7 +277,7 @@ const ListRow = ({
                     <span
                         className={cn(
                             'inline-flex w-fit items-center mt-1 px-1.5 py-0',
-                            'text-xs font-bold text-off-white leading-tight',
+                            'text-xs font-normal text-off-white leading-tight',
                             'border border-off-black',
                             'font-shimshon',
                             eraColor

@@ -437,7 +437,7 @@ const HallOfFameSection = () => {
                                             'px-2.5 py-1',
                                             'font-shimshon text-xs text-off-black',
                                             'bg-light-gray border border-off-black',
-                                            'shadow-[1px_1px_0px_#1F1F1F]',
+                                            'shadow-brutalist-xs',
                                             'hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px]',
                                             'transition-all duration-150 cursor-pointer'
                                         )}

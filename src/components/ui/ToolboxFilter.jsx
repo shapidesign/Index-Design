@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 const pricingOptions = [
   { value: 'חינם', label: 'חינם', bg: 'bg-tetris-green', activeBorder: 'border-tetris-green' },
   { value: 'חצי חינם (freemium)', label: 'חצי חינם', bg: 'bg-tetris-orange', activeBorder: 'border-tetris-orange' },
-  { value: 'תשלום/מנוי', label: 'תשלום/מנוי', bg: 'bg-[#8867FF]', activeBorder: 'border-[#8867FF]' },
+  { value: 'תשלום/מנוי', label: 'תשלום/מנוי', bg: 'bg-tetris-purple', activeBorder: 'border-tetris-purple' },
 ];
 
 /** Type → primary accent color mapping */
@@ -46,7 +46,7 @@ const tagColors = [
 const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
 
 const usesWhiteText = (bgClass) =>
-  bgClass === 'bg-tetris-purple' || bgClass === 'bg-[#8867FF]';
+  bgClass === 'bg-tetris-purple';
 
 const FilterChip = ({ label, isActive, activeBg, onClick, className }) => (
   <button

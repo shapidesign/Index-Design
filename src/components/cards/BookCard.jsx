@@ -73,7 +73,7 @@ const BookCard = ({
                 <h3 className="text-lg font-bold text-off-black text-right mb-1 break-words">{title}</h3>
                 {year && (
                   <div className="flex justify-end mb-1">
-                    <span className="inline-flex w-fit items-center px-3 py-0.5 text-sm font-bold font-pixelify bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
+                    <span className="inline-flex w-fit items-center px-3 py-0.5 text-sm font-normal font-pixelify bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
                       {year}
                     </span>
                   </div>
@@ -120,7 +120,7 @@ const BookCard = ({
                     className={cn(
                       'inline-flex items-center justify-center h-6 min-w-[76px] px-2',
                       'text-xs font-normal border border-off-black',
-                      'shadow-[1px_1px_0px_#1F1F1F]',
+                      'shadow-brutalist-xs',
                       symbolicFontClass(tag),
                       bgColor,
                       tagTextClass(bgColor)
@@ -163,7 +163,7 @@ const BookCard = ({
       <h3 className="text-xl font-bold text-off-black text-right mb-1 line-clamp-2 min-h-[56px]">{title}</h3>
       {year && (
         <div className="flex justify-end mb-2">
-          <span className="inline-flex w-fit items-center px-3 py-0.5 text-base font-bold font-pixelify bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
+          <span className="inline-flex w-fit items-center px-3 py-0.5 text-base font-normal font-pixelify bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
             {year}
           </span>
         </div>
@@ -194,7 +194,7 @@ const BookCard = ({
               className={cn(
                 'inline-flex items-center justify-center h-6 min-w-[76px] px-2',
                 'text-xs font-normal border border-off-black',
-                'shadow-[1px_1px_0px_#1F1F1F]',
+                'shadow-brutalist-xs',
                 symbolicFontClass(tag),
                 bgColor,
                 tagTextClass(bgColor)
@@ -233,7 +233,7 @@ const BookCard = ({
           <span className={cn(
             'block px-3 py-1',
             'bg-tetris-yellow',
-            'text-off-black text-xs font-bold',
+            'text-off-black text-xs font-normal',
             'border-3 border-off-black',
             'shadow-brutalist-xs',
             'rotate-12'

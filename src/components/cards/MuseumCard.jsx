@@ -43,7 +43,7 @@ const MuseumCard = ({
                 'group relative flex items-center gap-4 p-3',
                 'bg-off-white border-2 border-off-black',
                 'shadow-brutalist-xs hover:shadow-brutalist-sm',
-                'transition-all duration-200 hover:translate-x-[-2px] hover:translate-y-[-2px]',
+                'transition-all duration-200 hover:translate-x-[2px] hover:translate-y-[-2px]',
                 'overflow-hidden cursor-pointer'
             )}>
                 {/* Image Thumbnail */}
@@ -101,7 +101,7 @@ const MuseumCard = ({
                                     'border border-off-black',
                                     tagColors[i % tagColors.length],
                                     getTagTextClass(tagColors[i % tagColors.length]),
-                                    'shadow-[1px_1px_0px_#1F1F1F]'
+                                    'shadow-brutalist-xs'
                                 )}
                             >
                                 {tag}
@@ -145,7 +145,7 @@ const MuseumCard = ({
             'group relative flex flex-col h-full',
             'bg-off-white border-3 border-off-black',
             'shadow-brutalist hover:shadow-brutalist-sm',
-            'transition-all duration-200 hover:translate-x-[-4px] hover:translate-y-[-4px]',
+            'transition-all duration-200 hover:translate-x-[4px] hover:translate-y-[-4px]',
             'overflow-hidden cursor-pointer'
         )}>
             {/* Image Container */}
@@ -190,7 +190,7 @@ const MuseumCard = ({
                 {/* Type Tags */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
                     {type.slice(0, 3).map((t) => (
-                        <span key={t} className="px-2 py-0.5 text-xs font-bold font-shimshon bg-tetris-cyan/30 border border-off-black">
+                        <span key={t} className="px-2 py-0.5 text-xs font-normal font-shimshon bg-tetris-cyan/30 border border-off-black">
                             {t}
                         </span>
                     ))}
@@ -208,7 +208,7 @@ const MuseumCard = ({
                                     'border border-off-black',
                                     tagColors[i % tagColors.length],
                                     getTagTextClass(tagColors[i % tagColors.length]),
-                                    'shadow-[1px_1px_0px_#1F1F1F]'
+                                    'shadow-brutalist-xs'
                                 )}
                             >
                                 {tag}

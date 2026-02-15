@@ -116,7 +116,7 @@ const ResourceCard = ({
           <span className={cn(
             'block px-3 py-1',
             'bg-tetris-yellow',
-            'text-off-black text-xs font-bold',
+            'text-off-black text-xs font-normal',
             'border-3 border-off-black',
             'shadow-brutalist-xs',
             'rotate-12',

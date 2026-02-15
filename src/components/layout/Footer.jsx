@@ -23,7 +23,7 @@ const Footer = () => {
           {/* About */}
           <div>
             <img src={logoDark} alt="אינדקס האב" className="h-7 w-auto mb-4" />
-            <p className="text-sm text-gray-400 leading-relaxed">
+            <p className="text-sm text-dark-gray leading-relaxed">
               האב משאבים לסטודנטים לעיצוב גרפי. כל הכלים, הטיפים והמיקומים שתצטרכו - במקום אחד.
             </p>
           </div>
@@ -31,7 +31,7 @@ const Footer = () => {
           {/* Quick Links */}
           <div>
             <h3 className="text-lg font-bold mb-4">ניווט מהיר</h3>
-            <ul className="space-y-2 text-sm text-gray-400">
+            <ul className="space-y-2 text-sm text-dark-gray">
               <li>ארגז הכלים</li>
               <li>המוזיאון</li>
               <li>הספרייה</li>
@@ -53,7 +53,7 @@ const Footer = () => {
                 'inline-block px-3 py-1',
                 'bg-tetris-green',
                 'text-off-black text-xs font-bold',
-                'border-2 border-off-white',
+                'border-2 border-off-black',
               )}>
                 נבנה על ידי יהונתן שפירא, 2026
               </span>
@@ -61,7 +61,7 @@ const Footer = () => {
                 'inline-block px-2 py-1',
                 'bg-tetris-yellow',
                 'text-off-black text-xs font-bold font-mono',
-                'border-2 border-off-white',
+                'border-2 border-off-black',
               )}>
                 v{pkg.version}
               </span>
@@ -69,7 +69,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-700 pt-6 text-center text-xs text-gray-500">
+        <div className="border-t border-dark-gray pt-6 text-center text-xs text-mid-gray">
           <p>© {new Date().getFullYear()} אינדקס האב - כל הזכויות שמורות</p>
         </div>
       </div>

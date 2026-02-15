@@ -76,17 +76,20 @@ const luckySectionIds = ['toolbox', 'museum', 'library', 'hallOfFame'];
 
 /** Quick suggestions for the search dropdown */
 const quickSuggestions = [
-  { label: 'פונטים', query: 'פונטים', color: '#7D53FA' },
-  { label: 'צבעים', query: 'צבעים', color: '#FD982E' },
-  { label: 'השראה', query: 'השראה', color: '#93C5FD' },
-  { label: 'אייקונים', query: 'אייקונים', color: '#36EF79' },
-  { label: 'תמונות', query: 'תמונות', color: '#F9A8D4' },
-  { label: 'טקסטורות', query: 'טקסטורות', color: '#FDE047' },
-  { label: 'מדריכים', query: 'מדריכים', color: '#FD982E' },
-  { label: 'תיק עבודות', query: 'תיק עבודות', color: '#7D53FA' },
-  { label: 'מוקאפים', query: 'מוקאפים', color: '#36EF79' },
-  { label: 'כלי AI', query: 'כלי AI', color: '#93C5FD' },
+  { label: 'פונטים', query: 'פונטים', bgClass: 'bg-tetris-purple' },
+  { label: 'צבעים', query: 'צבעים', bgClass: 'bg-tetris-orange' },
+  { label: 'השראה', query: 'השראה', bgClass: 'bg-tetris-blue' },
+  { label: 'אייקונים', query: 'אייקונים', bgClass: 'bg-tetris-green' },
+  { label: 'תמונות', query: 'תמונות', bgClass: 'bg-tetris-pink' },
+  { label: 'טקסטורות', query: 'טקסטורות', bgClass: 'bg-tetris-yellow' },
+  { label: 'מדריכים', query: 'מדריכים', bgClass: 'bg-tetris-orange' },
+  { label: 'תיק עבודות', query: 'תיק עבודות', bgClass: 'bg-tetris-purple' },
+  { label: 'מוקאפים', query: 'מוקאפים', bgClass: 'bg-tetris-green' },
+  { label: 'כלי AI', query: 'כלי AI', bgClass: 'bg-tetris-cyan' },
 ];
+
+const suggestionTextClass = (bgClass) =>
+  bgClass === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black';
 
 /** Search icon from Figma (purple variant) */
 const SearchIcon = ({ className }) => (
@@ -726,8 +729,8 @@ const App = () => {
                           className={cn(
                             "px-3 py-1.5",
                             "font-shimshon text-sm",
-                            "text-off-white",
-                            "bg-tetris-purple",
+                            suggestion.bgClass,
+                            suggestionTextClass(suggestion.bgClass),
                             "border-2 border-off-black",
                             "shadow-brutalist-xs",
                             "transition-all duration-200",

@@ -172,7 +172,7 @@ const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
                     <span
                       className={cn(
                         'inline-block px-2 py-0.5 text-xs font-normal font-shimshon',
-                        'border border-off-black shadow-[1px_1px_0px_#1F1F1F]',
+                        'border border-off-black shadow-brutalist-xs',
                         tagColors[i % tagColors.length],
                         getTagTextClass(tagColors[i % tagColors.length])
                       )}

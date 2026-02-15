@@ -207,7 +207,7 @@ const MuseumModal = ({ item, onClose }) => {
 
                 <div className="flex flex-col md:flex-row">
                     {/* Image Side */}
-                    <div className="w-full md:w-2/5 h-56 md:h-auto md:min-h-[420px] bg-light-gray border-b-3 md:border-b-0 md:border-l-3 border-off-black relative overflow-hidden">
+                    <div className="w-full md:w-2/5 h-56 md:h-auto md:min-h-[420px] bg-light-gray border-b-3 md:border-b-0 md:border-s-3 border-off-black relative overflow-hidden">
                         {item.imageUrl ? (
                             <img
                                 src={item.imageUrl}
@@ -242,12 +242,12 @@ const MuseumModal = ({ item, onClose }) => {
                         {/* Type + Era Tags */}
                         <div className="flex flex-wrap gap-2 mb-5">
                             {item.type?.map((t) => (
-                                <span key={t} className="px-3 py-1 text-xs font-bold font-shimshon bg-tetris-cyan/30 border border-off-black">
+                                <span key={t} className="px-3 py-1 text-xs font-normal font-shimshon bg-tetris-cyan/30 border border-off-black">
                                     {t}
                                 </span>
                             ))}
                             {item.era?.map((e) => (
-                                <span key={e} className="px-3 py-1 text-xs font-bold font-shimshon bg-tetris-purple text-off-white border border-off-black">
+                                <span key={e} className="px-3 py-1 text-xs font-normal font-shimshon bg-tetris-purple text-off-white border border-off-black">
                                     {e}
                                 </span>
                             ))}
@@ -286,7 +286,7 @@ const MuseumModal = ({ item, onClose }) => {
                                                     'border border-off-black',
                                                     tagColors[i % tagColors.length],
                                                     getTagTextClass(tagColors[i % tagColors.length]),
-                                                    'shadow-[1px_1px_0px_#1F1F1F]'
+                                                    'shadow-brutalist-xs'
                                                 )}
                                             >
                                                 {tag}
@@ -610,7 +610,7 @@ const MuseumSection = () => {
                                             'px-2.5 py-1',
                                             'font-shimshon text-xs text-off-black',
                                             'bg-light-gray border border-off-black',
-                                            'shadow-[1px_1px_0px_#1F1F1F]',
+                                            'shadow-brutalist-xs',
                                             'hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px]',
                                             'transition-all duration-150 cursor-pointer'
                                         )}
