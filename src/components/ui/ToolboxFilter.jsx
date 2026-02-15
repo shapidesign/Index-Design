@@ -45,20 +45,27 @@ const tagColors = [
 /** Check if a string is primarily Latin/English */
 const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
 
+const usesWhiteText = (bgClass) =>
+  bgClass === 'bg-tetris-purple' || bgClass === 'bg-[#8867FF]';
+
 const FilterChip = ({ label, isActive, activeBg, onClick, className }) => (
   <button
     type="button"
     onClick={onClick}
     className={cn(
       'px-3 py-1.5',
-      'text-xs font-bold text-off-black',
+      'text-xs font-bold',
       isEnglish(label) ? 'font-pixelify' : 'font-shimshon',
       'border-2 border-off-black',
       'whitespace-nowrap',
       'transition-all duration-200',
       isActive
-        ? [activeBg, 'shadow-none translate-x-[2px] translate-y-[2px]']
-        : ['bg-light-gray', 'shadow-brutalist-xs', 'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'],
+        ? [
+            activeBg,
+            usesWhiteText(activeBg) ? 'text-off-white' : 'text-off-black',
+            'shadow-none translate-x-[2px] translate-y-[2px]'
+          ]
+        : ['bg-light-gray', 'text-off-black', 'shadow-brutalist-xs', 'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'],
       className
     )}
     aria-pressed={isActive}
