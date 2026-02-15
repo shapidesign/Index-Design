@@ -202,6 +202,7 @@ const PlaceholderImage = ({ name, types }) => {
 };
 
 const ToolboxCard = ({
+  itemId,
   name,
   description,
   types = [],
@@ -227,6 +228,7 @@ const ToolboxCard = ({
 
   return (
     <a
+      id={itemId ? `search-item-toolbox-${String(itemId).replace(/[^a-zA-Z0-9_-]/g, '-')}` : undefined}
       href={href}
       target="_blank"
       rel="noopener noreferrer"

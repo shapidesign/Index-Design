@@ -25,6 +25,7 @@ const MuseumCard = ({
     if (viewMode === 'list') {
         return (
             <div 
+                id={id ? `search-item-museum-${String(id).replace(/[^a-zA-Z0-9_-]/g, '-')}` : undefined}
                 onClick={onClick}
                 className={cn(
                 'group relative flex items-center gap-4 p-3',
@@ -124,6 +125,7 @@ const MuseumCard = ({
     // Gallery View
     return (
         <div 
+            id={id ? `search-item-museum-${String(id).replace(/[^a-zA-Z0-9_-]/g, '-')}` : undefined}
             onClick={onClick}
             className={cn(
             'group relative flex flex-col h-full',

@@ -164,6 +164,7 @@ const ToolboxSection = () => {
           {filteredResources.map((resource) => (
             <ToolboxCard
               key={resource.id}
+              itemId={resource.id}
               name={resource.name}
               description={resource.description}
               types={resource.types}

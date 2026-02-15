@@ -77,13 +77,37 @@ const SearchIcon = ({ className }) => (
   </svg>
 );
 
+const isEnglishText = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test((text || '').trim());
+
+const normalizeSearchText = (value) =>
+  String(value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ');
+
+const toArray = (value) => (Array.isArray(value) ? value.filter(Boolean) : []);
+
+const makeTargetId = (sectionId, itemId) =>
+  `search-item-${sectionId}-${String(itemId || '')
+    .replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+
+const getPreviewText = (text, max = 85) => {
+  const clean = String(text || '').trim();
+  if (!clean) return '';
+  return clean.length > max ? `${clean.slice(0, max)}...` : clean;
+};
+
 const App = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [activeSection, setActiveSection] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [luckyHighlight, setLuckyHighlight] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchFocused, setSearchFocused] = useState(true);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [activeResultIndex, setActiveResultIndex] = useState(-1);
+  const [globalSearchItems, setGlobalSearchItems] = useState([]);
+  const [isSearchDataLoading, setIsSearchDataLoading] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
   const searchContainerRef = useRef(null);
 
   /** Initial website loading animation */
@@ -99,26 +123,183 @@ const App = () => {
     const handleClickOutside = (e) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
         setSearchFocused(false);
+        setActiveResultIndex(-1);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  /** Fetch searchable datasets for global search */
+  useEffect(() => {
+    let cancelled = false;
+
+    const buildUnifiedSearchIndex = async () => {
+      try {
+        setIsSearchDataLoading(true);
+
+        const [resourcesRes, museumRes, hallRes] = await Promise.all([
+          fetch('/api/resources'),
+          fetch('/api/museum'),
+          fetch('/api/hall-of-fame')
+        ]);
+
+        if (!resourcesRes.ok || !museumRes.ok || !hallRes.ok) {
+          throw new Error('Failed loading global search data');
+        }
+
+        const [resourcesJson, museumJson, hallJson] = await Promise.all([
+          resourcesRes.json(),
+          museumRes.json(),
+          hallRes.json()
+        ]);
+
+        const resources = (resourcesJson?.results || []).map((item) => ({
+          id: item.id,
+          sectionId: 'toolbox',
+          sectionLabel: 'ארגז הכלים',
+          titleHe: item.name || '',
+          titleEn: '',
+          description: item.description || '',
+          tags: toArray(item.tags),
+          keywords: [
+            item.name,
+            item.description,
+            ...toArray(item.tags),
+            ...toArray(item.types)
+          ].filter(Boolean),
+          targetId: makeTargetId('toolbox', item.id)
+        }));
+
+        const museumItems = (museumJson?.results || []).map((item) => ({
+          id: item.id,
+          sectionId: 'museum',
+          sectionLabel: 'המוזיאון',
+          titleHe: item.nameHe || item.name || '',
+          titleEn: item.nameEn || '',
+          description: item.description || '',
+          tags: toArray(item.tags),
+          keywords: [
+            item.name,
+            item.nameHe,
+            item.nameEn,
+            item.description,
+            item.famousWork,
+            item.quote,
+            item.country,
+            ...toArray(item.tags),
+            ...toArray(item.type),
+            ...toArray(item.era)
+          ].filter(Boolean),
+          targetId: makeTargetId('museum', item.id)
+        }));
+
+        const hallItems = (hallJson?.results || []).map((item) => ({
+          id: item.id,
+          sectionId: 'hallOfFame',
+          sectionLabel: 'היכל התהילה',
+          titleHe: item.nameHe || item.name || '',
+          titleEn: item.nameEn || '',
+          description: item.description || '',
+          tags: [...toArray(item.styles), ...toArray(item.fields)],
+          keywords: [
+            item.name,
+            item.nameHe,
+            item.nameEn,
+            item.description,
+            ...toArray(item.styles),
+            ...toArray(item.fields),
+            ...toArray(item.era)
+          ].filter(Boolean),
+          targetId: makeTargetId('hallOfFame', item.id)
+        }));
+
+        if (!cancelled) {
+          setGlobalSearchItems([...resources, ...museumItems, ...hallItems]);
+        }
+      } catch (error) {
+        console.error('Global search index error:', error);
+        if (!cancelled) setGlobalSearchItems([]);
+      } finally {
+        if (!cancelled) setIsSearchDataLoading(false);
+      }
+    };
+
+    buildUnifiedSearchIndex();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   /** Handle picking a quick suggestion */
   const handleSuggestionClick = useCallback((query) => {
     setSearchQuery(query);
-    setSearchFocused(false);
+    setSearchFocused(true);
+    setActiveResultIndex(-1);
   }, []);
 
-  /** Filter categories by search query */
-  const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) return categories;
-    const q = searchQuery.trim().toLowerCase();
-    return categories.filter(
-      (c) => c.title.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q)
-    );
-  }, [searchQuery]);
+  /** Global search results across implemented sections */
+  const globalSearchResults = useMemo(() => {
+    const query = normalizeSearchText(searchQuery);
+    if (!query) return [];
+
+    return globalSearchItems
+      .map((item) => {
+        const titleHe = normalizeSearchText(item.titleHe);
+        const titleEn = normalizeSearchText(item.titleEn);
+        const description = normalizeSearchText(item.description);
+        const tagsText = normalizeSearchText(item.tags.join(' '));
+        const keywordsText = normalizeSearchText(item.keywords.join(' '));
+
+        let score = 0;
+        if (titleHe === query || titleEn === query) score += 20;
+        if (titleHe.includes(query) || titleEn.includes(query)) score += 12;
+        if (tagsText.includes(query)) score += 8;
+        if (keywordsText.includes(query)) score += 5;
+        if (description.includes(query)) score += 3;
+
+        return { ...item, score };
+      })
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 12);
+  }, [globalSearchItems, searchQuery]);
+
+  const displayCategories = categories;
+
+  const handleResultSelect = useCallback((result) => {
+    if (!result) return;
+    setSearchQuery(result.titleHe || result.titleEn || '');
+    setSearchFocused(false);
+    setActiveResultIndex(-1);
+    setActiveSection(result.sectionId);
+    setPendingNavigation({ sectionId: result.sectionId, targetId: result.targetId });
+  }, []);
+
+  useEffect(() => {
+    if (!pendingNavigation?.sectionId || activeSection !== pendingNavigation.sectionId) return;
+
+    const sectionEl = document.getElementById(`section-${pendingNavigation.sectionId}`);
+    if (sectionEl) {
+      sectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    let attempts = 0;
+    const interval = window.setInterval(() => {
+      const target = document.getElementById(pendingNavigation.targetId);
+      attempts += 1;
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        window.clearInterval(interval);
+        setPendingNavigation(null);
+      } else if (attempts >= 15) {
+        window.clearInterval(interval);
+        setPendingNavigation(null);
+      }
+    }, 120);
+
+    return () => window.clearInterval(interval);
+  }, [activeSection, pendingNavigation]);
 
   /** Pick a random category and scroll/highlight it */
   const handleFeelingLucky = useCallback(() => {
@@ -145,7 +326,7 @@ const App = () => {
 
           {/* Logo icon + logotype - right side in RTL */}
           <button
-            onClick={() => { setActiveSection(null); setSearchQuery(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            onClick={() => { setActiveSection(null); setSearchQuery(''); setSearchFocused(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             aria-label="אינדקס האב - דף הבית"
             className="shrink-0 flex items-center gap-2 cursor-pointer"
           >
@@ -304,13 +485,37 @@ const App = () => {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setActiveResultIndex(-1);
+                }}
                 onFocus={() => setSearchFocused(true)}
+                onClick={() => setSearchFocused(true)}
+                onKeyDown={(e) => {
+                  const hasResults = globalSearchResults.length > 0;
+                  if (e.key === 'Escape') {
+                    setSearchFocused(false);
+                    setActiveResultIndex(-1);
+                    return;
+                  }
+                  if (!hasResults) return;
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setActiveResultIndex((prev) => (prev + 1) % globalSearchResults.length);
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setActiveResultIndex((prev) => (prev <= 0 ? globalSearchResults.length - 1 : prev - 1));
+                  } else if (e.key === 'Enter' && activeResultIndex >= 0) {
+                    e.preventDefault();
+                    handleResultSelect(globalSearchResults[activeResultIndex]);
+                  }
+                }}
                 placeholder="חיפוש..."
                 className={cn(
                   "w-full bg-transparent",
-                  "text-off-black font-shimshon text-base",
-                  "placeholder:text-mid-gray",
+                  "text-off-black text-base",
+                  isEnglishText(searchQuery) ? "font-pixelify" : "font-shimshon",
+                  "placeholder:text-mid-gray placeholder:font-shimshon",
                   "outline-none border-none",
                   "text-right"
                 )}
@@ -323,61 +528,111 @@ const App = () => {
               />
             </div>
 
-            {/* Quick Suggestions Dropdown */}
+            {/* Search Dropdown */}
             {searchFocused && (
               <div
                 id="search-suggestions"
                 role="listbox"
-                aria-label="הצעות חיפוש מהירות"
+                aria-label={searchQuery.trim() ? "תוצאות חיפוש כלליות" : "הצעות חיפוש מהירות"}
                 className={cn(
                   "absolute top-full left-0 right-0 z-30",
                   "mt-1",
                   "bg-off-white",
                   "border-3 border-off-black",
                   "shadow-brutalist",
-                  "p-4",
+                  "p-3",
                   "animate-tetris-stack"
                 )}
               >
-                <p className="text-xs font-shimshon text-dark-gray mb-3 text-right">
-                  חיפוש מהיר
-                </p>
-                <div className="flex flex-wrap gap-2 justify-end">
-                  {quickSuggestions.map((suggestion) => (
-                    <button
-                      key={suggestion.label}
-                      role="option"
-                      aria-selected={searchQuery === suggestion.query}
-                      onClick={() => handleSuggestionClick(suggestion.query)}
-                      style={{
-                        backgroundColor: searchQuery === suggestion.query
-                          ? suggestion.color
-                          : undefined,
-                        '--suggestion-color': suggestion.color,
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = suggestion.color; }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = searchQuery === suggestion.query
-                          ? suggestion.color
-                          : '';
-                      }}
-                      className={cn(
-                        "px-3 py-1.5",
-                        "font-shimshon text-sm",
-                        "text-off-black",
-                        "border-2 border-off-black",
-                        "shadow-brutalist-xs",
-                        "transition-all duration-200",
-                        "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
-                        "active:shadow-none active:translate-x-[2px] active:translate-y-[2px]",
-                        "cursor-pointer",
-                        searchQuery !== suggestion.query && "bg-light-gray"
-                      )}
-                    >
-                      {suggestion.label}
-                    </button>
-                  ))}
-                </div>
+                {!searchQuery.trim() ? (
+                  <>
+                    <p className="text-xs font-shimshon text-dark-gray mb-3 text-right">
+                      חיפוש מהיר
+                    </p>
+                    <div className="flex flex-wrap gap-2 justify-end">
+                      {quickSuggestions.map((suggestion) => (
+                        <button
+                          key={suggestion.label}
+                          role="option"
+                          aria-selected={searchQuery === suggestion.query}
+                          onClick={() => handleSuggestionClick(suggestion.query)}
+                          style={{
+                            backgroundColor: searchQuery === suggestion.query
+                              ? suggestion.color
+                              : undefined,
+                            '--suggestion-color': suggestion.color,
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = suggestion.color; }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = searchQuery === suggestion.query
+                              ? suggestion.color
+                              : '';
+                          }}
+                          className={cn(
+                            "px-3 py-1.5",
+                            "font-shimshon text-sm",
+                            "text-off-black",
+                            "border-2 border-off-black",
+                            "shadow-brutalist-xs",
+                            "transition-all duration-200",
+                            "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                            "active:shadow-none active:translate-x-[2px] active:translate-y-[2px]",
+                            "cursor-pointer",
+                            searchQuery !== suggestion.query && "bg-light-gray"
+                          )}
+                        >
+                          {suggestion.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="max-h-80 overflow-y-auto">
+                    {isSearchDataLoading ? (
+                      <p className="text-sm font-ibm text-mid-gray text-right py-2">טוען תוצאות...</p>
+                    ) : globalSearchResults.length === 0 ? (
+                      <p className="text-sm font-ibm text-mid-gray text-right py-2">לא נמצאו תוצאות לחיפוש זה</p>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {globalSearchResults.map((result, index) => (
+                          <button
+                            key={`${result.sectionId}-${result.id}`}
+                            role="option"
+                            aria-selected={activeResultIndex === index}
+                            onClick={() => handleResultSelect(result)}
+                            className={cn(
+                              "w-full p-3 text-right",
+                              "bg-light-gray border-2 border-off-black",
+                              "shadow-brutalist-xs",
+                              "transition-all duration-200",
+                              "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                              activeResultIndex === index && "bg-tetris-yellow/40"
+                            )}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="text-[11px] font-shimshon px-2 py-0.5 bg-off-white border border-off-black">
+                                {result.sectionLabel}
+                              </span>
+                              <div className="flex-1">
+                                <p className="text-sm font-bold text-off-black font-shimshon">
+                                  {result.titleHe || result.titleEn}
+                                </p>
+                                {result.titleEn && result.titleEn !== result.titleHe && (
+                                  <p className="text-xs text-mid-gray font-pixelify mt-0.5">{result.titleEn}</p>
+                                )}
+                                {result.description && (
+                                  <p className="text-xs text-dark-gray font-ibm mt-1">
+                                    {getPreviewText(result.description)}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -386,7 +641,7 @@ const App = () => {
         {/* ===== CATEGORY CARDS (hidden when any section is active) ===== */}
         {!activeSection && (
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredCategories.map((card) => (
+            {displayCategories.map((card) => (
               <article
                 key={card.id}
                 id={`card-${card.id}`}

@@ -38,6 +38,7 @@ const eraColor = 'bg-tetris-purple';
 
 // ===== GALLERY VIEW CARD =====
 const GalleryCard = ({
+    itemId,
     nameHe,
     nameEn,
     description,
@@ -63,6 +64,7 @@ const GalleryCard = ({
     return (
         <CardTag
             {...linkProps}
+            id={itemId ? `search-item-hallOfFame-${String(itemId).replace(/[^a-zA-Z0-9_-]/g, '-')}` : undefined}
             dir="rtl"
             aria-label={`${nameHe}${era?.length ? ` — ${era[0]}` : ''}`}
             className={cn(
@@ -210,6 +212,7 @@ const GalleryCard = ({
 
 // ===== LIST VIEW ROW =====
 const ListRow = ({
+    itemId,
     nameHe,
     nameEn,
     description,
@@ -234,6 +237,7 @@ const ListRow = ({
     return (
         <CardTag
             {...linkProps}
+            id={itemId ? `search-item-hallOfFame-${String(itemId).replace(/[^a-zA-Z0-9_-]/g, '-')}` : undefined}
             dir="rtl"
             className={cn(
                 'flex items-start gap-4 p-4',

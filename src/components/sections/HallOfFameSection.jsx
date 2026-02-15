@@ -501,6 +501,7 @@ const HallOfFameSection = () => {
                         {filteredDesigners.map((designer) => (
                             <HallOfFameCard
                                 key={designer.id}
+                                itemId={designer.id}
                                 viewMode="gallery"
                                 nameHe={designer.nameHe}
                                 nameEn={designer.nameEn}
@@ -518,6 +519,7 @@ const HallOfFameSection = () => {
                         {filteredDesigners.map((designer) => (
                             <HallOfFameCard
                                 key={designer.id}
+                                itemId={designer.id}
                                 viewMode="list"
                                 nameHe={designer.nameHe}
                                 nameEn={designer.nameEn}
