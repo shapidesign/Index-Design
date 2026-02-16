@@ -542,7 +542,7 @@ const App = () => {
               )}
               aria-label="תמיכה ביוצר"
             >
-              <Heart size={18} strokeWidth={1.7} className="text-off-white" fill="#FAFAF9" />
+              <Heart size={18} strokeWidth={1.7} className="text-off-white" />
             </button>
           </div>
 
@@ -575,7 +575,7 @@ const App = () => {
               )}
               aria-label="תמיכה ביוצר"
             >
-              <Heart size={18} strokeWidth={1.7} className="text-off-white" fill="#FAFAF9" />
+              <Heart size={18} strokeWidth={1.7} className="text-off-white" />
             </button>
             <button
               className={cn(
@@ -1160,7 +1160,7 @@ const App = () => {
                 'transition-all duration-200'
               )}
             >
-              <Heart size={14} fill="currentColor" />
+              <Heart size={14} />
               <span>לתמיכה ביוצר</span>
             </button>
           </div>

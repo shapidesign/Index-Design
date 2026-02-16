@@ -100,7 +100,7 @@ const SupportModal = ({ open, onClose }) => {
               'transition-all duration-200'
             )}
           >
-            <Heart size={18} fill="currentColor" />
+            <Heart size={18} />
             <span>לתמיכה ביוצר</span>
             <ExternalLink size={14} />
           </a>
