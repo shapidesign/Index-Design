@@ -14,12 +14,14 @@ const TAG_PALETTE = [
   'bg-tetris-cyan',
 ];
 
+/** FNV-1a hash — much better distribution for Hebrew strings */
 function hashTag(str) {
-  let h = 0;
+  let h = 0x811c9dc5;
   for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
   }
-  return Math.abs(h);
+  return h >>> 0;
 }
 
 /** Get a deterministic background color class for a tag name */
