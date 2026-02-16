@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Heart } from 'lucide-react';
 import TetrisBlock from '@/components/tetris/TetrisBlock';
 import logoDark from '@/assets/svg/logo-dark.svg';
 import pkg from '../../../package.json';
+import SupportModal from '@/components/ui/SupportModal';
 
 /**
  * Footer - כותרת תחתונה
  * Site footer with links, credits, and tetris decoration
  */
 const Footer = () => {
+  const [supportModalOpen, setSupportModalOpen] = useState(false);
+
   return (
     <footer
       dir="rtl"
@@ -66,6 +70,21 @@ const Footer = () => {
                 v{pkg.version}
               </span>
             </div>
+            <button
+              onClick={() => setSupportModalOpen(true)}
+              className={cn(
+                'inline-flex items-center gap-2 px-4 py-2',
+                'bg-tetris-purple text-off-white',
+                'text-sm font-bold font-shimshon',
+                'border-2 border-off-black',
+                'shadow-brutalist-xs',
+                'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                'transition-all duration-200'
+              )}
+            >
+              <Heart size={14} fill="currentColor" />
+              <span>לתמיכה ביוצר</span>
+            </button>
           </div>
         </div>
 
@@ -73,6 +92,9 @@ const Footer = () => {
           <p>© {new Date().getFullYear()} אינדקס האב - כל הזכויות שמורות</p>
         </div>
       </div>
+
+      {/* Support Modal */}
+      <SupportModal open={supportModalOpen} onClose={() => setSupportModalOpen(false)} />
     </footer>
   );
 };

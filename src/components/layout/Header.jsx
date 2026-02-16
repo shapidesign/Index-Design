@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Heart } from 'lucide-react';
 import logoDark from '@/assets/svg/logo-dark.svg';
+import SupportModal from '@/components/ui/SupportModal';
 
 /**
  * Header - כותרת עליונה
@@ -24,6 +25,7 @@ const navSections = [
 
 const Header = ({ activeSection, onSectionChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [supportModalOpen, setSupportModalOpen] = useState(false);
   
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -76,6 +78,23 @@ const Header = ({ activeSection, onSectionChange }) => {
               ))}
             </nav>
 
+            {/* Support heart button (desktop) */}
+            <button
+              onClick={() => setSupportModalOpen(true)}
+              className={cn(
+                'w-[34px] h-[34px]',
+                'flex items-center justify-center',
+                'bg-tetris-pink',
+                'border-[1.7px] border-dark-gray',
+                'shadow-brutalist-hamburger',
+                'transition-all duration-200',
+                'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
+              )}
+              aria-label="תמיכה ביוצר"
+            >
+              <Heart size={18} strokeWidth={1.7} className="text-off-white" fill="#FAFAF9" />
+            </button>
+
             {/* Hamburger button (desktop - for extra menu) */}
             <button
               className={cn(
@@ -93,7 +112,25 @@ const Header = ({ activeSection, onSectionChange }) => {
             </button>
           </div>
 
-          {/* Mobile: hamburger only */}
+          {/* Mobile: support heart button */}
+          <button
+            className={cn(
+              'md:hidden',
+              'w-[34px] h-[34px]',
+              'flex items-center justify-center',
+              'bg-tetris-pink',
+              'border-[1.7px] border-dark-gray',
+              'shadow-brutalist-hamburger',
+              'transition-all duration-200',
+              'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
+            )}
+            onClick={() => setSupportModalOpen(true)}
+            aria-label="תמיכה ביוצר"
+          >
+            <Heart size={18} strokeWidth={1.7} className="text-off-white" fill="#FAFAF9" />
+          </button>
+
+          {/* Mobile: hamburger */}
           <button
             className={cn(
               'md:hidden',
@@ -149,6 +186,9 @@ const Header = ({ activeSection, onSectionChange }) => {
           ))}
         </nav>
       </div>
+
+      {/* Support Modal */}
+      <SupportModal open={supportModalOpen} onClose={() => setSupportModalOpen(false)} />
     </header>
   );
 };
