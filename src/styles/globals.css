@@ -57,7 +57,7 @@
   /* Font Families */
   --font-shimshon: 'Shimshon', sans-serif;
   --font-ibm: 'IBM Plex Sans Hebrew', sans-serif;
-  --font-pixelify: 'Jersey 20', sans-serif;
+  --font-jersey: 'Jersey 20', sans-serif;
   --font-rubik: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   /* Shadows - צללים ברוטליסטיים */
@@ -137,9 +137,9 @@
 /* ===== UTILITY CLASSES ===== */
 @layer utilities {
 
-  /* Display font (Jersey 20) for English labels/tags in toolbox */
-  .font-pixelify {
-    font-family: var(--font-pixelify);
+  /* Display font (Jersey 20) for English text */
+  .font-jersey {
+    font-family: var(--font-jersey);
   }
 
   /* Border width 3px for neo-brutalist */

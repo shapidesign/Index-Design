@@ -9,6 +9,9 @@ import { LayoutGrid, List, ChevronDown, X, Search, ExternalLink } from 'lucide-r
 import { getFlagPath, getRandomThumbnail } from '@/lib/museum';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
+/** Check if a string is primarily Latin/English */
+const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
+
 /** URL-based screenshot thumbnail fallback */
 const getLinkThumbnail = (url) => {
     if (!url) return null;
@@ -242,12 +245,12 @@ const MuseumModal = ({ item, onClose }) => {
                         {/* Type + Era Tags */}
                         <div className="flex flex-wrap gap-2 mb-5">
                             {item.type?.map((t) => (
-                                <span key={t} className="px-3 py-1 text-xs font-normal font-shimshon bg-tetris-cyan/30 border border-off-black">
+                                <span key={t} className={cn("px-3 py-1 text-xs font-normal bg-tetris-cyan/30 border border-off-black", isEnglish(t) ? 'font-jersey' : 'font-shimshon')}>
                                     {t}
                                 </span>
                             ))}
                             {item.era?.map((e) => (
-                                <span key={e} className="px-3 py-1 text-xs font-normal font-shimshon bg-tetris-purple text-off-white border border-off-black">
+                                <span key={e} className={cn("px-3 py-1 text-xs font-normal bg-tetris-purple text-off-white border border-off-black", isEnglish(e) ? 'font-jersey' : 'font-shimshon')}>
                                     {e}
                                 </span>
                             ))}

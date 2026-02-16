@@ -684,7 +684,7 @@ const App = () => {
                 className={cn(
                   "w-full bg-transparent",
                   "text-off-black text-base",
-                  isEnglishText(searchQuery) ? "font-pixelify" : "font-shimshon",
+                  isEnglishText(searchQuery) ? "font-jersey" : "font-shimshon",
                   "placeholder:text-mid-gray placeholder:font-shimshon",
                   "outline-none border-none",
                   "text-right"
@@ -772,11 +772,11 @@ const App = () => {
                                 {result.sectionLabel}
                               </span>
                               <div className="flex-1">
-                                <p className="text-sm font-bold text-off-black font-shimshon">
+                                <p className={cn("text-sm font-bold text-off-black", isEnglishText(result.titleHe || result.titleEn) ? "font-jersey" : "font-shimshon")}>
                                   {result.titleHe || result.titleEn}
                                 </p>
                                 {result.titleEn && result.titleEn !== result.titleHe && (
-                                  <p className="text-xs text-mid-gray font-pixelify mt-0.5">{result.titleEn}</p>
+                                  <p className="text-xs text-mid-gray font-jersey mt-0.5">{result.titleEn}</p>
                                 )}
                                 {result.description && (
                                   <p className="text-xs text-dark-gray font-ibm mt-1">
@@ -999,11 +999,11 @@ const App = () => {
                 ) : (
                   <div className="text-right">
                     <p className="text-xs font-bold text-dark-gray mb-2">{luckyPick.sectionLabel}</p>
-                    <h3 className="text-3xl font-bold text-off-black mb-2">
+                    <h3 className={cn("text-3xl font-bold text-off-black mb-2", isEnglishText(luckyPick.titleHe || luckyPick.titleEn) ? "font-jersey" : "font-shimshon")}>
                       {luckyPick.titleHe || luckyPick.titleEn}
                     </h3>
                     {luckyPick.titleEn && luckyPick.titleEn !== luckyPick.titleHe && (
-                      <p className="text-sm text-mid-gray font-pixelify mb-3">{luckyPick.titleEn}</p>
+                      <p className="text-sm text-mid-gray font-jersey mb-3">{luckyPick.titleEn}</p>
                     )}
                     {luckyPick.description && (
                       <p className="text-base text-dark-gray font-ibm leading-relaxed mb-4">
@@ -1015,7 +1015,7 @@ const App = () => {
                         {luckyPick.tags.slice(0, 5).map((tag) => (
                           <span
                             key={`${luckyPick.id}-${tag}`}
-                            className="px-2 py-1 bg-light-gray border border-off-black text-xs font-normal font-shimshon"
+                            className={cn("px-2 py-1 bg-light-gray border border-off-black text-xs font-normal", isEnglishText(tag) ? "font-jersey" : "font-shimshon")}
                           >
                             {tag}
                           </span>

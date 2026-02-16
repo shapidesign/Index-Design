@@ -96,7 +96,7 @@ const GalleryCard = ({
                         className="absolute bottom-0 left-0 leading-none pointer-events-none select-none"
                         style={{
                             fontSize: '120px',
-                            fontFamily: "'Shimshon', sans-serif",
+                            fontFamily: isEnglish(initial) ? "'Jersey 20', sans-serif" : "'Shimshon', sans-serif",
                             fontWeight: 700,
                             color: '#1F1F1F',
                             opacity: 0.07,
@@ -151,7 +151,7 @@ const GalleryCard = ({
                     {nameHe}
                 </h3>
                 {nameEn && (
-                    <p className="text-sm text-dark-gray text-right mb-3 font-pixelify leading-tight">
+                    <p className="text-sm text-dark-gray text-right mb-3 font-jersey leading-tight">
                         {nameEn}
                     </p>
                 )}
@@ -169,7 +169,7 @@ const GalleryCard = ({
                                         'text-xs font-normal',
                                         'border border-off-black',
                                         'shadow-brutalist-xs',
-                                        isEnglish(style) ? 'font-pixelify' : 'font-shimshon',
+                                        isEnglish(style) ? 'font-jersey' : 'font-shimshon',
                                         bgColor,
                                         needsWhiteText(bgColor) ? 'text-off-white' : 'text-off-black'
                                     )}
@@ -194,7 +194,7 @@ const GalleryCard = ({
                                         'text-xs font-normal',
                                         'border border-off-black',
                                         'shadow-brutalist-xs',
-                                        isEnglish(field) ? 'font-pixelify' : 'font-shimshon',
+                                        isEnglish(field) ? 'font-jersey' : 'font-shimshon',
                                         bgColor,
                                         needsWhiteText(bgColor) ? 'text-off-white' : 'text-off-black'
                                     )}
@@ -271,7 +271,7 @@ const ListRow = ({
                     {nameHe}
                 </h3>
                 {nameEn && (
-                    <p className="text-xs text-dark-gray font-pixelify mt-0.5 line-clamp-1 break-all">{nameEn}</p>
+                    <p className="text-xs text-dark-gray font-jersey mt-0.5 line-clamp-1 break-all">{nameEn}</p>
                 )}
                 {era?.length > 0 && (
                     <span
@@ -304,7 +304,7 @@ const ListRow = ({
                                 'inline-block px-1.5 py-0.5',
                                 'text-xs font-normal',
                                 'border border-off-black',
-                                isEnglish(style) ? 'font-pixelify' : 'font-shimshon',
+                                isEnglish(style) ? 'font-jersey' : 'font-shimshon',
                                 bgColor,
                                 needsWhiteText(bgColor) ? 'text-off-white' : 'text-off-black'
                             )}

@@ -36,7 +36,7 @@ const DecadeSlider = ({ range, onChange }) => {
             </label>
             <div className="flex items-center gap-3" dir="ltr">
                 {/* Left label = newer year */}
-                <span className="text-xs font-pixelify text-dark-gray min-w-[32px] text-center">{range[1]}</span>
+                <span className="text-xs font-jersey text-dark-gray min-w-[32px] text-center">{range[1]}</span>
                 <div className="flex-1 relative h-8 flex items-center">
                     {/* Track background */}
                     <div className="absolute inset-x-0 h-2 bg-light-gray border-2 border-off-black rounded-none" />
@@ -76,12 +76,12 @@ const DecadeSlider = ({ range, onChange }) => {
                     />
                 </div>
                 {/* Right label = older year */}
-                <span className="text-xs font-pixelify text-dark-gray min-w-[32px] text-center">{range[0]}</span>
+                <span className="text-xs font-jersey text-dark-gray min-w-[32px] text-center">{range[0]}</span>
             </div>
             {/* Decade markers — reversed for RTL (newest left, oldest right) */}
             <div className="flex justify-between px-1" dir="ltr">
                 {DECADES.filter((_, i) => i % 3 === 0).reverse().map((d) => (
-                    <span key={d} className="text-xs font-pixelify text-mid-gray">{d}</span>
+                    <span key={d} className="text-xs font-jersey text-mid-gray">{d}</span>
                 ))}
             </div>
         </div>
