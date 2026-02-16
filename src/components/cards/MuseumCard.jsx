@@ -16,6 +16,9 @@ const tagColors = [
 
 const getTagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
 
+/** Check if a string is primarily Latin/English */
+const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
+
 /** Build a URL-based screenshot thumbnail as a fallback when no image is available */
 const getLinkThumbnail = (url) => {
     if (!url) return null;
@@ -84,7 +87,7 @@ const MuseumCard = ({
                         {country && (
                             <div className="inline-flex items-center gap-1 px-1 py-0 bg-light-gray border border-off-black text-xs leading-tight w-fit max-w-[92px]">
                                 {flagPath && <img src={flagPath} alt={country} className="w-2.5 h-auto shrink-0" />}
-                                <span className="font-ibm truncate max-w-[70px]">{country}</span>
+                                <span className={cn("truncate max-w-[70px]", isEnglish(country) ? 'font-pixelify' : 'font-ibm')}>{country}</span>
                             </div>
                         )}
                     </div>
@@ -110,7 +113,8 @@ const MuseumCard = ({
                                 key={tag}
                                 className={cn(
                                     'px-2 py-0.5',
-                                    'text-xs font-normal font-shimshon',
+                                    'text-xs font-normal',
+                                    isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
                                     'border border-off-black',
                                     tagColors[i % tagColors.length],
                                     getTagTextClass(tagColors[i % tagColors.length]),
@@ -184,7 +188,7 @@ const MuseumCard = ({
                 {country && (
                     <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-off-white border-2 border-off-black shadow-brutalist-xs z-10">
                         {flagPath && <img src={flagPath} alt={country} className="w-4 h-auto" />}
-                        <span className="text-xs font-bold font-shimshon">{country}</span>
+                        <span className={cn("text-xs font-bold", isEnglish(country) ? 'font-pixelify' : 'font-shimshon')}>{country}</span>
                     </div>
                 )}
             </div>
@@ -217,7 +221,8 @@ const MuseumCard = ({
                                 key={tag}
                                 className={cn(
                                     'px-2 py-0.5',
-                                    'text-xs font-normal font-shimshon',
+                                    'text-xs font-normal',
+                                    isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
                                     'border border-off-black',
                                     tagColors[i % tagColors.length],
                                     getTagTextClass(tagColors[i % tagColors.length]),

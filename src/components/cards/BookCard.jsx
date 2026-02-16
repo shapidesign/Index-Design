@@ -30,8 +30,9 @@ const BookCard = ({
   category,
   className,
 }) => {
+  const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
   const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(String(value || ''));
-  const symbolicFontClass = (value) => (isSymbolHeavyText(value) ? 'font-pixelify' : 'font-shimshon');
+  const textFontClass = (value) => (isEnglish(value) || isSymbolHeavyText(value) ? 'font-pixelify' : 'font-shimshon');
   const tagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
   const coverAlt = title ? `כריכת הספר ${title}` : 'כריכת ספר';
 
@@ -78,7 +79,7 @@ const BookCard = ({
                     </span>
                   </div>
                 )}
-                {author && <p className="text-sm text-dark-gray text-right mb-1">{author}</p>}
+                {author && <p className={cn("text-sm text-dark-gray text-right mb-1", isEnglish(author) ? 'font-pixelify' : 'font-ibm')}>{author}</p>}
                 {category && (
                   <div className="flex flex-wrap gap-2 justify-end">
                     <Badge color="bg-tetris-blue">{category}</Badge>
@@ -121,7 +122,7 @@ const BookCard = ({
                       'inline-flex items-center justify-center h-6 min-w-[76px] px-2',
                       'text-xs font-normal border border-off-black',
                       'shadow-brutalist-xs',
-                      symbolicFontClass(tag),
+                      textFontClass(tag),
                       bgColor,
                       tagTextClass(bgColor)
                     )}
@@ -168,7 +169,7 @@ const BookCard = ({
           </span>
         </div>
       )}
-      {author && <p className="text-sm text-dark-gray text-right mb-3 line-clamp-1 min-h-[20px]">{author}</p>}
+      {author && <p className={cn("text-sm text-dark-gray text-right mb-3 line-clamp-1 min-h-[20px]", isEnglish(author) ? 'font-pixelify' : 'font-ibm')}>{author}</p>}
       {category && (
         <div className="mb-3 flex items-center gap-2 justify-end">
           <Badge color="bg-tetris-blue">{category}</Badge>
@@ -195,7 +196,7 @@ const BookCard = ({
                 'inline-flex items-center justify-center h-6 min-w-[76px] px-2',
                 'text-xs font-normal border border-off-black',
                 'shadow-brutalist-xs',
-                symbolicFontClass(tag),
+                textFontClass(tag),
                 bgColor,
                 tagTextClass(bgColor)
               )}

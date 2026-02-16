@@ -302,7 +302,8 @@ const ToolboxCard = ({
                 key={tag}
                 className={cn(
                   'inline-block px-2 py-0.5',
-                  'text-xs font-normal font-shimshon',
+                  'text-xs font-normal',
+                  isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
                   'border border-off-black',
                   'shadow-brutalist-xs',
                   tagColors[i % tagColors.length],
@@ -424,7 +425,8 @@ const ToolboxCard = ({
                 key={tag}
                 className={cn(
                   'inline-block px-2 py-0.5',
-                  'text-xs font-normal font-shimshon',
+                  'text-xs font-normal',
+                  isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
                   'border border-off-black',
                   'shadow-brutalist-xs',
                   tagColors[i % tagColors.length],
