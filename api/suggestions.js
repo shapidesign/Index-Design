@@ -189,7 +189,8 @@ export default async function handler(req, res) {
     let [nameKey, nameMeta] = findProperty(props, ['שם', 'Name']);
     if (!nameKey) [nameKey, nameMeta] = findPropertyByType(props, ['title']);
 
-    const [emailKey, emailMeta] = findProperty(props, ['אימייל', 'Email']);
+    let [emailKey, emailMeta] = findProperty(props, ['אימייל', 'Email', 'email', 'מייל', 'דואל', 'דוא"ל', 'Mail']);
+    if (!emailKey) [emailKey, emailMeta] = findPropertyByType(props, ['email']);
     let [messageKey, messageMeta] = findProperty(props, ['הודעה', 'Message', 'Suggestion', 'הצעה']);
     if (!messageKey) [messageKey, messageMeta] = findPropertyByType(props, ['rich_text'], [nameKey]);
 
