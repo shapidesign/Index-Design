@@ -3,10 +3,11 @@ import { cn } from '@/lib/utils';
 import logoDark from '@/assets/svg/logo-dark.svg';
 import logoHero from '@/assets/svg/logo-hero-purple.svg';
 import logoIcon from '@/assets/svg/logo-icon.svg';
-import { Menu, MessageSquare } from 'lucide-react';
+import { Menu, MessageSquare, Heart } from 'lucide-react';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import MessageSuggestionModal from '@/components/ui/MessageSuggestionModal';
+import SupportModal from '@/components/ui/SupportModal';
 import pkg from '../package.json';
 
 /** Lazy-loaded section components */
@@ -144,6 +145,7 @@ const App = () => {
   const [isSearchDataLoading, setIsSearchDataLoading] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [luckyPick, setLuckyPick] = useState(null);
   const searchContainerRef = useRef(null);
   const highlightedTargetRef = useRef(null);
@@ -526,9 +528,25 @@ const App = () => {
               <MessageSquare size={14} />
               <span>שליחת הצעה</span>
             </button>
+            <button
+              type="button"
+              onClick={() => setIsSupportModalOpen(true)}
+              className={cn(
+                'w-[34px] h-[34px]',
+                'flex items-center justify-center',
+                'bg-tetris-pink',
+                'border-[1.7px] border-dark-gray',
+                'shadow-brutalist-hamburger',
+                'transition-all duration-200',
+                'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
+              )}
+              aria-label="תמיכה ביוצר"
+            >
+              <Heart size={18} strokeWidth={1.7} className="text-off-white" fill="#FAFAF9" />
+            </button>
           </div>
 
-          {/* Mobile/Tablet left-side controls: version + hamburger */}
+          {/* Mobile/Tablet left-side controls: version + support + hamburger */}
           <div className="lg:hidden flex items-center gap-2">
             <span
               className={cn(
@@ -543,6 +561,22 @@ const App = () => {
             >
               v{pkg.version}
             </span>
+            <button
+              type="button"
+              onClick={() => setIsSupportModalOpen(true)}
+              className={cn(
+                'w-[34px] h-[34px]',
+                'flex items-center justify-center',
+                'bg-tetris-pink',
+                'border-[1.7px] border-dark-gray',
+                'shadow-brutalist-hamburger',
+                'transition-all duration-200',
+                'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
+              )}
+              aria-label="תמיכה ביוצר"
+            >
+              <Heart size={18} strokeWidth={1.7} className="text-off-white" fill="#FAFAF9" />
+            </button>
             <button
               className={cn(
                 'w-[34px] h-[34px]',
@@ -1098,7 +1132,7 @@ const App = () => {
       {/* ===== FOOTER ===== */}
       <footer className="border-t-3 border-off-black bg-off-black text-off-white mt-16">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
-          <div className="mb-5 flex justify-center">
+          <div className="mb-5 flex justify-center gap-3">
             <button
               type="button"
               onClick={() => setIsSuggestionModalOpen(true)}
@@ -1114,6 +1148,21 @@ const App = () => {
               <MessageSquare size={15} />
               <span>רוצים להציע תוכן לאתר?</span>
             </button>
+            <button
+              type="button"
+              onClick={() => setIsSupportModalOpen(true)}
+              className={cn(
+                'inline-flex items-center gap-2 px-4 py-2',
+                'bg-tetris-purple text-off-white text-sm font-bold font-shimshon',
+                'border-2 border-off-black',
+                'shadow-brutalist-xs',
+                'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                'transition-all duration-200'
+              )}
+            >
+              <Heart size={14} fill="currentColor" />
+              <span>לתמיכה ביוצר</span>
+            </button>
           </div>
           <p className="text-sm text-dark-gray font-ibm">
             נבנה על ידי יהונתן שפירא, 2026
@@ -1124,6 +1173,10 @@ const App = () => {
       <MessageSuggestionModal
         open={isSuggestionModalOpen}
         onClose={() => setIsSuggestionModalOpen(false)}
+      />
+      <SupportModal
+        open={isSupportModalOpen}
+        onClose={() => setIsSupportModalOpen(false)}
       />
     </div>
   );
