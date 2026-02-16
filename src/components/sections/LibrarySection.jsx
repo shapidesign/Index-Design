@@ -5,6 +5,7 @@ import BookCard from '@/components/cards/BookCard';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import { LayoutGrid, List, Search, X, ChevronDown } from 'lucide-react';
+import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
 const normalizeText = (value) =>
   String(value || '')
@@ -25,19 +26,8 @@ const parseYearsFromText = (value) => {
 
 const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(String(value || ''));
 
-const getSymbolicFontClass = (value) => (isSymbolHeavyText(value) ? 'font-pixelify' : 'font-shimshon');
+const getSymbolicFontClass = (value) => (isSymbolHeavyText(value) ? 'font-jersey' : 'font-shimshon');
 
-const tagColors = [
-  'bg-tetris-purple',
-  'bg-tetris-orange',
-  'bg-tetris-green',
-  'bg-tetris-pink',
-  'bg-tetris-yellow',
-  'bg-tetris-blue',
-  'bg-tetris-cyan',
-];
-
-const getTagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
 
 const YearRangeSlider = ({ bounds, range, onChange }) => {
   const [minBound, maxBound] = bounds;
@@ -51,7 +41,7 @@ const YearRangeSlider = ({ bounds, range, onChange }) => {
       <label className="text-xs text-dark-gray text-right font-shimshon">טווח שנים</label>
 
       <div className="flex items-center gap-2" dir="ltr">
-        <span className="text-xs text-dark-gray min-w-[42px] text-left font-pixelify">{minBound}</span>
+        <span className="text-xs text-dark-gray min-w-[42px] text-left font-jersey">{minBound}</span>
         <div className="relative flex-1 h-8 flex items-center">
           <div className="absolute inset-x-0 h-2 bg-light-gray border-2 border-off-black" />
           <div
@@ -85,7 +75,7 @@ const YearRangeSlider = ({ bounds, range, onChange }) => {
             style={{ height: '32px' }}
           />
         </div>
-        <span className="text-xs text-dark-gray min-w-[42px] text-right font-pixelify">{maxBound}</span>
+        <span className="text-xs text-dark-gray min-w-[42px] text-right font-jersey">{maxBound}</span>
       </div>
     </div>
   );
@@ -173,8 +163,8 @@ const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
                       className={cn(
                         'inline-block px-2 py-0.5 text-xs font-normal font-shimshon',
                         'border border-off-black shadow-brutalist-xs',
-                        tagColors[i % tagColors.length],
-                        getTagTextClass(tagColors[i % tagColors.length])
+                        getTagColor(tag),
+                        getTagTextClass(getTagColor(tag))
                       )}
                     >
                       {tag}
@@ -415,7 +405,7 @@ const LibrarySection = () => {
               </div>
               <div className="md:min-w-[170px]">
                 <p className="text-xs text-dark-gray text-right mb-1 font-shimshon">טווח נבחר</p>
-                <p className="text-sm text-off-black text-right border-2 border-off-black bg-light-gray px-3 py-1.5 font-pixelify">
+                <p className="text-sm text-off-black text-right border-2 border-off-black bg-light-gray px-3 py-1.5 font-jersey">
                   {`${yearRange[0]} - ${yearRange[1]}`}
                 </p>
               </div>

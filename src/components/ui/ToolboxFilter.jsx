@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { getTagColor } from '@/lib/tagColors';
 
 /**
  * ToolboxFilter - פילטרים לארגז הכלים
@@ -31,14 +32,6 @@ const typeColorMap = {
   'מדריך': 'bg-tetris-cyan',
 };
 
-/** Secondary colors cycled for tag chips */
-const tagColors = [
-  'bg-tetris-pink',
-  'bg-tetris-yellow',
-  'bg-tetris-blue',
-  'bg-tetris-cyan',
-];
-
 /**
  * Generic filter chip button
  */
@@ -55,7 +48,7 @@ const FilterChip = ({ label, isActive, activeBg, onClick, className }) => (
     className={cn(
       'px-3 py-1.5',
       'text-xs font-bold',
-      isEnglish(label) ? 'font-pixelify' : 'font-shimshon',
+      isEnglish(label) ? 'font-jersey' : 'font-shimshon',
       'border-2 border-off-black',
       'whitespace-nowrap',
       'transition-all duration-200',
@@ -159,12 +152,12 @@ const ToolboxFilter = ({
         <div>
           <p className="font-shimshon text-xs text-dark-gray mb-2">תגיות</p>
           <div className="flex flex-wrap gap-2 pb-1 pe-1 overflow-visible">
-            {availableTags.map((tag, i) => (
+            {availableTags.map((tag) => (
               <FilterChip
                 key={tag}
                 label={tag}
                 isActive={filters.tags.includes(tag)}
-                activeBg={tagColors[i % tagColors.length]}
+                activeBg={getTagColor(tag)}
                 onClick={() => onFilterChange('tags', tag)}
               />
             ))}

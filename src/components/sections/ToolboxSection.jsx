@@ -75,17 +75,17 @@ const ToolboxSection = () => {
       ) {
         return false;
       }
-      // Type filter (resource must have at least one matching type)
+      // Type filter (resource must match ALL selected types)
       if (
         filters.types.length > 0 &&
-        !r.types?.some((t) => filters.types.includes(t))
+        !filters.types.every((t) => r.types?.includes(t))
       ) {
         return false;
       }
-      // Tag filter (resource must have at least one matching tag)
+      // Tag filter (resource must match ALL selected tags)
       if (
         filters.tags.length > 0 &&
-        !r.tags?.some((t) => filters.tags.includes(t))
+        !filters.tags.every((t) => r.tags?.includes(t))
       ) {
         return false;
       }

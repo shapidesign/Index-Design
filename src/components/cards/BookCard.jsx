@@ -2,16 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
 import { ExternalLink } from 'lucide-react';
-
-const tagColors = [
-  'bg-tetris-purple',
-  'bg-tetris-orange',
-  'bg-tetris-green',
-  'bg-tetris-pink',
-  'bg-tetris-yellow',
-  'bg-tetris-blue',
-  'bg-tetris-cyan',
-];
+import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
 /**
  * BookCard - כרטיס ספר
@@ -32,8 +23,7 @@ const BookCard = ({
 }) => {
   const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
   const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(String(value || ''));
-  const textFontClass = (value) => (isEnglish(value) || isSymbolHeavyText(value) ? 'font-pixelify' : 'font-shimshon');
-  const tagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
+  const textFontClass = (value) => (isEnglish(value) || isSymbolHeavyText(value) ? 'font-jersey' : 'font-shimshon');
   const coverAlt = title ? `כריכת הספר ${title}` : 'כריכת ספר';
 
   const coverElement = coverUrl ? (
@@ -71,15 +61,15 @@ const BookCard = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold text-off-black text-right mb-1 break-words">{title}</h3>
+                <h3 className={cn("text-lg font-bold text-off-black text-right mb-1 break-words", isEnglish(title) ? 'font-jersey' : 'font-shimshon')}>{title}</h3>
                 {year && (
                   <div className="flex justify-end mb-1">
-                    <span className="inline-flex w-fit items-center px-3 py-0.5 text-sm font-normal font-pixelify bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
+                    <span className="inline-flex w-fit items-center px-3 py-0.5 text-sm font-normal font-jersey bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
                       {year}
                     </span>
                   </div>
                 )}
-                {author && <p className={cn("text-sm text-dark-gray text-right mb-1", isEnglish(author) ? 'font-pixelify' : 'font-ibm')}>{author}</p>}
+                {author && <p className={cn("text-sm text-dark-gray text-right mb-1", isEnglish(author) ? 'font-jersey' : 'font-ibm')}>{author}</p>}
                 {category && (
                   <div className="flex flex-wrap gap-2 justify-end">
                     <Badge color="bg-tetris-blue">{category}</Badge>
@@ -112,9 +102,9 @@ const BookCard = ({
 
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 justify-end mt-3">
-                {tags.slice(0, 6).map((tag, i) => (
+                {tags.slice(0, 6).map((tag) => (
                   (() => {
-                    const bgColor = tagColors[i % tagColors.length];
+                    const bgColor = getTagColor(tag);
                     return (
                   <span
                     key={tag}
@@ -124,7 +114,7 @@ const BookCard = ({
                       'shadow-brutalist-xs',
                       textFontClass(tag),
                       bgColor,
-                      tagTextClass(bgColor)
+                      getTagTextClass(bgColor)
                     )}
                   >
                     {tag}
@@ -161,15 +151,15 @@ const BookCard = ({
         </div>
       </div>
 
-      <h3 className="text-xl font-bold text-off-black text-right mb-1 line-clamp-2 min-h-[56px]">{title}</h3>
+      <h3 className={cn("text-xl font-bold text-off-black text-right mb-1 line-clamp-2 min-h-[56px]", isEnglish(title) ? 'font-jersey' : 'font-shimshon')}>{title}</h3>
       {year && (
         <div className="flex justify-end mb-2">
-          <span className="inline-flex w-fit items-center px-3 py-0.5 text-base font-normal font-pixelify bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
+          <span className="inline-flex w-fit items-center px-3 py-0.5 text-base font-normal font-jersey bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
             {year}
           </span>
         </div>
       )}
-      {author && <p className={cn("text-sm text-dark-gray text-right mb-3 line-clamp-1 min-h-[20px]", isEnglish(author) ? 'font-pixelify' : 'font-ibm')}>{author}</p>}
+      {author && <p className={cn("text-sm text-dark-gray text-right mb-3 line-clamp-1 min-h-[20px]", isEnglish(author) ? 'font-jersey' : 'font-ibm')}>{author}</p>}
       {category && (
         <div className="mb-3 flex items-center gap-2 justify-end">
           <Badge color="bg-tetris-blue">{category}</Badge>
@@ -186,9 +176,9 @@ const BookCard = ({
 
       {tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2 justify-end">
-          {tags.slice(0, 5).map((tag, i) => (
+          {tags.slice(0, 5).map((tag) => (
             (() => {
-              const bgColor = tagColors[i % tagColors.length];
+              const bgColor = getTagColor(tag);
               return (
             <span
               key={tag}
@@ -198,7 +188,7 @@ const BookCard = ({
                 'shadow-brutalist-xs',
                 textFontClass(tag),
                 bgColor,
-                tagTextClass(bgColor)
+                getTagTextClass(bgColor)
               )}
             >
               {tag}

@@ -7,6 +7,7 @@ import TetrisLoader from '@/components/tetris/TetrisLoader';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import { LayoutGrid, List, ChevronDown, X, Search, ExternalLink } from 'lucide-react';
 import { getFlagPath, getRandomThumbnail } from '@/lib/museum';
+import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
 /** URL-based screenshot thumbnail fallback */
 const getLinkThumbnail = (url) => {
@@ -142,17 +143,6 @@ const quickSearches = [
     'ניו יורק',
 ];
 
-const tagColors = [
-    'bg-tetris-purple',
-    'bg-tetris-orange',
-    'bg-tetris-green',
-    'bg-tetris-pink',
-    'bg-tetris-yellow',
-    'bg-tetris-blue',
-    'bg-tetris-cyan',
-];
-
-const getTagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
 
 // ===== MUSEUM MODAL COMPONENT =====
 const MuseumModal = ({ item, onClose }) => {
@@ -245,7 +235,7 @@ const MuseumModal = ({ item, onClose }) => {
                                 {item.nameHe || item.name}
                             </h2>
                             {item.nameEn && (
-                                <h3 className="text-lg font-pixelify text-mid-gray">{item.nameEn}</h3>
+                                <h3 className="text-lg font-jersey text-mid-gray">{item.nameEn}</h3>
                             )}
                         </div>
 
@@ -287,15 +277,15 @@ const MuseumModal = ({ item, onClose }) => {
                                 <div>
                                     <h4 className="text-sm font-bold font-shimshon text-off-black mb-2">תגיות</h4>
                                     <div className="flex flex-wrap gap-2">
-                                        {item.tags.map((tag, i) => (
+                                        {item.tags.map((tag) => (
                                             <span
                                                 key={tag}
                                                 className={cn(
                                                     'px-2.5 py-1',
                                                     'text-xs font-normal font-shimshon',
                                                     'border border-off-black',
-                                                    tagColors[i % tagColors.length],
-                                                    getTagTextClass(tagColors[i % tagColors.length]),
+                                                    getTagColor(tag),
+                                                    getTagTextClass(getTagColor(tag)),
                                                     'shadow-brutalist-xs'
                                                 )}
                                             >

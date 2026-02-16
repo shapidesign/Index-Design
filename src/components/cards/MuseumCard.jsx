@@ -3,18 +3,7 @@ import { cn } from '@/lib/utils';
 import { ExternalLink, MapPin } from 'lucide-react';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import { getFlagPath, getRandomThumbnail } from '@/lib/museum';
-
-const tagColors = [
-    'bg-tetris-purple',
-    'bg-tetris-orange',
-    'bg-tetris-green',
-    'bg-tetris-pink',
-    'bg-tetris-yellow',
-    'bg-tetris-blue',
-    'bg-tetris-cyan',
-];
-
-const getTagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
+import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
 /** Check if a string is primarily Latin/English */
 const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
@@ -81,13 +70,13 @@ const MuseumCard = ({
                                 {nameHe}
                             </h3>
                             {nameEn && (
-                                <span className="text-xs font-pixelify text-mid-gray line-clamp-1 break-all">{nameEn}</span>
+                                <span className="text-xs font-jersey text-mid-gray line-clamp-1 break-all">{nameEn}</span>
                             )}
                         </div>
                         {country && (
                             <div className="inline-flex items-center gap-1 px-1 py-0 bg-light-gray border border-off-black text-xs leading-tight w-fit max-w-[92px]">
                                 {flagPath && <img src={flagPath} alt={country} className="w-2.5 h-auto shrink-0" />}
-                                <span className={cn("truncate max-w-[70px]", isEnglish(country) ? 'font-pixelify' : 'font-ibm')}>{country}</span>
+                                <span className={cn("truncate max-w-[70px]", isEnglish(country) ? 'font-jersey' : 'font-ibm')}>{country}</span>
                             </div>
                         )}
                     </div>
@@ -99,7 +88,7 @@ const MuseumCard = ({
                 {/* Type Tags */}
                 <div className="hidden sm:flex gap-1">
                     {type.slice(0, 2).map((t) => (
-                        <span key={t} className="px-2 py-0.5 text-xs font-shimshon bg-tetris-cyan/20 border border-off-black">
+                        <span key={t} className={cn("px-2 py-0.5 text-xs bg-tetris-cyan/20 border border-off-black", isEnglish(t) ? 'font-jersey' : 'font-shimshon')}>
                             {t}
                         </span>
                     ))}
@@ -108,16 +97,16 @@ const MuseumCard = ({
                 {/* Tags */}
                 {tags.length > 0 && (
                     <div className="hidden md:flex items-center gap-1 flex-wrap">
-                        {tags.slice(0, 3).map((tag, i) => (
+                        {tags.slice(0, 3).map((tag) => (
                             <span
                                 key={tag}
                                 className={cn(
                                     'px-2 py-0.5',
                                     'text-xs font-normal',
-                                    isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
+                                    isEnglish(tag) ? 'font-jersey' : 'font-shimshon',
                                     'border border-off-black',
-                                    tagColors[i % tagColors.length],
-                                    getTagTextClass(tagColors[i % tagColors.length]),
+                                    getTagColor(tag),
+                                    getTagTextClass(getTagColor(tag)),
                                     'shadow-brutalist-xs'
                                 )}
                             >
@@ -188,7 +177,7 @@ const MuseumCard = ({
                 {country && (
                     <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-off-white border-2 border-off-black shadow-brutalist-xs z-10">
                         {flagPath && <img src={flagPath} alt={country} className="w-4 h-auto" />}
-                        <span className={cn("text-xs font-bold", isEnglish(country) ? 'font-pixelify' : 'font-shimshon')}>{country}</span>
+                        <span className={cn("text-xs font-bold", isEnglish(country) ? 'font-jersey' : 'font-shimshon')}>{country}</span>
                     </div>
                 )}
             </div>
@@ -200,14 +189,14 @@ const MuseumCard = ({
                         {nameHe}
                     </h3>
                     {nameEn && (
-                        <span className="text-sm font-pixelify text-mid-gray mt-1">{nameEn}</span>
+                        <span className="text-sm font-jersey text-mid-gray mt-1">{nameEn}</span>
                     )}
                 </div>
 
                 {/* Type Tags */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
                     {type.slice(0, 3).map((t) => (
-                        <span key={t} className="px-2 py-0.5 text-xs font-normal font-shimshon bg-tetris-cyan/30 border border-off-black">
+                        <span key={t} className={cn("px-2 py-0.5 text-xs font-normal bg-tetris-cyan/30 border border-off-black", isEnglish(t) ? 'font-jersey' : 'font-shimshon')}>
                             {t}
                         </span>
                     ))}
@@ -216,16 +205,16 @@ const MuseumCard = ({
                 {/* Tags */}
                 {tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
-                        {tags.slice(0, 4).map((tag, i) => (
+                        {tags.slice(0, 4).map((tag) => (
                             <span
                                 key={tag}
                                 className={cn(
                                     'px-2 py-0.5',
                                     'text-xs font-normal',
-                                    isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
+                                    isEnglish(tag) ? 'font-jersey' : 'font-shimshon',
                                     'border border-off-black',
-                                    tagColors[i % tagColors.length],
-                                    getTagTextClass(tagColors[i % tagColors.length]),
+                                    getTagColor(tag),
+                                    getTagTextClass(getTagColor(tag)),
                                     'shadow-brutalist-xs'
                                 )}
                             >

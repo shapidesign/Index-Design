@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
 import PricingBadge from '@/components/ui/PricingBadge';
+import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
 /**
  * ToolboxCard - כרטיס משאב לארגז הכלים
@@ -40,18 +41,6 @@ const typeGradientMap = {
   'מדריך': { from: '#67E8F9', to: '#A5F3FC' },
 };
 
-/** Secondary accent colors cycled for tags */
-const tagColors = [
-  'bg-tetris-purple',
-  'bg-tetris-orange',
-  'bg-tetris-green',
-  'bg-tetris-pink',
-  'bg-tetris-yellow',
-  'bg-tetris-blue',
-  'bg-tetris-cyan',
-];
-
-const getTagTextClass = (bgColor) => (bgColor === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black');
 
 /** Check if a string is primarily Latin/English */
 const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
@@ -192,7 +181,7 @@ const PlaceholderImage = ({ name, types }) => {
           className={cn(
             'text-center leading-tight font-bold text-off-black',
             'drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]',
-            nameIsEnglish ? 'font-pixelify' : 'font-shimshon',
+            nameIsEnglish ? 'font-jersey' : 'font-shimshon',
             name.length > 20 ? 'text-base' : name.length > 12 ? 'text-xl' : 'text-2xl'
           )}
         >
@@ -273,7 +262,7 @@ const ToolboxCard = ({
             <h3
               className={cn(
                 'text-lg font-bold text-off-black text-right leading-tight line-clamp-2 break-words min-w-0 flex-1',
-                isEnglish(name) ? 'font-pixelify' : 'font-shimshon'
+                isEnglish(name) ? 'font-jersey' : 'font-shimshon'
               )}
             >
               {name}
@@ -292,22 +281,22 @@ const ToolboxCard = ({
               <Badge
                 key={type}
                 color={typeColorMap[type] || 'bg-light-gray'}
-                className={isEnglish(type) ? 'font-pixelify' : ''}
+                className={isEnglish(type) ? 'font-jersey' : ''}
               >
                 {type}
               </Badge>
             ))}
-            {tags.slice(0, 4).map((tag, i) => (
+            {tags.slice(0, 4).map((tag) => (
               <span
                 key={tag}
                 className={cn(
                   'inline-block px-2 py-0.5',
                   'text-xs font-normal',
-                  isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
+                  isEnglish(tag) ? 'font-jersey' : 'font-shimshon',
                   'border border-off-black',
                   'shadow-brutalist-xs',
-                  tagColors[i % tagColors.length],
-                  getTagTextClass(tagColors[i % tagColors.length])
+                  getTagColor(tag),
+                  getTagTextClass(getTagColor(tag))
                 )}
               >
                 {tag}
@@ -366,7 +355,7 @@ const ToolboxCard = ({
               <Badge
                 key={type}
                 color={typeColorMap[type] || 'bg-light-gray'}
-                className={isEnglish(type) ? 'font-pixelify' : ''}
+                className={isEnglish(type) ? 'font-jersey' : ''}
               >
                 {type}
               </Badge>
@@ -404,7 +393,7 @@ const ToolboxCard = ({
         <h3
           className={cn(
             'text-lg font-bold text-off-black text-right mb-2 leading-tight',
-            isEnglish(name) ? 'font-pixelify' : 'font-shimshon'
+            isEnglish(name) ? 'font-jersey' : 'font-shimshon'
           )}
         >
           {name}
@@ -420,17 +409,17 @@ const ToolboxCard = ({
         {/* Tags — secondary accent colors (cycled) */}
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
-            {tags.map((tag, i) => (
+            {tags.map((tag) => (
               <span
                 key={tag}
                 className={cn(
                   'inline-block px-2 py-0.5',
                   'text-xs font-normal',
-                  isEnglish(tag) ? 'font-pixelify' : 'font-shimshon',
+                  isEnglish(tag) ? 'font-jersey' : 'font-shimshon',
                   'border border-off-black',
                   'shadow-brutalist-xs',
-                  tagColors[i % tagColors.length],
-                  getTagTextClass(tagColors[i % tagColors.length])
+                  getTagColor(tag),
+                  getTagTextClass(getTagColor(tag))
                 )}
               >
                 {tag}
