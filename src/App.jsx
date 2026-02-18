@@ -482,21 +482,6 @@ const App = () => {
 
           {/* Desktop Nav - left side in RTL */}
           <div className="hidden lg:flex items-center gap-2">
-            {/* HIT Logo */}
-            <a 
-              href="https://portal.hit.ac.il/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="ml-2 transition-opacity hover:opacity-80"
-              aria-label="HIT Portal"
-            >
-              <img 
-                src={hitLogo} 
-                alt="HIT Logo" 
-                className="h-8 w-auto brightness-0 invert" 
-              />
-            </a>
-            
             <span
               className={cn(
                 'inline-block px-3 py-1',
@@ -563,25 +548,24 @@ const App = () => {
               <Heart size={18} strokeWidth={1.7} className="text-off-white" />
             </button>
             */}
+            {/* HIT Logo */}
+            <a
+              href="https://portal.hit.ac.il/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mr-2 transition-opacity hover:opacity-80"
+              aria-label="HIT Portal"
+            >
+              <img
+                src={hitLogo}
+                alt="HIT Logo"
+                className="h-8 w-auto brightness-0 invert"
+              />
+            </a>
           </div>
 
           {/* Mobile/Tablet left-side controls: version + support + hamburger */}
           <div className="lg:hidden flex items-center gap-2">
-            {/* HIT Logo Mobile */}
-            <a 
-              href="https://portal.hit.ac.il/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="ml-1 transition-opacity hover:opacity-80"
-              aria-label="HIT Portal"
-            >
-              <img 
-                src={hitLogo} 
-                alt="HIT Logo" 
-                className="h-6 w-auto brightness-0 invert" 
-              />
-            </a>
-
             <span
               className={cn(
                 'inline-block px-2 py-1',
@@ -613,6 +597,20 @@ const App = () => {
               <Heart size={18} strokeWidth={1.7} className="text-off-white" />
             </button>
             */}
+            {/* HIT Logo Mobile */}
+            <a
+              href="https://portal.hit.ac.il/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mr-1 transition-opacity hover:opacity-80"
+              aria-label="HIT Portal"
+            >
+              <img
+                src={hitLogo}
+                alt="HIT Logo"
+                className="h-6 w-auto brightness-0 invert"
+              />
+            </a>
             <button
               className={cn(
                 'w-[34px] h-[34px]',
