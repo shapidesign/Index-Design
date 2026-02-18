@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import logoDark from '@/assets/svg/logo-dark.svg';
 import logoHero from '@/assets/svg/logo-hero-purple.svg';
 import logoIcon from '@/assets/svg/logo-icon.svg';
+import hitLogo from '@/assets/images/hit-logo.png';
 import { Menu, MessageSquare, Heart } from 'lucide-react';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
@@ -45,6 +46,7 @@ const HallOfFameSection = lazyWithChunkRecovery(() => import('@/components/secti
 const MuseumSection = lazyWithChunkRecovery(() => import('@/components/sections/MuseumSection'));
 const LibrarySection = lazyWithChunkRecovery(() => import('@/components/sections/LibrarySection'));
 const MapSection = lazyWithChunkRecovery(() => import('@/components/sections/MapSection'));
+const TipsSection = lazyWithChunkRecovery(() => import('@/components/sections/TipsSection'));
 
 /**
  * App - Main Application Component
@@ -480,6 +482,21 @@ const App = () => {
 
           {/* Desktop Nav - left side in RTL */}
           <div className="hidden lg:flex items-center gap-2">
+            {/* HIT Logo */}
+            <a 
+              href="https://portal.hit.ac.il/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="ml-2 transition-opacity hover:opacity-80"
+              aria-label="HIT Portal"
+            >
+              <img 
+                src={hitLogo} 
+                alt="HIT Logo" 
+                className="h-8 w-auto brightness-0 invert" 
+              />
+            </a>
+            
             <span
               className={cn(
                 'inline-block px-3 py-1',
@@ -528,6 +545,7 @@ const App = () => {
               <MessageSquare size={14} />
               <span>שליחת הצעה</span>
             </button>
+            {/* Support Button - Hidden for now
             <button
               type="button"
               onClick={() => setIsSupportModalOpen(true)}
@@ -544,10 +562,26 @@ const App = () => {
             >
               <Heart size={18} strokeWidth={1.7} className="text-off-white" />
             </button>
+            */}
           </div>
 
           {/* Mobile/Tablet left-side controls: version + support + hamburger */}
           <div className="lg:hidden flex items-center gap-2">
+            {/* HIT Logo Mobile */}
+            <a 
+              href="https://portal.hit.ac.il/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="ml-1 transition-opacity hover:opacity-80"
+              aria-label="HIT Portal"
+            >
+              <img 
+                src={hitLogo} 
+                alt="HIT Logo" 
+                className="h-6 w-auto brightness-0 invert" 
+              />
+            </a>
+
             <span
               className={cn(
                 'inline-block px-2 py-1',
@@ -561,6 +595,7 @@ const App = () => {
             >
               v{pkg.version}
             </span>
+            {/* Support Button - Hidden for now
             <button
               type="button"
               onClick={() => setIsSupportModalOpen(true)}
@@ -577,6 +612,7 @@ const App = () => {
             >
               <Heart size={18} strokeWidth={1.7} className="text-off-white" />
             </button>
+            */}
             <button
               className={cn(
                 'w-[34px] h-[34px]',
@@ -975,6 +1011,32 @@ const App = () => {
           </div>
         )}
 
+        {/* ===== TIPS SECTION ===== */}
+        {activeSection === 'tips' && (
+          <div className="mt-12" id="section-tips">
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={() => setActiveSection(null)}
+                className={cn(
+                  "px-4 py-2",
+                  "font-shimshon text-sm font-bold text-off-black",
+                  "bg-light-gray",
+                  "border-2 border-off-black",
+                  "shadow-brutalist-xs",
+                  "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                  "transition-all duration-200"
+                )}
+              >
+                חזרה לכל הקטגוריות
+              </button>
+            </div>
+            <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
+              <TipsSection />
+            </Suspense>
+          </div>
+        )}
+
         {/* ===== SURPRISE SECTION ===== */}
         {activeSection === 'lucky' && (
           <div className="mt-12" id="section-lucky">
@@ -1148,6 +1210,7 @@ const App = () => {
               <MessageSquare size={15} />
               <span>רוצים להציע תוכן לאתר?</span>
             </button>
+            {/* Support Button - Hidden for now
             <button
               type="button"
               onClick={() => setIsSupportModalOpen(true)}
@@ -1163,6 +1226,7 @@ const App = () => {
               <Heart size={14} />
               <span>לתמיכה ביוצר</span>
             </button>
+            */}
           </div>
           <p className="text-sm text-dark-gray font-ibm">
             נבנה על ידי יהונתן שפירא, 2026
