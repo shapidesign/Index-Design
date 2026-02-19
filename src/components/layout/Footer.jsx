@@ -48,7 +48,7 @@ const Footer = () => {
           {/* Credits */}
           <div className="flex flex-col items-start gap-4">
             <a
-              href="https://www.hit.ac.il/academic/design/visual-communication/"
+              href="https://www.hit.ac.il/academic/design/visual-communications/"
               target="_blank"
               rel="noopener noreferrer"
               className="mb-2 transition-opacity hover:opacity-80"

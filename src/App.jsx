@@ -470,7 +470,11 @@ const App = () => {
     <div dir="rtl" className="min-h-screen bg-off-white text-off-black font-shimshon animate-app-fade-in">
 
       {/* ===== NAVBAR - Dark for differentiation ===== */}
-      <Header activeSection={activeSection} onSectionChange={setActiveSection} />
+      <Header
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        onHelpClick={() => setIsSuggestionModalOpen(true)}
+      />
 
       {/* ===== MAIN ===== */}
       <main className="max-w-7xl mx-auto px-4 py-12">

@@ -15,15 +15,16 @@ import vcLogo from '@/assets/svg/vc-logo-small.svg';
  */
 
 const navSections = [
-  { id: 'tips', label: 'טיפ' },
-  { id: 'students', label: 'סטודנט לסטודנט' },
-  { id: 'library', label: 'הספרייה' },
-  { id: 'museum', label: 'המוזיאון' },
   { id: 'toolbox', label: 'ארגז כלים' },
-  { id: 'ai-tools', label: 'כלי AI ותוכנות' },
+  { id: 'museum', label: 'מוזיאון' },
+  { id: 'library', label: 'ספרייה' },
+  { id: 'map', label: 'מפה' },
+  { id: 'tips', label: 'טיפים' },
+  { id: 'hallOfFame', label: 'היכל התהילה' },
+  { id: 'lucky', label: 'הפתעה' },
 ];
 
-const Header = ({ activeSection, onSectionChange }) => {
+const Header = ({ activeSection, onSectionChange, onHelpClick }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Prevent body scroll when mobile menu is open
@@ -55,45 +56,64 @@ const Header = ({ activeSection, onSectionChange }) => {
         </a>
 
         {/* Desktop navigation centered */}
-        <nav className="hidden md:flex items-center justify-center gap-4">
-          {navSections.map((section) => (
-            <button
-              key={section.id}
-              onClick={() => onSectionChange?.(section.id)}
-              className={cn(
-                'px-4 py-2',
-                'text-sm font-shimshon whitespace-nowrap',
-                'border border-dark-gray',
-                'transition-all duration-200',
-                activeSection === section.id
-                  ? 'bg-tetris-purple text-off-white shadow-none translate-x-[4px] translate-y-[4px]'
-                  : 'bg-btn-gray text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
-              )}
-            >
-              {section.label}
-            </button>
-          ))}
-        </nav>
+        <div className="hidden md:flex items-center justify-center gap-4">
+          <nav className="flex items-center justify-center gap-4">
+            {navSections.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => onSectionChange?.(section.id)}
+                className={cn(
+                  'px-4 py-2',
+                  'text-sm font-shimshon whitespace-nowrap',
+                  'border border-dark-gray',
+                  'transition-all duration-200',
+                  section.id === 'lucky'
+                    ? 'bg-tetris-cyan text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+                    : activeSection === section.id
+                      ? 'bg-tetris-purple text-off-white shadow-none translate-x-[4px] translate-y-[4px]'
+                      : 'bg-btn-gray text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+                )}
+              >
+                {section.label}
+              </button>
+            ))}
+          </nav>
+
+          <button
+            type="button"
+            onClick={() => onHelpClick?.()}
+            className={cn(
+              'px-4 py-2',
+              'text-sm font-shimshon whitespace-nowrap',
+              'bg-tetris-purple text-off-white',
+              'border border-dark-gray shadow-brutalist-nav',
+              'transition-all duration-200',
+              'hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+            )}
+          >
+            לעזור
+          </button>
+        </div>
 
         {/* Left side: VC logo (desktop full, mobile icon) + mobile hamburger */}
         <div className="flex items-center gap-2 md:justify-self-start">
           <a
-            href="https://www.hit.ac.il/academic/design/visual-communication/"
+            href="https://www.hit.ac.il/academic/design/visual-communications/"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center"
           >
             {/* Desktop: Full Logo */}
-            <img 
-              src={vcLogo} 
-              alt="המחלקה לתקשורת חזותית" 
+            <img
+              src={vcLogo}
+              alt="המחלקה לתקשורת חזותית"
               className="hidden md:block h-10 w-auto brightness-0 invert"
             />
             {/* Mobile: Icon Only (using object-position to crop) */}
             <div className="md:hidden h-8 w-8 overflow-hidden relative">
-              <img 
-                src={vcLogo} 
-                alt="המחלקה לתקשורת חזותית" 
+              <img
+                src={vcLogo}
+                alt="המחלקה לתקשורת חזותית"
                 className="h-8 w-auto max-w-none absolute right-0 brightness-0 invert"
                 style={{ right: '-2px' }} // Adjust to show only the icon part
               />
@@ -133,6 +153,23 @@ const Header = ({ activeSection, onSectionChange }) => {
         )}
       >
         <nav className="flex flex-col gap-4">
+          <button
+            type="button"
+            onClick={() => {
+              onHelpClick?.();
+              setMobileMenuOpen(false);
+            }}
+            className={cn(
+              'px-6 py-4 text-right',
+              'font-shimshon text-lg',
+              'border border-dark-gray',
+              'bg-tetris-purple text-off-white',
+              'shadow-brutalist-nav',
+              'transition-all duration-200'
+            )}
+          >
+            לעזור
+          </button>
           {navSections.map((section) => (
             <button
               key={section.id}
