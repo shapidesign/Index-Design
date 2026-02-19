@@ -18,9 +18,9 @@ const navSections = [
   { id: 'toolbox', label: 'ארגז כלים' },
   { id: 'museum', label: 'מוזיאון' },
   { id: 'library', label: 'ספרייה' },
+  { id: 'hallOfFame', label: 'היכל התהילה' },
   { id: 'map', label: 'מפה' },
   { id: 'tips', label: 'טיפים' },
-  { id: 'hallOfFame', label: 'היכל התהילה' },
   { id: 'lucky', label: 'הפתעה' },
 ];
 
@@ -73,7 +73,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
                   'border border-dark-gray',
                   'transition-all duration-200',
                   section.id === 'lucky'
-                    ? 'bg-tetris-cyan text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+                    ? 'bg-tetris-yellow text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
                     : activeSection === section.id
                       ? 'bg-tetris-purple text-off-white shadow-none translate-x-[4px] translate-y-[4px]'
                       : 'bg-btn-gray text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
@@ -155,6 +155,29 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
         )}
       >
         <nav className="flex flex-col gap-4">
+          {navSections.map((section) => (
+            <button
+              key={section.id}
+              onClick={() => {
+                onSectionChange?.(section.id);
+                setMobileMenuOpen(false);
+              }}
+              className={cn(
+                'px-6 py-4 text-right',
+                'font-shimshon text-lg',
+                'border border-dark-gray',
+                'shadow-brutalist-nav',
+                'transition-all duration-200',
+                section.id === 'lucky'
+                  ? 'bg-tetris-yellow text-off-black'
+                  : activeSection === section.id
+                    ? 'bg-tetris-purple text-off-white shadow-none'
+                    : 'bg-btn-gray text-off-black'
+              )}
+            >
+              {section.label}
+            </button>
+          ))}
           <button
             type="button"
             onClick={() => {
@@ -172,27 +195,6 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
           >
             לעזור
           </button>
-          {navSections.map((section) => (
-            <button
-              key={section.id}
-              onClick={() => {
-                onSectionChange?.(section.id);
-                setMobileMenuOpen(false);
-              }}
-              className={cn(
-                'px-6 py-4 text-right',
-                'font-shimshon text-lg',
-                'border border-dark-gray',
-                'shadow-brutalist-nav',
-                'transition-all duration-200',
-                activeSection === section.id
-                  ? 'bg-tetris-purple text-off-white shadow-none'
-                  : 'bg-btn-gray text-off-black'
-              )}
-            >
-              {section.label}
-            </button>
-          ))}
         </nav>
       </div>
 

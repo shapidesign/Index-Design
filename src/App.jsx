@@ -60,9 +60,9 @@ const navSections = [
   { id: 'toolbox', label: 'ארגז הכלים' },
   { id: 'museum', label: 'המוזיאון' },
   { id: 'library', label: 'הספרייה' },
+  { id: 'hallOfFame', label: 'היכל התהילה' },
   { id: 'map', label: 'המפה' },
   { id: 'tips', label: 'טיפים' },
-  { id: 'hallOfFame', label: 'היכל התהילה' },
   { id: 'lucky', label: 'הפתעה' },
 ];
 
@@ -71,9 +71,9 @@ const categories = [
   { id: 'toolbox', title: 'ארגז הכלים', desc: 'כלים חינמיים ומומלצים לעיצוב', color: 'purple', shape: 'T' },
   { id: 'museum', title: 'המוזיאון', desc: 'מעצבים ויצירות שחובה להכיר', color: 'orange', shape: 'L' },
   { id: 'library', title: 'הספרייה', desc: 'ספרים וחומרי לימוד מומלצים', color: 'blue', shape: 'I' },
+  { id: 'hallOfFame', title: 'היכל התהילה', desc: 'מאסטרים, זרמים ושפות חזותיות שחובה ללמוד', color: 'yellow', shape: 'Z' },
   { id: 'map', title: 'המפה', desc: 'מיקומים שימושיים לסטודנטים', color: 'green', shape: 'O' },
   { id: 'tips', title: 'טיפים', desc: 'טיפים וביקורות מסטודנטים', color: 'pink', shape: 'S' },
-  { id: 'hallOfFame', title: 'היכל התהילה', desc: 'מאסטרים, זרמים ושפות חזותיות שחובה ללמוד', color: 'yellow', shape: 'Z' },
   { id: 'lucky', title: 'הפתעה', desc: 'דף הפתעה עם כרטיס אקראי במיוחד בשבילך', color: 'cyan', shape: 'J', isLucky: true },
 ];
 
@@ -1052,7 +1052,7 @@ const App = () => {
             </button>
             */}
           </div>
-          <p className="text-sm text-dark-gray font-ibm">
+          <p className="text-sm text-tetris-green font-ibm">
             נבנה על ידי יהונתן שפירא, 2026
           </p>
         </div>
