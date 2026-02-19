@@ -462,6 +462,15 @@ const App = () => {
     window.setTimeout(() => setLuckyHighlight(null), 2000);
   }, [clearSearchTargetHighlight, luckyItems]);
 
+  const handleGoHome = useCallback(() => {
+    clearSearchTargetHighlight();
+    setActiveSection(null);
+    setPendingNavigation(null);
+    setSearchFocused(false);
+    setActiveResultIndex(-1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [clearSearchTargetHighlight]);
+
   if (isInitialLoading) {
     return <TetrisLoader fullScreen />;
   }
@@ -474,6 +483,7 @@ const App = () => {
         activeSection={activeSection}
         onSectionChange={setActiveSection}
         onHelpClick={() => setIsSuggestionModalOpen(true)}
+        onHomeClick={handleGoHome}
       />
 
       {/* ===== MAIN ===== */}

@@ -24,7 +24,7 @@ const navSections = [
   { id: 'lucky', label: 'הפתעה' },
 ];
 
-const Header = ({ activeSection, onSectionChange, onHelpClick }) => {
+const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Prevent body scroll when mobile menu is open
@@ -51,9 +51,14 @@ const Header = ({ activeSection, onSectionChange, onHelpClick }) => {
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between md:grid md:grid-cols-[auto_1fr_auto] md:gap-6">
 
         {/* Logo - right corner in RTL (white version for dark bg) */}
-        <a href="/" aria-label="אינדקס האב - דף הבית" className="shrink-0">
+        <button
+          type="button"
+          onClick={() => onHomeClick?.()}
+          aria-label="אינדקס האב - דף הבית"
+          className="shrink-0"
+        >
           <img src={logoDark} alt="אינדקס האב" className="h-8 w-auto" />
-        </a>
+        </button>
 
         {/* Desktop navigation centered */}
         <div className="hidden md:flex items-center justify-center gap-4">
