@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { Heart } from 'lucide-react';
 import TetrisBlock from '@/components/tetris/TetrisBlock';
 import logoDark from '@/assets/svg/logo-dark.svg';
-import hitLogo from '@/assets/images/hit-white.jpg';
+import vcLogo from '@/assets/svg/vc-logo-small.svg';
 import pkg from '../../../package.json';
 import SupportModal from '@/components/ui/SupportModal';
 
@@ -48,16 +48,16 @@ const Footer = () => {
           {/* Credits */}
           <div className="flex flex-col items-start gap-4">
             <a
-              href="https://portal.hit.ac.il/"
+              href="https://www.hit.ac.il/academic/design/visual-communication/"
               target="_blank"
               rel="noopener noreferrer"
               className="mb-2 transition-opacity hover:opacity-80"
-              aria-label="מכון הטכנולוגי חולון – HIT Portal"
+              aria-label="המחלקה לתקשורת חזותית - HIT"
             >
               <img
-                src={hitLogo}
-                alt="מכון הטכנולוגי חולון"
-                className="h-8 w-auto mix-blend-screen"
+                src={vcLogo}
+                alt="המחלקה לתקשורת חזותית"
+                className="h-10 w-auto brightness-0 invert"
               />
             </a>
             <h3 className="text-lg font-bold mb-2">נבנה באהבה</h3>

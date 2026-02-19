@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Menu, X, Heart } from 'lucide-react';
 import logoDark from '@/assets/svg/logo-dark.svg';
+import vcLogo from '@/assets/svg/vc-logo-small.svg';
 import SupportModal from '@/components/ui/SupportModal';
 
 /**
@@ -54,6 +55,32 @@ const Header = ({ activeSection, onSectionChange }) => {
         <a href="/" aria-label="אינדקס האב - דף הבית" className="shrink-0">
           <img src={logoDark} alt="אינדקס האב" className="h-8 w-auto" />
         </a>
+
+        {/* Left Section: VC Logo */}
+        <div className="flex items-center gap-4 absolute left-4 md:left-6">
+          <a
+            href="https://www.hit.ac.il/academic/design/visual-communication/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center"
+          >
+            {/* Desktop: Full Logo */}
+            <img 
+              src={vcLogo} 
+              alt="המחלקה לתקשורת חזותית" 
+              className="hidden md:block h-10 w-auto brightness-0 invert"
+            />
+            {/* Mobile: Icon Only (using object-position to crop) */}
+            <div className="md:hidden h-8 w-8 overflow-hidden relative">
+              <img 
+                src={vcLogo} 
+                alt="המחלקה לתקשורת חזותית" 
+                className="h-8 w-auto max-w-none absolute right-0 brightness-0 invert"
+                style={{ right: '-2px' }} // Adjust to show only the icon part
+              />
+            </div>
+          </a>
+        </div>
 
         {/* Desktop Navigation + Hamburger */}
         <div className="flex items-center gap-4">

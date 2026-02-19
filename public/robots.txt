@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://index-design-hit.vercel.app/sitemap.xml

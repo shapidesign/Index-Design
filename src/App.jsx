@@ -9,6 +9,9 @@ import TetrisShape from '@/components/tetris/TetrisShape';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import MessageSuggestionModal from '@/components/ui/MessageSuggestionModal';
 import SupportModal from '@/components/ui/SupportModal';
+import EyeLogo from '@/components/ui/EyeLogo';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import pkg from '../package.json';
 
 /** Lazy-loaded section components */
@@ -467,227 +470,19 @@ const App = () => {
     <div dir="rtl" className="min-h-screen bg-off-white text-off-black font-shimshon animate-app-fade-in">
 
       {/* ===== NAVBAR - Dark for differentiation ===== */}
-      <header className="sticky top-0 z-50 bg-off-black border-b-3 border-off-black">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
-
-          {/* Logo icon + logotype - right side in RTL */}
-          <button
-            onClick={() => { setActiveSection(null); setSearchQuery(''); setSearchFocused(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            aria-label="אינדקס האב - דף הבית"
-            className="shrink-0 flex items-center gap-2 cursor-pointer"
-          >
-            <img src={logoIcon} alt="" aria-hidden="true" className="w-8 h-8" />
-            <img src={logoDark} alt="אינדקס האב" className="h-8 w-auto" />
-          </button>
-
-          {/* Desktop Nav - left side in RTL */}
-          <div className="hidden lg:flex items-center gap-2">
-            <span
-              className={cn(
-                'inline-block px-3 py-1',
-                'bg-tetris-yellow',
-                'text-off-black text-xs font-bold font-mono',
-                'border-2 border-off-white',
-                'shadow-brutalist-nav'
-              )}
-              aria-label={`גרסה ${pkg.version}`}
-              title={`גרסה ${pkg.version}`}
-            >
-              v{pkg.version}
-            </span>
-            <nav className="flex items-center gap-2">
-              {navSections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => section.id === 'lucky' ? handleFeelingLucky() : setActiveSection(section.id)}
-                  className={cn(
-                    'px-3 py-2',
-                    'text-sm font-shimshon whitespace-nowrap',
-                    'border border-dark-gray',
-                    'transition-all duration-200',
-                    section.id === 'lucky'
-                      ? 'bg-tetris-cyan text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
-                      : activeSection === section.id
-                        ? 'bg-tetris-green text-off-black shadow-brutalist-nav'
-                        : 'bg-btn-gray text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
-                  )}
-                >
-                  {section.label}
-                </button>
-              ))}
-            </nav>
-            <button
-              type="button"
-              onClick={() => setIsSuggestionModalOpen(true)}
-              className={cn(
-                'inline-flex items-center gap-2 px-3 py-2',
-                'bg-tetris-purple text-off-white text-sm font-bold font-shimshon',
-                'border border-dark-gray shadow-brutalist-nav',
-                'hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]',
-                'transition-all duration-200'
-              )}
-            >
-              <MessageSquare size={14} />
-              <span>שליחת הצעה</span>
-            </button>
-            {/* Support Button - Hidden for now
-            <button
-              type="button"
-              onClick={() => setIsSupportModalOpen(true)}
-              className={cn(
-                'w-[34px] h-[34px]',
-                'flex items-center justify-center',
-                'bg-tetris-pink',
-                'border-[1.7px] border-dark-gray',
-                'shadow-brutalist-hamburger',
-                'transition-all duration-200',
-                'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
-              )}
-              aria-label="תמיכה ביוצר"
-            >
-              <Heart size={18} strokeWidth={1.7} className="text-off-white" />
-            </button>
-            */}
-            {/* HIT Logo */}
-            <a
-              href="https://portal.hit.ac.il/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mr-2 transition-opacity hover:opacity-80"
-              aria-label="HIT Portal"
-            >
-              <img
-                src={hitLogo}
-                alt="HIT Logo"
-                className="h-8 w-auto brightness-0 invert"
-              />
-            </a>
-          </div>
-
-          {/* Mobile/Tablet left-side controls: version + support + hamburger */}
-          <div className="lg:hidden flex items-center gap-2">
-            <span
-              className={cn(
-                'inline-block px-2 py-1',
-                'bg-tetris-yellow',
-                'text-off-black text-xs leading-none font-bold font-mono',
-                'border-2 border-off-white',
-                'shadow-brutalist-xs'
-              )}
-              aria-label={`גרסה ${pkg.version}`}
-              title={`גרסה ${pkg.version}`}
-            >
-              v{pkg.version}
-            </span>
-            {/* Support Button - Hidden for now
-            <button
-              type="button"
-              onClick={() => setIsSupportModalOpen(true)}
-              className={cn(
-                'w-[34px] h-[34px]',
-                'flex items-center justify-center',
-                'bg-tetris-pink',
-                'border-[1.7px] border-dark-gray',
-                'shadow-brutalist-hamburger',
-                'transition-all duration-200',
-                'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
-              )}
-              aria-label="תמיכה ביוצר"
-            >
-              <Heart size={18} strokeWidth={1.7} className="text-off-white" />
-            </button>
-            */}
-            {/* HIT Logo Mobile */}
-            <a
-              href="https://portal.hit.ac.il/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mr-1 transition-opacity hover:opacity-80"
-              aria-label="HIT Portal"
-            >
-              <img
-                src={hitLogo}
-                alt="HIT Logo"
-                className="h-6 w-auto brightness-0 invert"
-              />
-            </a>
-            <button
-              className={cn(
-                'w-[34px] h-[34px]',
-                'flex items-center justify-center',
-                'bg-tetris-purple',
-                'border-[1.7px] border-dark-gray',
-                'shadow-brutalist-hamburger',
-                'transition-all duration-200',
-                'hover:shadow-none hover:translate-x-[3.4px] hover:translate-y-[3.4px]'
-              )}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? 'סגור תפריט' : 'פתח תפריט'}
-            >
-              <Menu size={18} strokeWidth={1.7} className="text-off-white" />
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu Overlay */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 top-[65px] bg-off-black z-40 p-6 overflow-y-auto">
-            <nav className="flex flex-col gap-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSuggestionModalOpen(true);
-                  setMobileMenuOpen(false);
-                }}
-                className={cn(
-                  'px-6 py-4 text-right',
-                  'font-shimshon text-lg',
-                  'border border-dark-gray',
-                  'bg-tetris-purple text-off-white',
-                  'shadow-brutalist-nav',
-                  'transition-all duration-200'
-                )}
-              >
-                שליחת הצעה
-              </button>
-              {navSections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => {
-                    if (section.id === 'lucky') {
-                      handleFeelingLucky();
-                    } else {
-                      setActiveSection(section.id);
-                    }
-                    setMobileMenuOpen(false);
-                  }}
-                  className={cn(
-                    'px-6 py-4 text-right',
-                    'font-shimshon text-lg',
-                    'border border-dark-gray',
-                    'shadow-brutalist-nav',
-                    'transition-all duration-200',
-                    section.id === 'lucky'
-                      ? 'bg-tetris-cyan text-off-black'
-                      : activeSection === section.id
-                        ? 'bg-tetris-green text-off-black shadow-brutalist-nav'
-                        : 'bg-btn-gray text-off-black'
-                  )}
-                >
-                  {section.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-        )}
-      </header>
+      <Header activeSection={activeSection} onSectionChange={setActiveSection} />
 
       {/* ===== MAIN ===== */}
       <main className="max-w-7xl mx-auto px-4 py-12">
         {/* Hero + category cards: hidden when any section is active */}
         {!activeSection && (
           <>
-            <section className="text-center mb-8 py-4">
+            <section className="text-center mb-8 py-4 flex flex-col items-center">
+              {/* Eye Logo Animation */}
+              <div className="mb-6">
+                <EyeLogo className="w-32 h-32 md:w-40 md:h-40" />
+              </div>
+
               {/* Logo "אינדקס" from Figma */}
               <div className="flex justify-center mb-4">
                 <img
@@ -699,8 +494,8 @@ const App = () => {
               <h1 className="text-5xl md:text-7xl font-bold mb-4 leading-tight">
                 <span className="text-tetris-purple">משאבי עיצוב לסטודנט</span>
               </h1>
-              <p className="text-lg text-dark-gray max-w-2xl mx-auto font-ibm text-balance">
-                כל מה שסטודנט לעיצוב צריך - כלים, טיפוגרפיה, מוקאפים, טיפים מסטודנטים ומיקומים מקומיים
+              <p className="text-base md:text-lg text-dark-gray max-w-xl mx-auto font-ibm text-balance leading-relaxed">
+                כל מה שסטודנט לעיצוב צריך במקום אחד
               </p>
             </section>
           </>
