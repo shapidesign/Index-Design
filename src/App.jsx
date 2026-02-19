@@ -462,6 +462,23 @@ const App = () => {
     window.setTimeout(() => setLuckyHighlight(null), 2000);
   }, [clearSearchTargetHighlight, luckyItems]);
 
+  const handleSectionChange = useCallback((sectionId) => {
+    if (sectionId === 'lucky') {
+      handleFeelingLucky();
+      return;
+    }
+    setActiveSection(sectionId);
+  }, [handleFeelingLucky]);
+
+  useEffect(() => {
+    // If user already opened "Surprise" while data was still loading,
+    // auto-pick a card as soon as lucky items are available.
+    if (activeSection !== 'lucky') return;
+    if (luckyPick) return;
+    if (luckyItems.length === 0) return;
+    handleFeelingLucky();
+  }, [activeSection, luckyItems, luckyPick, handleFeelingLucky]);
+
   const handleGoHome = useCallback(() => {
     clearSearchTargetHighlight();
     setActiveSection(null);
@@ -481,7 +498,7 @@ const App = () => {
       {/* ===== NAVBAR - Dark for differentiation ===== */}
       <Header
         activeSection={activeSection}
-        onSectionChange={setActiveSection}
+        onSectionChange={handleSectionChange}
         onHelpClick={() => setIsSuggestionModalOpen(true)}
         onHomeClick={handleGoHome}
       />
