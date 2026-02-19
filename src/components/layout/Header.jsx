@@ -114,15 +114,12 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
               alt="המחלקה לתקשורת חזותית"
               className="hidden md:block h-10 w-auto brightness-0 invert"
             />
-            {/* Mobile: Icon Only (using object-position to crop) */}
-            <div className="md:hidden h-8 w-8 overflow-hidden relative">
-              <img
-                src={vcLogo}
-                alt="המחלקה לתקשורת חזותית"
-                className="h-8 w-auto max-w-none absolute right-0 brightness-0 invert"
-                style={{ right: '-2px' }} // Adjust to show only the icon part
-              />
-            </div>
+            {/* Mobile: Full VC logo */}
+            <img
+              src={vcLogo}
+              alt="המחלקה לתקשורת חזותית"
+              className="md:hidden h-8 w-auto brightness-0 invert"
+            />
           </a>
 
           {/* Mobile: hamburger */}
