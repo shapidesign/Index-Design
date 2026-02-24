@@ -55,23 +55,21 @@ const WhatsNewModal = ({ open, onClose }) => {
           <X size={18} />
         </button>
 
-        <h2 id="whats-new-title" className="text-2xl font-bold font-shimshon text-off-black mb-4">
+        <h2 id="whats-new-title" className="text-2xl font-bold font-shimshon text-off-black mb-4 text-right">
           מה חדש אצלנו?
         </h2>
 
-        <ul className="space-y-3 text-right font-ibm text-dark-gray">
-          <li className="flex items-start gap-2 justify-end">
-            <span className="text-tetris-purple shrink-0">•</span>
-            <span>שיפרנו את מנגנון החיפוש</span>
-          </li>
-          <li className="flex items-start gap-2 justify-end">
-            <span className="text-tetris-purple shrink-0">•</span>
-            <span>הוספנו עוד 10 כלים</span>
-          </li>
-          <li className="flex items-start gap-2 justify-end">
-            <span className="text-tetris-purple shrink-0">•</span>
-            <span>העין של המחלקה מסתכלת עליכם כל הזמן</span>
-          </li>
+        <ul
+          dir="rtl"
+          className={cn(
+            'space-y-3 font-ibm text-dark-gray text-base',
+            'list-disc list-inside text-right',
+            'ps-4 marker:text-tetris-purple'
+          )}
+        >
+          <li>שיפרנו את מנגנון החיפוש</li>
+          <li>הוספנו עוד 10 כלים</li>
+          <li>העין של המחלקה מסתכלת עליכם כל הזמן</li>
         </ul>
 
         <div className="mt-6 flex justify-end">
