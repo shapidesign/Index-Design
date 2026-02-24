@@ -9,6 +9,7 @@ import TetrisShape from '@/components/tetris/TetrisShape';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import MessageSuggestionModal from '@/components/ui/MessageSuggestionModal';
 import SupportModal from '@/components/ui/SupportModal';
+import WhatsNewModal from '@/components/ui/WhatsNewModal';
 import EyeLogo from '@/components/ui/EyeLogo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -138,6 +139,11 @@ const getPreviewText = (text, max = 85) => {
   return clean.length > max ? `${clean.slice(0, max)}...` : clean;
 };
 
+/** Bump this to show "What's New" again for returning users */
+const WHATS_NEW_VERSION = 'v1';
+
+const WHATS_NEW_STORAGE_KEY = 'index-whats-new-seen';
+
 const App = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [activeSection, setActiveSection] = useState(null);
@@ -151,6 +157,7 @@ const App = () => {
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
   const [luckyPick, setLuckyPick] = useState(null);
   const searchContainerRef = useRef(null);
   const highlightedTargetRef = useRef(null);
@@ -163,6 +170,31 @@ const App = () => {
       setIsInitialLoading(false);
     }, 4500);
     return () => window.clearTimeout(timer);
+  }, []);
+
+  /** Show "What's New" once per user per version (after initial load) */
+  useEffect(() => {
+    if (isInitialLoading) return;
+    const timer = window.setTimeout(() => {
+      try {
+        const seen = localStorage.getItem(WHATS_NEW_STORAGE_KEY);
+        if (seen !== WHATS_NEW_VERSION) {
+          setIsWhatsNewOpen(true);
+        }
+      } catch {
+        /* localStorage unavailable */
+      }
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [isInitialLoading]);
+
+  const handleWhatsNewClose = useCallback(() => {
+    setIsWhatsNewOpen(false);
+    try {
+      localStorage.setItem(WHATS_NEW_STORAGE_KEY, WHATS_NEW_VERSION);
+    } catch {
+      /* localStorage unavailable */
+    }
   }, []);
 
   /** Close dropdown when clicking outside */
@@ -1065,6 +1097,10 @@ const App = () => {
       <SupportModal
         open={isSupportModalOpen}
         onClose={() => setIsSupportModalOpen(false)}
+      />
+      <WhatsNewModal
+        open={isWhatsNewOpen}
+        onClose={handleWhatsNewClose}
       />
     </div>
   );
