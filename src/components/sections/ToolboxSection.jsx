@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import useData from '@/hooks/useData';
 import ToolboxCard from '@/components/cards/ToolboxCard';
@@ -20,10 +20,17 @@ const emptyFilters = {
   tags: [],
 };
 
-const ToolboxSection = () => {
+const ToolboxSection = ({ pendingNavigation }) => {
   const { data, loading, error, refetch } = useData('/api/resources');
   const [filters, setFilters] = useState(emptyFilters);
   const [viewMode, setViewMode] = useState('gallery');
+
+  /** Clear filters when navigating from search to a specific card */
+  useEffect(() => {
+    if (pendingNavigation?.targetId) {
+      setFilters(emptyFilters);
+    }
+  }, [pendingNavigation?.targetId]);
 
   // The API returns { results: [...], total: number }
   const resources = data?.results || [];

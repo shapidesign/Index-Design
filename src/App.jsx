@@ -752,7 +752,7 @@ const App = () => {
               </button>
             </div>
             <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
-              <ToolboxSection />
+              <ToolboxSection pendingNavigation={pendingNavigation} />
             </Suspense>
           </div>
         )}
@@ -778,7 +778,7 @@ const App = () => {
               </button>
             </div>
             <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
-              <HallOfFameSection />
+              <HallOfFameSection pendingNavigation={pendingNavigation} />
             </Suspense>
           </div>
         )}
@@ -804,7 +804,7 @@ const App = () => {
               </button>
             </div>
             <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
-              <MuseumSection />
+              <MuseumSection pendingNavigation={pendingNavigation} />
             </Suspense>
           </div>
         )}
@@ -830,7 +830,7 @@ const App = () => {
               </button>
             </div>
             <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
-              <LibrarySection />
+              <LibrarySection pendingNavigation={pendingNavigation} />
             </Suspense>
           </div>
         )}

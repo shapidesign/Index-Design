@@ -327,7 +327,7 @@ const MuseumModal = ({ item, onClose }) => {
 };
 
 // ===== MAIN SECTION =====
-const MuseumSection = () => {
+const MuseumSection = ({ pendingNavigation }) => {
     const { data, loading, error, refetch } = useData('/api/museum');
     const [bootLoading, setBootLoading] = useState(true);
     const [viewMode, setViewMode] = useState('gallery');
@@ -430,6 +430,13 @@ const MuseumSection = () => {
         setSelectedTags([]);
         setSelectedEras([]);
     }, []);
+
+    /** Clear filters when navigating from search to a specific card */
+    useEffect(() => {
+        if (pendingNavigation?.targetId) {
+            clearAll();
+        }
+    }, [pendingNavigation?.targetId, clearAll]);
 
     /** Filtered items */
     const filteredItems = useMemo(() => {

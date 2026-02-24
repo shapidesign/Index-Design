@@ -207,7 +207,7 @@ const quickSearches = [
 ];
 
 // ===== MAIN SECTION =====
-const HallOfFameSection = () => {
+const HallOfFameSection = ({ pendingNavigation }) => {
     const { data, loading, error, refetch } = useData('/api/hall-of-fame');
     const [viewMode, setViewMode] = useState('gallery');
     const [searchQuery, setSearchQuery] = useState('');
@@ -269,6 +269,13 @@ const HallOfFameSection = () => {
         setSelectedFields([]);
         setDecadeRange([DECADE_MIN, DECADE_MAX]);
     }, []);
+
+    /** Clear filters when navigating from search to a specific card */
+    useEffect(() => {
+        if (pendingNavigation?.targetId) {
+            clearAll();
+        }
+    }, [pendingNavigation?.targetId, clearAll]);
 
     /** Filtered designers */
     const filteredDesigners = useMemo(() => {

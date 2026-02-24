@@ -192,7 +192,7 @@ const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
   );
 };
 
-const LibrarySection = () => {
+const LibrarySection = ({ pendingNavigation }) => {
   const { data, loading, error, refetch } = useData('/api/books');
   const [viewMode, setViewMode] = useState('gallery');
   const [searchQuery, setSearchQuery] = useState('');
@@ -242,6 +242,13 @@ const LibrarySection = () => {
     setSelectedTags([]);
     if (yearBounds) setYearRange(yearBounds);
   }, [yearBounds]);
+
+  /** Clear filters when navigating from search to a specific card */
+  useEffect(() => {
+    if (pendingNavigation?.targetId) {
+      clearFilters();
+    }
+  }, [pendingNavigation?.targetId, clearFilters]);
 
   const filteredBooks = useMemo(() => {
     const query = normalizeText(searchQuery);
