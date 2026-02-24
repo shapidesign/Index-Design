@@ -525,9 +525,9 @@ const App = () => {
               <h1 className="text-5xl md:text-7xl font-bold mb-4 leading-tight">
                 <span className="text-tetris-purple">ארגז כלים למעצב</span>
               </h1>
-              //<p className="text-base md:text-lg text-dark-gray max-w-xl mx-auto font-ibm text-balance leading-relaxed">
+              {/* <p className="text-base md:text-lg text-dark-gray max-w-xl mx-auto font-ibm text-balance leading-relaxed">
                 כל מה שסטודנט לעיצוב צריך במקום אחד
-              </p>//
+              </p> */}
             </section>
           </>
         )}
