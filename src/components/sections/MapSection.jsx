@@ -1,10 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { ExternalLink, Map, List, ChevronDown, ChevronUp, MapPin, Phone } from 'lucide-react';
+import { ExternalLink, Map, List, ChevronDown, ChevronUp, MapPin, MessageSquare } from 'lucide-react';
 import pinArtStore from '../../../Pins/p1-2.png';
 import pinPrintShop from '../../../Pins/p2-2.png';
 import pinProfessionals from '../../../Pins/p4-2.png';
 import pinSuppliers from '../../../Pins/p5-2.png';
+import StarIcon from '@/assets/star.svg';
+import MapReviewModal from '../ui/MapReviewModal';
 
 const GOOGLE_MAPS_EMBED_URL =
   'https://www.google.com/maps/d/u/0/embed?mid=1F_s6PIi59T-J0hgTAwJAzbzG9Ru_Kgo&ehbc=2E312F&noprof=1';
@@ -115,7 +117,7 @@ const buildMapsLink = (coords) => {
 /**
  * Category group — collapsible section with places list
  */
-const CategoryGroup = ({ category, places, defaultOpen }) => {
+const CategoryGroup = ({ category, places, defaultOpen, reviewsMap, onOpenReview }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -160,6 +162,12 @@ const CategoryGroup = ({ category, places, defaultOpen }) => {
         <div className="divide-y-2 divide-light-gray">
           {places.map((place, idx) => {
             const mapsLink = buildMapsLink(place.coords);
+            const reviewData = reviewsMap[place.name] || { ratings: [], comments: 0 };
+            const avgRating = reviewData.ratings.length > 0
+              ? (reviewData.ratings.reduce((a, b) => a + b, 0) / reviewData.ratings.length).toFixed(1)
+              : null;
+            const ratingCount = reviewData.ratings.length;
+
             return (
               <div
                 key={`${place.name}-${idx}`}
@@ -174,6 +182,15 @@ const CategoryGroup = ({ category, places, defaultOpen }) => {
                   <p className="font-bold font-shimshon text-off-black text-sm md:text-base leading-snug">
                     {place.name}
                   </p>
+                  
+                  {/* Rating Block */}
+                  {avgRating && (
+                    <div className="flex items-center gap-1.5 mt-1 text-xs font-ibm text-dark-gray" dir="ltr">
+                      <img src={StarIcon} alt="Star" className="w-3.5 h-3.5" />
+                      <span>{avgRating} ({ratingCount})</span>
+                    </div>
+                  )}
+
                   {place.description && !place.description.startsWith('http') && (
                     <p className="text-xs text-dark-gray font-ibm mt-1 leading-relaxed">
                       {place.description}
@@ -183,6 +200,26 @@ const CategoryGroup = ({ category, places, defaultOpen }) => {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => onOpenReview(place.name)}
+                    className={cn(
+                      'inline-flex relative items-center justify-center w-8 h-8',
+                      'border-2 border-off-black bg-tetris-orange',
+                      'shadow-brutalist-xs',
+                      'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                      'transition-all duration-200'
+                    )}
+                    title="גלו המלצות או הוסיפו אחת משלכם"
+                  >
+                    <MessageSquare size={13} className="text-off-black" />
+                    {reviewData.comments > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-off-black text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-ibm">
+                        {reviewData.comments}
+                      </span>
+                    )}
+                  </button>
+
                   {place.link && (
                     <a
                       href={place.link}
@@ -234,6 +271,29 @@ const CategoryGroup = ({ category, places, defaultOpen }) => {
 const MapSection = () => {
   const [viewMode, setViewMode] = useState('map');
   const [activeFilters, setActiveFilters] = useState(new Set(CATEGORIES.map((c) => c.id)));
+  
+  const [reviewsMap, setReviewsMap] = useState({});
+  const [reviewModalPlace, setReviewModalPlace] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/map-reviews')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.reviews) return;
+        const map = {};
+        data.reviews.forEach(rev => {
+          if (!map[rev.place]) {
+            map[rev.place] = { ratings: [], comments: 0 };
+          }
+          if (rev.rating) {
+            map[rev.place].ratings.push(rev.rating);
+          }
+          map[rev.place].comments += 1;
+        });
+        setReviewsMap(map);
+      })
+      .catch(console.error);
+  }, []);
 
   /** Toggle a category filter */
   const toggleFilter = (categoryId) => {
@@ -428,6 +488,8 @@ const MapSection = () => {
                   category={group.category}
                   places={group.places}
                   defaultOpen={groupedPlaces.length <= 2}
+                  reviewsMap={reviewsMap}
+                  onOpenReview={setReviewModalPlace}
                 />
               ))}
             </div>
@@ -453,6 +515,13 @@ const MapSection = () => {
           </a>
         </div>
       </div>
+      
+      {/* Review Modal */}
+      <MapReviewModal
+        open={!!reviewModalPlace}
+        onClose={() => setReviewModalPlace(null)}
+        placeName={reviewModalPlace}
+      />
     </section>
   );
 };
