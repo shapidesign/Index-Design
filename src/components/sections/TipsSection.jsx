@@ -2,6 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import TipArticleModal from '../ui/TipArticleModal';
 import { Loader2 } from 'lucide-react';
+import { getTagColor, getTagTextClass } from '@/lib/tagColors';
+
+const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
 
 const bgColorMap = {
   0: 'bg-tetris-pink',
@@ -86,7 +89,7 @@ const TipsSection = () => {
           טיפים
         </h2>
         <p className="text-lg text-dark-gray font-ibm max-w-2xl">
-          מאגר של כלים, טריקים וקיצורי דרך שנולדו מדם, יזע ודמעות. למדו מהנסיון של אחרים כדי לשרוד את התואר קצת יותר בקלות.
+         מאגר של טיפים, הסברים ומדריכים
         </p>
       </div>
 
@@ -129,7 +132,8 @@ const TipsSection = () => {
                     key={`tag-${tag}`}
                     onClick={() => setSelectedTag(tag)}
                     className={cn(
-                      'px-3 py-1 font-shimshon font-bold border-2 border-off-black transition-all hover:-translate-y-[2px]',
+                      'px-3 py-1 font-normal border-2 border-off-black transition-all hover:-translate-y-[2px]',
+                      isEnglish(tag) ? 'font-jersey' : 'font-shimshon',
                       selectedTag === tag
                         ? 'bg-off-black text-off-white shadow-none translate-y-0'
                         : 'bg-white text-dark-gray shadow-brutalist-xs hover:shadow-brutalist'
@@ -188,16 +192,24 @@ const TipsSection = () => {
                       </p>
 
                       <div className="flex flex-wrap gap-1.5 mt-auto">
-                        {tip.tags?.slice(0, 3).map((tag, tagIdx) => (
-                          <span 
-                            key={`${tip.id}-tag-${tagIdx}`}
-                            className="bg-light-gray text-xs font-bold font-ibm border border-off-black px-1.5 py-0.5"
-                          >
-                            {tag}
-                          </span>
-                        ))}
+                        {tip.tags?.slice(0, 3).map((tag, tagIdx) => {
+                          const tagBgColor = getTagColor(tag);
+                          return (
+                            <span 
+                              key={`${tip.id}-tag-${tagIdx}`}
+                              className={cn(
+                                "border border-off-black px-1.5 py-0.5 text-xs font-normal",
+                                tagBgColor,
+                                getTagTextClass(tagBgColor),
+                                isEnglish(tag) ? 'font-jersey text-sm' : 'font-shimshon'
+                              )}
+                            >
+                              {tag}
+                            </span>
+                          );
+                        })}
                         {tip.tags?.length > 3 && (
-                          <span className="text-xs text-mid-gray shrink-0 pt-0.5">
+                          <span className="text-xs text-mid-gray shrink-0 pt-0.5 font-shimshon">
                             +{tip.tags.length - 3}
                           </span>
                         )}

@@ -1,6 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { X, ChevronRight, ChevronLeft } from 'lucide-react';
+import { getTagColor, getTagTextClass } from '@/lib/tagColors';
+
+const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
 
 /**
  * Parses Notion rich-text (which often comes as plain text with newlines)
@@ -120,17 +123,28 @@ const TipArticleModal = ({ tip, open, onClose, onNext, onPrev, hasNext, hasPrev 
           <div className="max-w-2xl mx-auto space-y-6">
             
             {/* Meta tags */}
-            <div className="flex flex-wrap gap-2 items-center text-sm font-bold font-shimshon">
+            <div className="flex flex-wrap gap-2 items-center">
               {tip.type && (
-                <span className="bg-tetris-purple text-off-white px-3 py-1 border-2 border-off-black shadow-brutalist-xs">
+                <span className="bg-tetris-purple text-off-white text-sm font-bold font-shimshon px-3 py-1 border-2 border-off-black shadow-brutalist-xs">
                   {tip.type}
                 </span>
               )}
-              {tip.tags?.map((tag) => (
-                <span key={tag} className="bg-light-gray text-off-black px-2 py-1 border-2 border-off-black">
-                  {tag}
-                </span>
-              ))}
+              {tip.tags?.map((tag) => {
+                const tagBgColor = getTagColor(tag);
+                return (
+                  <span 
+                    key={tag} 
+                    className={cn(
+                      "px-2 py-1 border-2 border-off-black text-sm font-normal",
+                      tagBgColor,
+                      getTagTextClass(tagBgColor),
+                      isEnglish(tag) ? 'font-jersey text-base' : 'font-shimshon'
+                    )}
+                  >
+                    {tag}
+                  </span>
+                );
+              })}
             </div>
 
             <h2 className="text-4xl md:text-5xl font-black font-shimshon text-off-black leading-tight border-b-2 border-off-black/10 pb-4">

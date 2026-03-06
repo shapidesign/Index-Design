@@ -188,12 +188,14 @@ const App = () => {
     return () => window.clearTimeout(timer);
   }, [isInitialLoading]);
 
-  const handleWhatsNewClose = useCallback(() => {
+  const handleWhatsNewClose = useCallback((dontShowAgain) => {
     setIsWhatsNewOpen(false);
-    try {
-      localStorage.setItem(WHATS_NEW_STORAGE_KEY, WHATS_NEW_VERSION);
-    } catch {
-      /* localStorage unavailable */
+    if (dontShowAgain) {
+      try {
+        localStorage.setItem(WHATS_NEW_STORAGE_KEY, WHATS_NEW_VERSION);
+      } catch {
+        /* localStorage unavailable */
+      }
     }
   }, []);
 
