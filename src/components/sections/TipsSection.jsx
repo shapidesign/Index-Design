@@ -1,96 +1,226 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import TetrisBlock from '@/components/tetris/TetrisBlock';
+import TipArticleModal from '../ui/TipArticleModal';
+import { Loader2 } from 'lucide-react';
 
-/**
- * MockupCard - A simplified, blurred card to simulate upcoming content
- */
-const MockupCard = ({ className }) => {
-  return (
-    <div
-      className={cn(
-        'relative overflow-hidden',
-        'bg-off-white',
-        'border-3 border-off-black',
-        'shadow-brutalist',
-        'aspect-[3/4] md:aspect-[4/5]',
-        'filter blur-[6px] opacity-70',
-        'pointer-events-none select-none',
-        className
-      )}
-    >
-      {/* Fake Image Area */}
-      <div className="h-[45%] bg-light-gray border-b-3 border-off-black relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-tetris-pink/20 to-tetris-purple/20" />
-      </div>
-
-      {/* Fake Content Area */}
-      <div className="p-4 space-y-3">
-        {/* Fake Title */}
-        <div className="h-6 w-3/4 bg-dark-gray/20 rounded-sm" />
-        
-        {/* Fake Description lines */}
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-mid-gray/20 rounded-sm" />
-          <div className="h-3 w-5/6 bg-mid-gray/20 rounded-sm" />
-          <div className="h-3 w-4/5 bg-mid-gray/20 rounded-sm" />
-        </div>
-
-        {/* Fake Tags */}
-        <div className="flex gap-2 pt-2">
-          <div className="h-5 w-12 bg-tetris-yellow/30 border border-off-black/20 rounded-sm" />
-          <div className="h-5 w-16 bg-tetris-green/30 border border-off-black/20 rounded-sm" />
-        </div>
-      </div>
-    </div>
-  );
+const bgColorMap = {
+  0: 'bg-tetris-pink',
+  1: 'bg-tetris-blue',
+  2: 'bg-tetris-orange',
+  3: 'bg-tetris-green',
+  4: 'bg-tetris-yellow',
 };
 
-/**
- * TipsSection - "Coming Soon" placeholder for the Tips section
- */
 const TipsSection = () => {
-  return (
-    <section 
-      id="section-tips" 
-      className="min-h-[60vh] flex flex-col items-center justify-center py-16 relative overflow-hidden"
-    >
-      {/* Background decoration */}
-      <div className="absolute inset-0 pointer-events-none opacity-5">
-        <div className="absolute top-10 left-10 transform -rotate-12">
-          <TetrisBlock type="T" color="purple" size={120} />
-        </div>
-        <div className="absolute bottom-10 right-10 transform rotate-12">
-          <TetrisBlock type="S" color="pink" size={120} />
-        </div>
-      </div>
+  const [tips, setTips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-      <div className="relative z-10 text-center mb-12">
-        <h2 className="text-6xl md:text-8xl font-bold font-shimshon text-off-black mb-4 drop-shadow-brutalist-sm">
-          בקרוב
+  // Filters
+  const [selectedType, setSelectedType] = useState('הכל');
+  const [selectedTag, setSelectedTag] = useState('הכל');
+
+  // Modal State
+  const [activeTipIndex, setActiveTipIndex] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/tips')
+      .then((res) => {
+        if (!res.ok) throw new Error('שגיאה בטעינת טיפים');
+        return res.json();
+      })
+      .then((data) => {
+        if (data.tips) setTips(data.tips);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  // Compute available filters
+  const types = useMemo(() => {
+    return ['הכל', ...new Set(tips.map((t) => t.type).filter(Boolean))];
+  }, [tips]);
+
+  const tags = useMemo(() => {
+    const allTags = tips.flatMap((t) => t.tags || []);
+    return ['הכל', ...new Set(allTags)];
+  }, [tips]);
+
+  // Apply filters
+  const filteredTips = useMemo(() => {
+    return tips.filter((t) => {
+      const matchType = selectedType === 'הכל' || t.type === selectedType;
+      const matchTag = selectedTag === 'הכל' || (t.tags && t.tags.includes(selectedTag));
+      return matchType && matchTag;
+    });
+  }, [tips, selectedType, selectedTag]);
+
+  // Actions
+  const handleOpenTip = (tipId) => {
+    const idx = filteredTips.findIndex((t) => t.id === tipId);
+    if (idx !== -1) setActiveTipIndex(idx);
+  };
+
+  const handleNextTip = () => {
+    if (activeTipIndex !== null && activeTipIndex < filteredTips.length - 1) {
+      setActiveTipIndex(activeTipIndex + 1);
+    }
+  };
+
+  const handlePrevTip = () => {
+    if (activeTipIndex !== null && activeTipIndex > 0) {
+      setActiveTipIndex(activeTipIndex - 1);
+    }
+  };
+
+  const activeTip = activeTipIndex !== null ? filteredTips[activeTipIndex] : null;
+
+  return (
+    <section id="section-tips" className="py-12 md:py-16 relative" dir="rtl">
+      <div className="mb-8 md:mb-12">
+        <h2 className="text-4xl md:text-5xl font-bold font-shimshon text-off-black mb-4">
+          טיפים
         </h2>
-        <p className="text-xl md:text-2xl text-dark-gray font-shimshon max-w-md mx-auto">
-          אנחנו עובדים על מאגר טיפים מטורף שיעזור לכם לשרוד את התואר
+        <p className="text-lg text-dark-gray font-ibm max-w-2xl">
+          מאגר של כלים, טריקים וקיצורי דרך שנולדו מדם, יזע ודמעות. למדו מהנסיון של אחרים כדי לשרוד את התואר קצת יותר בקלות.
         </p>
       </div>
 
-      {/* Mockup Cards Container */}
-      <div className="relative w-full max-w-4xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 opacity-80">
-          {/* Card 1 - Rotated slightly left */}
-          <div className="transform -rotate-3 md:-rotate-6 transition-transform hover:rotate-0 duration-500">
-            <MockupCard />
+      {loading ? (
+        <div className="flex justify-center items-center py-20 min-h-[40vh]">
+          <Loader2 className="w-10 h-10 animate-spin text-tetris-purple" />
+        </div>
+      ) : error ? (
+        <div className="p-4 bg-red-100 border-2 border-red-700 text-red-800 font-ibm shadow-brutalist">
+          {error}
+        </div>
+      ) : (
+        <>
+          {/* Filters */}
+          <div className="flex flex-col gap-4 mb-8 bg-off-white border-3 border-off-black p-4 shadow-brutalist-sm">
+            <div className="flex items-center gap-3">
+              <span className="font-bold font-shimshon text-off-black shrink-0 w-16">סוג:</span>
+              <div className="flex flex-wrap gap-2">
+                {types.map((type) => (
+                  <button
+                    key={`type-${type}`}
+                    onClick={() => setSelectedType(type)}
+                    className={cn(
+                      'px-3 py-1 font-shimshon font-bold border-2 border-off-black transition-all hover:-translate-y-[2px]',
+                      selectedType === type
+                        ? 'bg-tetris-purple text-off-white shadow-none translate-y-0'
+                        : 'bg-white text-off-black shadow-brutalist-xs hover:shadow-brutalist'
+                    )}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="font-bold font-shimshon text-off-black shrink-0 w-16 pt-1">נושא:</span>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <button
+                    key={`tag-${tag}`}
+                    onClick={() => setSelectedTag(tag)}
+                    className={cn(
+                      'px-3 py-1 font-shimshon font-bold border-2 border-off-black transition-all hover:-translate-y-[2px]',
+                      selectedTag === tag
+                        ? 'bg-off-black text-off-white shadow-none translate-y-0'
+                        : 'bg-white text-dark-gray shadow-brutalist-xs hover:shadow-brutalist'
+                    )}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Card 2 - Rotated slightly right */}
-          <div className="transform rotate-3 md:rotate-6 transition-transform hover:rotate-0 duration-500 md:mt-12">
-            <MockupCard />
+          <div className="text-sm font-ibm text-mid-gray mb-4">
+            מציג {filteredTips.length} טיפים
           </div>
-        </div>
-        
-        {/* Overlay to prevent interaction and add depth */}
-        <div className="absolute inset-0 bg-gradient-to-t from-off-white/50 to-transparent pointer-events-none" />
-      </div>
+
+          {/* Cards Grid */}
+          {filteredTips.length === 0 ? (
+            <div className="py-12 text-center text-dark-gray font-ibm border-3 border-dashed border-mid-gray bg-white/50">
+              לא נמצאו טיפים התואמים לסינון.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredTips.map((tip, idx) => {
+                const headColor = bgColorMap[idx % 5];
+                return (
+                  <button
+                    key={tip.id}
+                    onClick={() => handleOpenTip(tip.id)}
+                    className={cn(
+                      'group relative overflow-hidden bg-off-white text-right',
+                      'border-3 border-off-black shadow-brutalist',
+                      'aspect-[3/4] md:aspect-[4/5] flex flex-col',
+                      'transition-all duration-300 hover:shadow-none hover:translate-x-1 hover:translate-y-1'
+                    )}
+                  >
+                    {/* Header Area */}
+                    <div className={cn('h-[40%] border-b-3 border-off-black relative p-4', headColor)}>
+                      <div className="absolute inset-0 bg-noise opacity-30 mix-blend-overlay" />
+                      {tip.type && (
+                        <div className="absolute top-4 right-4 bg-off-black text-off-white px-2 py-1 text-xs font-bold font-shimshon shadow-brutalist-xs">
+                          {tip.type}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content Area */}
+                    <div className="p-4 flex-1 flex flex-col min-h-0 bg-noise mix-blend-multiply">
+                      <h3 className="text-xl md:text-2xl font-bold font-shimshon text-off-black mb-2 line-clamp-3 leading-tight group-hover:text-tetris-purple transition-colors">
+                        {tip.title}
+                      </h3>
+                      
+                      <p className="text-sm text-dark-gray font-ibm line-clamp-3 mb-4 flex-1">
+                        {/* Show a preview of the content, stripping simple formatting */}
+                        {tip.content.substring(0, 150)}{tip.content.length > 150 ? '...' : ''}
+                      </p>
+
+                      <div className="flex flex-wrap gap-1.5 mt-auto">
+                        {tip.tags?.slice(0, 3).map((tag, tagIdx) => (
+                          <span 
+                            key={`${tip.id}-tag-${tagIdx}`}
+                            className="bg-light-gray text-xs font-bold font-ibm border border-off-black px-1.5 py-0.5"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {tip.tags?.length > 3 && (
+                          <span className="text-xs text-mid-gray shrink-0 pt-0.5">
+                            +{tip.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Article Modal */}
+          <TipArticleModal
+            tip={activeTip}
+            open={activeTipIndex !== null}
+            onClose={() => setActiveTipIndex(null)}
+            onNext={handleNextTip}
+            onPrev={handlePrevTip}
+            hasNext={activeTipIndex !== null && activeTipIndex < filteredTips.length - 1}
+            hasPrev={activeTipIndex !== null && activeTipIndex > 0}
+          />
+        </>
+      )}
     </section>
   );
 };
