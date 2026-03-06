@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import TipArticleModal from '../ui/TipArticleModal';
-import { Loader2 } from 'lucide-react';
+import TetrisLoader from '@/components/tetris/TetrisLoader';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
 const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
@@ -94,9 +94,7 @@ const TipsSection = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center py-20 min-h-[40vh]">
-          <Loader2 className="w-10 h-10 animate-spin text-tetris-purple" />
-        </div>
+        <TetrisLoader className="min-h-[40vh]" />
       ) : error ? (
         <div className="p-4 bg-red-100 border-2 border-red-700 text-red-800 font-ibm shadow-brutalist">
           {error}

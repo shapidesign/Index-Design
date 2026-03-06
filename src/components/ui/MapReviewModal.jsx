@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { cn } from '@/lib/utils';
 import { X, Send } from 'lucide-react';
 import StarIcon from '@/assets/star.svg';
@@ -87,10 +88,9 @@ const MapReviewModal = ({ open, onClose, placeName }) => {
 
   if (!open) return null;
 
-  return (
-    
+  return ReactDOM.createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 overflow-y-auto"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -99,7 +99,7 @@ const MapReviewModal = ({ open, onClose, placeName }) => {
       <div
         dir="rtl"
         className={cn(
-          'relative w-full max-w-xl',
+          'relative w-full max-w-xl mx-auto my-auto',
           'bg-off-white border-3 border-off-black shadow-brutalist',
           'p-6 md:p-7'
         )}
@@ -211,7 +211,8 @@ const MapReviewModal = ({ open, onClose, placeName }) => {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
