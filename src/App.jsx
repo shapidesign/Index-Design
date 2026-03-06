@@ -37,7 +37,7 @@ const lazyWithChunkRecovery = (importer) =>
         if (!alreadyReloaded) {
           window.sessionStorage.setItem(CHUNK_RELOAD_FLAG, 'true');
           window.location.reload();
-          return new Promise(() => {});
+          return new Promise(() => { });
         }
       }
 
@@ -319,6 +319,80 @@ const App = () => {
           targetId: makeTargetId('library', item.id)
         }));
 
+        /** Map places — hardcoded names for global search */
+        const mapPlaceNames = [
+          { name: 'קסם האומנות', cat: 'חנויות יצירה ואומנות' },
+          { name: 'המרכז לאומן - באר שבע', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Shirbutim', cat: 'חנויות יצירה ואומנות' },
+          { name: 'ארט דיפו חנות המחסן ART DEPOT', cat: 'חנויות יצירה ואומנות' },
+          { name: 'רפידו ציוד משרדי - נתניה', cat: 'חנויות יצירה ואומנות' },
+          { name: 'ארט כפר סבא', cat: 'חנויות יצירה ואומנות' },
+          { name: 'ארט אורי פרץ', cat: 'חנויות יצירה ואומנות' },
+          { name: 'לב התחביב', cat: 'חנויות יצירה ואומנות' },
+          { name: 'האָטֶלְיֶה - בית לאמנות', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Hobi Lobi 2005', cat: 'חנויות יצירה ואומנות' },
+          { name: 'דרור ליצירה רמת גן', cat: 'חנויות יצירה ואומנות' },
+          { name: 'ארט סנטר', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Chubu - צ\'ובו', cat: 'חנויות יצירה ואומנות' },
+          { name: 'ארטולס | ראשון לציון', cat: 'חנויות יצירה ואומנות' },
+          { name: 'ארטולס | סניף חולון', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Art Set', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Fixline', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Top Art', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Artistic Hands', cat: 'חנויות יצירה ואומנות' },
+          { name: 'אסכולה', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Arta', cat: 'חנויות יצירה ואומנות' },
+          { name: 'ארטא חולון / ארט פוינט', cat: 'חנויות יצירה ואומנות' },
+          { name: 'kanvas', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Mai-art', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Ronbi', cat: 'חנויות יצירה ואומנות' },
+          { name: 'אקוורל קרית אונו', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Aqvarel', cat: 'חנויות יצירה ואומנות' },
+          { name: 'Artistim', cat: 'חנויות יצירה ואומנות' },
+          { name: 'חולון גרף', cat: 'בתי דפוס' },
+          { name: 'פרינטיקה - Printika', cat: 'בתי דפוס' },
+          { name: 'Yprint', cat: 'בתי דפוס' },
+          { name: 'בית דפוס דקל', cat: 'בתי דפוס' },
+          { name: 'נועה שירותי העתקות', cat: 'בתי דפוס' },
+          { name: 'פרפל פרינט', cat: 'בתי דפוס' },
+          { name: 'Graphos Print', cat: 'בתי דפוס' },
+          { name: 'Dojo Jerusalem', cat: 'בתי דפוס' },
+          { name: 'תא תרבות המחוגה', cat: 'בתי דפוס' },
+          { name: 'pyramid', cat: 'בתי דפוס' },
+          { name: 'HC Studio Editions', cat: 'בתי דפוס' },
+          { name: 'ArtScan - ארטסקאן', cat: 'בתי דפוס' },
+          { name: 'Tap-Print', cat: 'בתי דפוס' },
+          { name: 'רע - בית מלאכה לצילום', cat: 'בתי דפוס' },
+          { name: 'Print Station Haifa', cat: 'בתי דפוס' },
+          { name: 'סדנת ההדפס ירושלים', cat: 'בתי דפוס' },
+          { name: 'דפוס השלמה', cat: 'בתי דפוס' },
+          { name: 'פוטוגרפיקס', cat: 'בתי דפוס' },
+          { name: 'קובי - רן', cat: 'בתי דפוס' },
+          { name: 'Nachlieli Printing', cat: 'בתי דפוס' },
+          { name: 'שיא קופי - c-copy', cat: 'בתי דפוס' },
+          { name: 'דפוס אילן', cat: 'בתי דפוס' },
+          { name: 'קודף', cat: 'בתי דפוס' },
+          { name: 'ע.ר. הדפסות', cat: 'בתי דפוס' },
+          { name: 'ארט פלוס', cat: 'בתי דפוס' },
+          { name: 'דיל דיגיטל / Fizzy Stickers', cat: 'בתי דפוס' },
+          { name: 'מדן נייר', cat: 'ספקים' },
+          { name: 'מפעל סיכות', cat: 'ספקים' },
+          { name: 'פייפרנט', cat: 'ספקים' },
+          { name: 'Sharon Trading Ltd.', cat: 'ספקים' },
+          { name: 'אברהם פרץ - כורך', cat: 'בעלי מקצוע' },
+          { name: 'כריכיית צימבר', cat: 'בעלי מקצוע' },
+          { name: 'דניאל בלום - כורך', cat: 'בעלי מקצוע' },
+          { name: 'חיתוך בלייזר ארטק לייזר', cat: 'בעלי מקצוע' },
+          { name: 'אלקוסר שלטים', cat: 'בעלי מקצוע' },
+          { name: 'לייזר קאט תעשיות', cat: 'בעלי מקצוע' },
+          { name: 'The Papercut Factory', cat: 'בעלי מקצוע' },
+          { name: 'ארט לייזר', cat: 'בעלי מקצוע' },
+          { name: 'ברינר חותמות', cat: 'בעלי מקצוע' },
+          { name: 'חותמות הגשר', cat: 'בעלי מקצוע' },
+          { name: 'Axelera 3D', cat: 'בעלי מקצוע' },
+          { name: 'סטודיו חגי פרגו', cat: 'בעלי מקצוע' },
+        ];
+
         const mapItems = [
           {
             id: 'google-my-maps-main',
@@ -342,7 +416,19 @@ const App = () => {
               'my maps'
             ],
             targetId: 'section-map'
-          }
+          },
+          ...mapPlaceNames.map((p, i) => ({
+            id: `map-place-${i}`,
+            sectionId: 'map',
+            sectionLabel: 'המפה',
+            titleHe: p.name,
+            titleEn: '',
+            description: p.cat,
+            link: '',
+            tags: [p.cat, 'מפה'],
+            keywords: [p.name, p.cat, 'מפה', 'מקום'],
+            targetId: 'section-map'
+          }))
         ];
 
         if (!cancelled) {
