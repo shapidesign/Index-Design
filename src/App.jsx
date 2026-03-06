@@ -177,12 +177,13 @@ const App = () => {
     if (isInitialLoading) return;
     const timer = window.setTimeout(() => {
       try {
-        const seen = localStorage.getItem(WHATS_NEW_STORAGE_KEY);
-        if (seen !== WHATS_NEW_VERSION) {
+        const seen = localStorage.getItem('index_whats_new_dont_show');
+        if (seen !== 'true') {
           setIsWhatsNewOpen(true);
         }
       } catch {
         /* localStorage unavailable */
+        setIsWhatsNewOpen(true); // Fallback to showing it
       }
     }, 400);
     return () => window.clearTimeout(timer);
@@ -192,7 +193,7 @@ const App = () => {
     setIsWhatsNewOpen(false);
     if (dontShowAgain) {
       try {
-        localStorage.setItem(WHATS_NEW_STORAGE_KEY, WHATS_NEW_VERSION);
+        localStorage.setItem('index_whats_new_dont_show', 'true');
       } catch {
         /* localStorage unavailable */
       }

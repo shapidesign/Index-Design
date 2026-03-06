@@ -4,8 +4,6 @@ import TipArticleModal from '../ui/TipArticleModal';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
-const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
-
 const bgColorMap = {
   0: 'bg-tetris-pink',
   1: 'bg-tetris-blue',
@@ -125,21 +123,24 @@ const TipsSection = () => {
             <div className="flex items-start gap-3">
               <span className="font-bold font-shimshon text-off-black shrink-0 w-16 pt-1">נושא:</span>
               <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <button
-                    key={`tag-${tag}`}
-                    onClick={() => setSelectedTag(tag)}
-                    className={cn(
-                      'px-3 py-1 font-normal border-2 border-off-black transition-all hover:-translate-y-[2px]',
-                      isEnglish(tag) ? 'font-jersey' : 'font-shimshon',
-                      selectedTag === tag
-                        ? 'bg-off-black text-off-white shadow-none translate-y-0'
-                        : 'bg-white text-dark-gray shadow-brutalist-xs hover:shadow-brutalist'
-                    )}
-                  >
-                    {tag}
-                  </button>
-                ))}
+                {tags.map((tag) => {
+                  const tagBg = getTagColor(tag);
+                  const isTagSelected = selectedTag === tag;
+                  return (
+                    <button
+                      key={`tag-${tag}`}
+                      onClick={() => setSelectedTag(tag)}
+                      className={cn(
+                        'px-3 py-1 font-mixed border-2 border-off-black transition-all hover:-translate-y-[2px]',
+                        isTagSelected
+                          ? 'bg-off-black text-off-white shadow-none translate-y-0'
+                          : cn(tagBg, getTagTextClass(tagBg), 'shadow-brutalist-xs hover:shadow-brutalist')
+                      )}
+                    >
+                      {tag}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -196,10 +197,9 @@ const TipsSection = () => {
                             <span 
                               key={`${tip.id}-tag-${tagIdx}`}
                               className={cn(
-                                "border border-off-black px-1.5 py-0.5 text-xs font-normal",
+                                "border border-off-black px-1.5 py-0.5 text-xs font-mixed",
                                 tagBgColor,
-                                getTagTextClass(tagBgColor),
-                                isEnglish(tag) ? 'font-jersey text-sm' : 'font-shimshon'
+                                getTagTextClass(tagBgColor)
                               )}
                             >
                               {tag}

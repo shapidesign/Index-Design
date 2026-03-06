@@ -3,8 +3,6 @@ import { cn } from '@/lib/utils';
 import { X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
-const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
-
 /**
  * Parses Notion rich-text (which often comes as plain text with newlines)
  * into paragraphs.
@@ -135,10 +133,9 @@ const TipArticleModal = ({ tip, open, onClose, onNext, onPrev, hasNext, hasPrev 
                   <span 
                     key={tag} 
                     className={cn(
-                      "px-2 py-1 border-2 border-off-black text-sm font-normal",
+                      "px-2 py-1 border-2 border-off-black text-base font-mixed",
                       tagBgColor,
-                      getTagTextClass(tagBgColor),
-                      isEnglish(tag) ? 'font-jersey text-base' : 'font-shimshon'
+                      getTagTextClass(tagBgColor)
                     )}
                   >
                     {tag}
