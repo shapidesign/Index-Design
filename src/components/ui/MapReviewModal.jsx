@@ -88,8 +88,9 @@ const MapReviewModal = ({ open, onClose, placeName }) => {
   if (!open) return null;
 
   return (
+    
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-off-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -125,38 +126,28 @@ const MapReviewModal = ({ open, onClose, placeName }) => {
           {placeName}
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <label className="block">
-            <span className="text-sm font-bold font-shimshon text-off-black">השם שלך *</span>
+            <span className="text-lg font-bold font-shimshon text-off-black block mb-2">השם שלך *</span>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 w-full px-3 py-2 bg-off-white border-2 border-off-black text-right font-shimshon outline-none focus:border-tetris-purple transition-colors"
+              className="w-full px-4 py-3 bg-white border-2 border-off-black text-right font-shimshon text-lg outline-none focus:border-tetris-purple transition-all shadow-brutalist-xs focus:shadow-brutalist"
               placeholder="איך תרצו שנופיע לכם בחולצה?"
             />
           </label>
 
-          <label className="block">
-            <span className="text-sm font-bold font-shimshon text-off-black">ההמלצה *</span>
-            <textarea
-              value={recommendation}
-              onChange={(e) => setRecommendation(e.target.value)}
-              className="mt-1 w-full min-h-[100px] px-3 py-2 bg-off-white border-2 border-off-black text-right font-ibm outline-none focus:border-tetris-purple transition-colors resize-y"
-              placeholder="כתבו מה ניסיתם, אהבתם או פחות אהבתם במקום הזה..."
-            />
-          </label>
-
-          <div className="block">
-            <span className="text-sm font-bold font-shimshon text-off-black block mb-2">דירוג (אופציונלי)</span>
-            <div className="flex items-center gap-1" dir="ltr">
+          <div className="block bg-light-gray/30 p-4 border-2 border-off-black/10 rounded-sm">
+            <span className="text-lg font-bold font-shimshon text-off-black block mb-3">דירוג (אופציונלי)</span>
+            <div className="flex items-center gap-2" dir="ltr">
               {[1, 2, 3, 4, 5].map((starValue) => {
                 const isActive = (hoveredRating || rating) >= starValue;
                 return (
                   <button
                     key={starValue}
                     type="button"
-                    className="p-1 transition-transform hover:scale-110 active:scale-95"
+                    className="p-1 transition-transform hover:scale-110 active:scale-95 focus:outline-none"
                     onMouseEnter={() => setHoveredRating(starValue)}
                     onMouseLeave={() => setHoveredRating(0)}
                     onClick={() => setRating(starValue)}
@@ -166,18 +157,30 @@ const MapReviewModal = ({ open, onClose, placeName }) => {
                       src={StarIcon} 
                       alt="" 
                       className={cn(
-                        "w-8 h-8 select-none transition-all duration-200",
-                        isActive ? "opacity-100" : "opacity-20 grayscale brightness-200"
+                        "w-10 h-10 select-none transition-all duration-200 cursor-pointer",
+                        isActive ? "opacity-100 scale-110 drop-shadow-sm" : "opacity-25"
                       )} 
                     />
                   </button>
                 );
               })}
-              <span className="mr-3 text-sm font-ibm text-dark-gray" dir="rtl">
-                {rating > 0 && `${rating} כוכבים`}
+              <span className="mr-5 text-lg font-bold font-shimshon text-tetris-purple min-w-[80px] text-right" dir="rtl">
+                {rating > 0 ? `${rating} כוכבים` : hoveredRating > 0 ? `${hoveredRating} כוכבים` : ''}
               </span>
             </div>
           </div>
+
+          <label className="block pb-2">
+            <span className="text-lg font-bold font-shimshon text-off-black block mb-2">ההמלצה *</span>
+            <textarea
+              value={recommendation}
+              onChange={(e) => setRecommendation(e.target.value)}
+              className="w-full min-h-[120px] px-4 py-3 bg-white border-2 border-off-black text-right font-ibm text-base outline-none focus:border-tetris-purple transition-all shadow-brutalist-xs focus:shadow-brutalist resize-y"
+              placeholder="כתבו מה ניסיתם, אהבתם או פחות אהבתם במקום הזה..."
+            />
+          </label>
+
+
 
           {error && (
             <p className="text-sm font-ibm text-red-700 bg-red-100 border-2 border-red-700 px-3 py-2 shadow-brutalist-xs">
