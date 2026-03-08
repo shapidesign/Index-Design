@@ -131,10 +131,10 @@ const TipsSection = () => {
                       key={`tag-${tag}`}
                       onClick={() => setSelectedTag(tag)}
                       className={cn(
-                        'px-3 py-1 font-mixed border-2 border-off-black transition-all hover:-translate-y-[2px]',
+                        'px-3 py-1 font-mixed border-2 border-off-black transition-all',
                         isTagSelected
-                          ? 'bg-off-black text-off-white shadow-none translate-y-0'
-                          : cn(tagBg, getTagTextClass(tagBg), 'shadow-brutalist-xs hover:shadow-brutalist')
+                          ? cn(tagBg, getTagTextClass(tagBg), 'shadow-none translate-x-[2px] translate-y-[2px]')
+                          : 'bg-white text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
                       )}
                     >
                       {tag}

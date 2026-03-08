@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { X, Send, Link as LinkIcon } from 'lucide-react';
+import ApprovedSuggestions from './ApprovedSuggestions';
 
 const CATEGORY_OPTIONS = ['טיפ', 'מעצב', 'סטודיו', 'אתר', 'ספר', 'מפה'];
 
@@ -118,7 +119,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
       <div
         dir="rtl"
         className={cn(
-          'relative w-full max-w-xl',
+          'relative w-full max-w-2xl max-h-[90vh] overflow-y-auto',
           'bg-off-white border-3 border-off-black shadow-brutalist',
           'p-6 md:p-7'
         )}
@@ -238,6 +239,8 @@ const MessageSuggestionModal = ({ open, onClose }) => {
             </button>
           </div>
         </form>
+
+        <ApprovedSuggestions />
       </div>
     </div>
   );

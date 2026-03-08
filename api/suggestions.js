@@ -142,12 +142,88 @@ const resolveParentAndProperties = async (notionId) => {
   }
 };
 
+// Simple cache for approved suggestions
+let approvedCache = null;
+let approvedCacheTime = 0;
+const APPROVED_CACHE_TTL = 5 * 60 * 1000; // 5 min
+
+const extractPlainText = (richText) => {
+  if (!Array.isArray(richText)) return '';
+  return richText.map(t => t.plain_text || '').join('');
+};
+
+const mapSuggestionRecord = (page) => {
+  const props = page.properties || {};
+  const result = { id: page.id };
+  for (const [key, val] of Object.entries(props)) {
+    switch (val.type) {
+      case 'title': result[key] = extractPlainText(val.title); break;
+      case 'rich_text': result[key] = extractPlainText(val.rich_text); break;
+      case 'email': result[key] = val.email || ''; break;
+      case 'url': result[key] = val.url || ''; break;
+      case 'checkbox': result[key] = val.checkbox; break;
+      case 'select': result[key] = val.select?.name || ''; break;
+      case 'status': result[key] = val.status?.name || ''; break;
+      default: break;
+    }
+  }
+  return result;
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // ── GET: return approved suggestions ──────────────────────────────
+  if (req.method === 'GET') {
+    try {
+      if (!NOTION_API_KEY) throw new Error('NOTION_API_KEY is missing');
+      const now = Date.now();
+      if (approvedCache && now - approvedCacheTime < APPROVED_CACHE_TTL) {
+        return res.status(200).json({ suggestions: approvedCache });
+      }
+
+      // Try to find an 'approved' checkbox property then filter
+      const filterByApproved = {
+        property: 'מאושר',
+        checkbox: { equals: true }
+      };
+
+      let pages = [];
+      try {
+        const result = await notion.databases.query({
+          database_id: NOTION_SUGGESTIONS_DB,
+          filter: filterByApproved,
+          page_size: 100
+        });
+        pages = result.results;
+      } catch {
+        // Try with english property name
+        const result = await notion.databases.query({
+          database_id: NOTION_SUGGESTIONS_DB,
+          page_size: 100
+        });
+        // Filter manually for any checkbox property that's true
+        pages = result.results.filter(page => {
+          return Object.values(page.properties || {}).some(
+            v => v.type === 'checkbox' && v.checkbox === true
+          );
+        });
+      }
+
+      const suggestions = pages.map(mapSuggestionRecord);
+      approvedCache = suggestions;
+      approvedCacheTime = now;
+      return res.status(200).json({ suggestions });
+    } catch (err) {
+      console.error('Error fetching approved suggestions:', err);
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
