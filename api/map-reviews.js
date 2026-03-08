@@ -126,8 +126,20 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
         try {
             const placeFilter = String(req.query?.place || '').trim();
+            const debug = req.query?.debug === '1';
             const { parent, properties: props } = await resolveParentAndProperties(NOTION_MAP_REVIEWS_DB);
             const parentId = parent?.database_id || parent?.data_source_id;
+
+            // Log all property names+types to help debug
+            if (debug) {
+                return res.status(200).json({
+                    debug: true,
+                    properties: Object.fromEntries(
+                        Object.entries(props).map(([k, v]) => [k, v.type])
+                    ),
+                    parentId
+                });
+            }
 
             // Discover property keys
             let [nameKey] = findProperty(props, ['Name', 'שם']);
@@ -142,48 +154,62 @@ export default async function handler(req, res) {
             let [ratingKey] = findProperty(props, ['דירוג', 'Rating', 'Stars']);
             if (!ratingKey) [ratingKey] = findPropertyByType(props, ['number']);
 
+            // Find the approved checkbox (checkbox property named מאושר or Approved)
+            let [checkboxKey] = findProperty(props, ['מאושר', 'Approved', 'approved']);
+            if (!checkboxKey) [checkboxKey] = findPropertyByType(props, ['checkbox']);
+
+            // Also check for status/select approval (fallback)
             let [statusKey] = findProperty(props, ['סטטוס', 'Status']);
             if (!statusKey) [statusKey] = findPropertyByType(props, ['status', 'select']);
 
             // Build filter: only approved reviews
-            const filter = { and: [] };
-            if (statusKey) {
+            const filterClauses = [];
+
+            if (checkboxKey) {
+                // Primary: filter by checkbox = true
+                filterClauses.push({ property: checkboxKey, checkbox: { equals: true } });
+            } else if (statusKey) {
+                // Fallback: filter by status/select named מאושר
                 const statusMeta = props[statusKey];
                 if (statusMeta?.type === 'status') {
-                    filter.and.push({ property: statusKey, status: { equals: 'מאושר' } });
+                    filterClauses.push({ property: statusKey, status: { equals: 'מאושר' } });
                 } else if (statusMeta?.type === 'select') {
-                    filter.and.push({ property: statusKey, select: { equals: 'מאושר' } });
+                    filterClauses.push({ property: statusKey, select: { equals: 'מאושר' } });
                 }
             }
 
             // Optionally filter by place name
             if (placeFilter && placeKey) {
-                filter.and.push({
+                filterClauses.push({
                     property: placeKey,
                     rich_text: { equals: placeFilter },
                 });
             }
 
             const queryArgs = { database_id: parentId };
-            if (filter.and.length > 0) {
-                queryArgs.filter = filter.and.length === 1 ? filter.and[0] : filter;
-            }
+            if (filterClauses.length === 1) queryArgs.filter = filterClauses[0];
+            else if (filterClauses.length > 1) queryArgs.filter = { and: filterClauses };
 
             const response = await notion.databases.query(queryArgs);
 
             const reviews = (response.results || []).map((page) => {
                 const p = page.properties || {};
+
+                // Also pull the approved flag to confirm
+                const isApproved = checkboxKey ? p[checkboxKey]?.checkbox === true : true;
+
                 return {
                     id: page.id,
                     name: nameKey ? getPlainText(p[nameKey]) : '',
                     place: placeKey ? getPlainText(p[placeKey]) : '',
                     recommendation: recKey ? getPlainText(p[recKey]) : '',
                     rating: ratingKey && p[ratingKey]?.number != null ? p[ratingKey].number : null,
+                    approved: isApproved,
                     createdAt: page.created_time,
                 };
             });
 
-            return res.status(200).json({ reviews });
+            return res.status(200).json({ reviews, meta: { checkboxKey, placeKey, recKey, ratingKey } });
         } catch (error) {
             console.error('Error fetching map reviews:', error);
             return res.status(500).json({ error: 'שגיאה בטעינת ההמלצות.', message: error.message });
