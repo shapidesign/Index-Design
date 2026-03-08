@@ -192,24 +192,73 @@ export default async function handler(req, res) {
 
             const response = await notion.databases.query(queryArgs);
 
-            const reviews = (response.results || []).map((page) => {
-                const p = page.properties || {};
+            /** Parse a paragraph block's plain text */
+            const blockText = (block) =>
+                (block?.paragraph?.rich_text || []).map(r => r.plain_text || '').join('').trim();
 
-                // Also pull the approved flag to confirm
-                const isApproved = checkboxKey ? p[checkboxKey]?.checkbox === true : true;
+            /** Extract label: value pairs from block text lines */
+            const parseLabel = (lines, labels) => {
+                for (const label of labels) {
+                    for (const line of lines) {
+                        const prefix = `${label}:`;
+                        if (line.startsWith(prefix)) return line.slice(prefix.length).trim();
+                    }
+                }
+                return '';
+            };
+
+            // Fetch blocks in parallel for all pages (to parse fallback body data)
+            const pages = response.results || [];
+            const blocksPerPage = await Promise.all(
+                pages.map(page =>
+                    notion.blocks.children.list({ block_id: page.id, page_size: 20 })
+                        .then(r => r.results || [])
+                        .catch(() => [])
+                )
+            );
+
+            const reviews = pages.map((page, i) => {
+                const p = page.properties || {};
+                const blocks = blocksPerPage[i];
+                const lines = blocks.map(blockText).filter(Boolean);
+
+                // Name comes from the title property (תוכן / Name)
+                const name = nameKey ? getPlainText(p[nameKey]) : '';
+
+                // Try property columns first, fall back to parsing body blocks
+                const place = placeKey ? getPlainText(p[placeKey])
+                    : parseLabel(lines, ['מקום', 'Place', 'Location']);
+
+                const recommendation = recKey ? getPlainText(p[recKey])
+                    : parseLabel(lines, ['המלצה', 'Recommendation', 'Review', 'הודעה']);
+
+                let rating = null;
+                if (ratingKey && p[ratingKey]?.number != null) {
+                    rating = p[ratingKey].number;
+                } else {
+                    const ratingRaw = parseLabel(lines, ['דירוג', 'Rating', 'Stars']);
+                    if (ratingRaw) {
+                        // handles "4/5" or just "4"
+                        const num = parseFloat(ratingRaw.split('/')[0]);
+                        if (!isNaN(num)) rating = num;
+                    }
+                }
+
+                // Filter by place name if requested (post-filter since no property column)
+                if (placeFilter && place.toLowerCase() !== placeFilter.toLowerCase()) return null;
 
                 return {
                     id: page.id,
-                    name: nameKey ? getPlainText(p[nameKey]) : '',
-                    place: placeKey ? getPlainText(p[placeKey]) : '',
-                    recommendation: recKey ? getPlainText(p[recKey]) : '',
-                    rating: ratingKey && p[ratingKey]?.number != null ? p[ratingKey].number : null,
-                    approved: isApproved,
+                    name,
+                    place,
+                    recommendation,
+                    rating,
                     createdAt: page.created_time,
                 };
-            });
+            }).filter(Boolean);
 
-            return res.status(200).json({ reviews, meta: { checkboxKey, placeKey, recKey, ratingKey } });
+            return res.status(200).json({ reviews, meta: { checkboxKey, nameKey, placeKey, recKey, ratingKey } });
+
         } catch (error) {
             console.error('Error fetching map reviews:', error);
             return res.status(500).json({ error: 'שגיאה בטעינת ההמלצות.', message: error.message });
