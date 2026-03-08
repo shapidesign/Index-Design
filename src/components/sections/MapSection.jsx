@@ -115,7 +115,7 @@ const buildMapsLink = (coords) => {
 };
 
 /**
- * Category group — collapsible section with places list
+ * CategoryGroup — collapsible section with places list
  */
 const CategoryGroup = ({ category, places, defaultOpen, reviewsMap, onOpenReview }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -162,11 +162,11 @@ const CategoryGroup = ({ category, places, defaultOpen, reviewsMap, onOpenReview
         <div className="divide-y-2 divide-light-gray">
           {places.map((place, idx) => {
             const mapsLink = buildMapsLink(place.coords);
-            const reviewData = reviewsMap[place.name] || { ratings: [], comments: 0 };
+            const reviewData = reviewsMap[place.name] || { ratings: [], reviews: [] };
             const avgRating = reviewData.ratings.length > 0
               ? (reviewData.ratings.reduce((a, b) => a + b, 0) / reviewData.ratings.length).toFixed(1)
               : null;
-            const ratingCount = reviewData.ratings.length;
+            const reviewCount = reviewData.reviews?.length || 0;
 
             return (
               <div
@@ -179,22 +179,58 @@ const CategoryGroup = ({ category, places, defaultOpen, reviewsMap, onOpenReview
               >
                 {/* Place info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold font-shimshon text-off-black text-sm md:text-base leading-snug">
-                    {place.name}
-                  </p>
-                  
-                  {/* Rating Block */}
-                  {avgRating && (
-                    <div className="flex items-center gap-1.5 mt-1 text-xs font-ibm text-dark-gray" dir="ltr">
-                      <img src={StarIcon} alt="Star" className="w-3.5 h-3.5" />
-                      <span>{avgRating} ({ratingCount})</span>
-                    </div>
-                  )}
+                  {/* Name + review stats row */}
+                  <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                    <p className="font-bold font-shimshon text-off-black text-sm md:text-base leading-snug">
+                      {place.name}
+                    </p>
+                    {reviewCount > 0 && (
+                      <div className="flex items-center gap-2 text-xs font-ibm text-dark-gray">
+                        {/* Review count with talk icon */}
+                        <span className="flex items-center gap-0.5">
+                          <MessageSquare size={11} className="text-tetris-orange" />
+                          <span>{reviewCount}</span>
+                        </span>
+                        {/* Avg rating with star */}
+                        {avgRating && (
+                          <span className="flex items-center gap-0.5" dir="ltr">
+                            <img src={StarIcon} alt="" className="w-3 h-3" />
+                            <span>{avgRating}</span>
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   {place.description && !place.description.startsWith('http') && (
-                    <p className="text-xs text-dark-gray font-ibm mt-1 leading-relaxed">
+                    <p className="text-xs text-dark-gray font-ibm mt-0.5 leading-relaxed">
                       {place.description}
                     </p>
+                  )}
+
+                  {/* Inline approved reviews */}
+                  {reviewData.reviews?.length > 0 && (
+                    <div className="mt-2 flex flex-col gap-1.5">
+                      {reviewData.reviews.map((rev) => (
+                        <div
+                          key={rev.id}
+                          className="bg-light-gray/60 border border-off-black/10 px-2.5 py-1.5 text-xs font-ibm text-dark-gray leading-snug"
+                        >
+                          {rev.recommendation && (
+                            <p className="line-clamp-2">“{rev.recommendation}”</p>
+                          )}
+                          <div className="flex items-center justify-between mt-1 gap-2">
+                            <span className="font-shimshon text-off-black text-[11px]">— {rev.name}</span>
+                            {rev.rating && (
+                              <span className="flex items-center gap-0.5" dir="ltr">
+                                <img src={StarIcon} alt="" className="w-2.5 h-2.5" />
+                                <span>{rev.rating}</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
 
@@ -213,11 +249,6 @@ const CategoryGroup = ({ category, places, defaultOpen, reviewsMap, onOpenReview
                     title="גלו המלצות או הוסיפו אחת משלכם"
                   >
                     <MessageSquare size={13} className="text-off-black" />
-                    {reviewData.comments > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-off-black text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-ibm">
-                        {reviewData.comments}
-                      </span>
-                    )}
                   </button>
 
                   {place.link && (
@@ -283,12 +314,12 @@ const MapSection = () => {
         const map = {};
         data.reviews.forEach(rev => {
           if (!map[rev.place]) {
-            map[rev.place] = { ratings: [], comments: 0 };
+            map[rev.place] = { ratings: [], reviews: [] };
           }
           if (rev.rating) {
             map[rev.place].ratings.push(rev.rating);
           }
-          map[rev.place].comments += 1;
+          map[rev.place].reviews.push(rev);
         });
         setReviewsMap(map);
       })

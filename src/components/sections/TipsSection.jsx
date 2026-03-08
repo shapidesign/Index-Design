@@ -17,9 +17,9 @@ const TipsSection = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Filters
-  const [selectedType, setSelectedType] = useState('הכל');
-  const [selectedTag, setSelectedTag] = useState('הכל');
+  // Filters — null means 'show all'
+  const [selectedType, setSelectedType] = useState(null);
+  const [selectedTag, setSelectedTag] = useState(null);
 
   // Modal State
   const [activeTipIndex, setActiveTipIndex] = useState(null);
@@ -41,21 +41,21 @@ const TipsSection = () => {
       });
   }, []);
 
-  // Compute available filters
+  // Compute available filters — no 'הכל' needed
   const types = useMemo(() => {
-    return ['הכל', ...new Set(tips.map((t) => t.type).filter(Boolean))];
+    return [...new Set(tips.map((t) => t.type).filter(Boolean))];
   }, [tips]);
 
   const tags = useMemo(() => {
     const allTags = tips.flatMap((t) => t.tags || []);
-    return ['הכל', ...new Set(allTags)];
+    return [...new Set(allTags)];
   }, [tips]);
 
   // Apply filters
   const filteredTips = useMemo(() => {
     return tips.filter((t) => {
-      const matchType = selectedType === 'הכל' || t.type === selectedType;
-      const matchTag = selectedTag === 'הכל' || (t.tags && t.tags.includes(selectedTag));
+      const matchType = !selectedType || t.type === selectedType;
+      const matchTag = !selectedTag || (t.tags && t.tags.includes(selectedTag));
       return matchType && matchTag;
     });
   }, [tips, selectedType, selectedTag]);
@@ -107,12 +107,12 @@ const TipsSection = () => {
                 {types.map((type) => (
                   <button
                     key={`type-${type}`}
-                    onClick={() => setSelectedType(type)}
+                    onClick={() => setSelectedType(selectedType === type ? null : type)}
                     className={cn(
-                      'px-3 py-1 font-shimshon font-bold border-2 border-off-black transition-all hover:-translate-y-[2px]',
+                      'px-3 py-1 font-shimshon border-2 border-off-black transition-all',
                       selectedType === type
-                        ? 'bg-tetris-purple text-off-white shadow-none translate-y-0'
-                        : 'bg-white text-off-black shadow-brutalist-xs hover:shadow-brutalist'
+                        ? 'bg-tetris-purple text-off-white shadow-none translate-x-[2px] translate-y-[2px] font-bold'
+                        : 'bg-white text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] font-bold'
                     )}
                   >
                     {type}
@@ -129,7 +129,7 @@ const TipsSection = () => {
                   return (
                     <button
                       key={`tag-${tag}`}
-                      onClick={() => setSelectedTag(tag)}
+                      onClick={() => setSelectedTag(isTagSelected ? null : tag)}
                       className={cn(
                         'px-3 py-1 font-mixed border-2 border-off-black transition-all',
                         isTagSelected
