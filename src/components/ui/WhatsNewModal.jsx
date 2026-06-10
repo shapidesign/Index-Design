@@ -72,9 +72,8 @@ const WhatsNewModal = ({ open, onClose }) => {
             'ps-4 marker:text-tetris-purple'
           )}
         >
-          <li>הוספנו למפה יכולת המלצה ודירוג מקומות באופן אישי</li>
-          <li>אזור טיפים חדש התווסף לאתר, מלא מידע שימושי לתואר</li>
-          <li>שדרוגים נוספים ועיצוב משופר בכל רחבי האתר</li>
+          <li>יש לנו פונט חדש לאתר! תגידו שלום לגופן ״אמיר״ של דן ריזינגר, באדיבות ״הפונטיה x ריזינגר״.</li>
+          <li>״המילון״ - מערכת לסינון פונטים עבריים לפי סגנון, שימוש, מאפיינים ואווירה. המערכת בהרצה - מוזמנים להציע הצעות!</li>
         </ul>
 
         <div className="mt-8 pt-4 border-t-2 border-off-black/10 flex flex-col sm:flex-row items-center justify-between gap-4">
