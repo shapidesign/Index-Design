@@ -60,7 +60,7 @@ const WhatsNewModal = ({ open, onClose }) => {
           <X size={18} />
         </button>
 
-        <h2 id="whats-new-title" className="text-2xl font-bold font-shimshon text-off-black mb-4 text-right">
+        <h2 id="whats-new-title" className="text-2xl font-bold font-headline text-off-black mb-4 text-right">
           מה חדש אצלנו?
         </h2>
 
@@ -100,7 +100,7 @@ const WhatsNewModal = ({ open, onClose }) => {
             className={cn(
               'px-6 py-2.5 min-w-[120px]',
               'bg-tetris-green border-2 border-off-black',
-              'font-bold font-shimshon text-off-black shadow-brutalist-xs',
+              'font-bold font-headline text-off-black shadow-brutalist-xs',
               'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
               'transition-all duration-200'
             )}

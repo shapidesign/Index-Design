@@ -43,7 +43,7 @@ const PricingBadge = ({ pricing, className }) => {
         'px-2.5 py-1',
         'border-2 border-off-black',
         'shadow-brutalist-xs',
-        'font-shimshon text-xs font-normal',
+        'font-headline text-xs font-normal',
         'whitespace-nowrap',
         config.bg,
         config.text,

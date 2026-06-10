@@ -164,7 +164,7 @@ const PlaceholderImage = ({ name, types }) => {
           fontSize: 'clamp(80px, 12vw, 140px)',
           fontFamily: nameIsEnglish
             ? "'Jersey 20', sans-serif"
-            : "'Shimshon', sans-serif",
+            : "'Reisinger Amir', sans-serif",
           fontWeight: 700,
           color: '#1F1F1F',
           opacity: 0.07,
@@ -181,7 +181,7 @@ const PlaceholderImage = ({ name, types }) => {
           className={cn(
             'text-center leading-tight font-bold text-off-black',
             'drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]',
-            nameIsEnglish ? 'font-jersey' : 'font-shimshon',
+            nameIsEnglish ? 'font-jersey' : 'font-headline',
             name.length > 20 ? 'text-base' : name.length > 12 ? 'text-xl' : 'text-2xl'
           )}
         >
@@ -262,7 +262,7 @@ const ToolboxCard = ({
             <h3
               className={cn(
                 'text-lg font-bold text-off-black text-right leading-tight line-clamp-2 break-words min-w-0 flex-1',
-                isEnglish(name) ? 'font-jersey' : 'font-shimshon'
+                isEnglish(name) ? 'font-jersey' : 'font-headline'
               )}
             >
               {name}
@@ -292,7 +292,7 @@ const ToolboxCard = ({
                 className={cn(
                   'inline-block px-2 py-0.5',
                   'text-xs font-normal',
-                  isEnglish(tag) ? 'font-jersey' : 'font-shimshon',
+                  isEnglish(tag) ? 'font-jersey' : 'font-headline',
                   'border border-off-black',
                   'shadow-brutalist-xs',
                   getTagColor(tag),
@@ -303,7 +303,7 @@ const ToolboxCard = ({
               </span>
             ))}
             {tags.length > 4 && (
-              <span className="text-xs font-shimshon text-mid-gray">
+              <span className="text-xs font-headline text-mid-gray">
                 +{tags.length - 4}
               </span>
             )}
@@ -389,11 +389,11 @@ const ToolboxCard = ({
 
       {/* ===== CARD BODY ===== */}
       <div className="p-4">
-        {/* Name — Jersey 20 for English, Shimshon for Hebrew */}
+        {/* Name — Jersey 20 for English, Reisinger Amir for Hebrew */}
         <h3
           className={cn(
             'text-lg font-bold text-off-black text-right mb-2 leading-tight',
-            isEnglish(name) ? 'font-jersey' : 'font-shimshon'
+            isEnglish(name) ? 'font-jersey' : 'font-headline'
           )}
         >
           {name}
@@ -415,7 +415,7 @@ const ToolboxCard = ({
                 className={cn(
                   'inline-block px-2 py-0.5',
                   'text-xs font-normal',
-                  isEnglish(tag) ? 'font-jersey' : 'font-shimshon',
+                  isEnglish(tag) ? 'font-jersey' : 'font-headline',
                   'border border-off-black',
                   'shadow-brutalist-xs',
                   getTagColor(tag),

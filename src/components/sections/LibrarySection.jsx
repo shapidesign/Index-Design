@@ -26,7 +26,7 @@ const parseYearsFromText = (value) => {
 
 const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(String(value || ''));
 
-const getSymbolicFontClass = (value) => (isSymbolHeavyText(value) ? 'font-jersey' : 'font-shimshon');
+const getSymbolicFontClass = (value) => (isSymbolHeavyText(value) ? 'font-jersey' : 'font-headline');
 
 
 const YearRangeSlider = ({ bounds, range, onChange }) => {
@@ -38,7 +38,7 @@ const YearRangeSlider = ({ bounds, range, onChange }) => {
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      <label className="text-xs text-dark-gray text-right font-shimshon">טווח שנים</label>
+      <label className="text-xs text-dark-gray text-right font-headline">טווח שנים</label>
 
       <div className="flex items-center gap-2" dir="ltr">
         <span className="text-xs text-dark-gray min-w-[42px] text-left font-jersey">{minBound}</span>
@@ -107,7 +107,7 @@ const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
           'w-full md:w-auto min-w-[220px]',
           'inline-flex items-center justify-between gap-2',
           'px-3 py-2 bg-off-white border-2 border-off-black shadow-brutalist-xs',
-          'text-sm font-shimshon',
+          'text-sm font-headline',
           'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
           'transition-all duration-200',
           selected.length > 0 && 'bg-tetris-cyan/20'
@@ -158,10 +158,10 @@ const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
                   )}
                 >
                   <span className="inline-flex items-center gap-2 justify-end w-full">
-                    {selected.includes(tag) && <span className="text-xs font-shimshon">✓</span>}
+                    {selected.includes(tag) && <span className="text-xs font-headline">✓</span>}
                     <span
                       className={cn(
-                        'inline-block px-2 py-0.5 text-xs font-normal font-shimshon',
+                        'inline-block px-2 py-0.5 text-xs font-normal font-headline',
                         'border border-off-black shadow-brutalist-xs',
                         getTagColor(tag),
                         getTagTextClass(getTagColor(tag))
@@ -180,7 +180,7 @@ const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
               <button
                 type="button"
                 onClick={onClear}
-                className="text-xs font-shimshon px-2 py-1 border border-off-black bg-light-gray hover:bg-tetris-pink/30 transition-colors"
+                className="text-xs font-headline px-2 py-1 border border-off-black bg-light-gray hover:bg-tetris-pink/30 transition-colors"
               >
                 ניקוי תגיות
               </button>
@@ -315,14 +315,14 @@ const LibrarySection = ({ pendingNavigation }) => {
           'text-right'
         )}
       >
-        <h3 className="text-xl font-bold font-shimshon text-off-black mb-2">לא הצלחנו לטעון את הספרייה</h3>
+        <h3 className="text-xl font-bold font-headline text-off-black mb-2">לא הצלחנו לטעון את הספרייה</h3>
         <p className="text-sm font-ibm text-dark-gray mb-4">{error}</p>
         <button
           type="button"
           onClick={refetch}
           className={cn(
             'px-4 py-2',
-            'bg-tetris-yellow text-off-black font-shimshon font-bold',
+            'bg-tetris-yellow text-off-black font-headline font-bold',
             'border-2 border-off-black shadow-brutalist-xs',
             'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
             'transition-all duration-200'
@@ -411,7 +411,7 @@ const LibrarySection = ({ pendingNavigation }) => {
                 <YearRangeSlider bounds={yearBounds} range={yearRange} onChange={setYearRange} />
               </div>
               <div className="md:min-w-[170px]">
-                <p className="text-xs text-dark-gray text-right mb-1 font-shimshon">טווח נבחר</p>
+                <p className="text-xs text-dark-gray text-right mb-1 font-headline">טווח נבחר</p>
                 <p className="text-sm text-off-black text-right border-2 border-off-black bg-light-gray px-3 py-1.5 font-jersey">
                   {`${yearRange[0]} - ${yearRange[1]}`}
                 </p>
@@ -427,7 +427,7 @@ const LibrarySection = ({ pendingNavigation }) => {
               onClick={clearFilters}
               className={cn(
                 'inline-flex items-center gap-1.5 px-3 py-1.5',
-                'text-xs font-bold font-shimshon',
+                'text-xs font-bold font-headline',
                 'bg-tetris-pink border-2 border-off-black shadow-brutalist-xs',
                 'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
                 'transition-all duration-200'
@@ -443,7 +443,7 @@ const LibrarySection = ({ pendingNavigation }) => {
       {filteredBooks.length === 0 ? (
         <div className="py-14 flex flex-col items-center justify-center text-center">
           <TetrisShape type="L" color="blue" size={30} className="opacity-60 mb-3" />
-          <p className="text-lg font-shimshon font-bold text-off-black mb-1">לא נמצאו ספרים</p>
+          <p className="text-lg font-headline font-bold text-off-black mb-1">לא נמצאו ספרים</p>
           <p className="text-sm font-ibm text-dark-gray">נסו מילות חיפוש אחרות או הורידו פילטרים.</p>
         </div>
       ) : viewMode === 'gallery' ? (

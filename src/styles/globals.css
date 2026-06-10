@@ -2,32 +2,40 @@
 
 /* ===== FONT FACES ===== */
 @font-face {
-  font-family: 'Shimshon';
-  src: url('/fonts/shimshon/Shimshon-Regular.ttf') format('truetype');
+  font-family: 'Reisinger Amir';
+  src: url('/fonts/reisinger-amir/Reisinger-Amir-Regular.woff2') format('woff2'),
+       url('/fonts/reisinger-amir/Reisinger-Amir-Regular.woff') format('woff'),
+       url('/fonts/reisinger-amir/Reisinger-Amir-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Shimshon';
-  src: url('/fonts/shimshon/Shimshon-Bold.ttf') format('truetype');
+  font-family: 'Reisinger Amir';
+  src: url('/fonts/reisinger-amir/Reisinger-Amir-Regular.woff2') format('woff2'),
+       url('/fonts/reisinger-amir/Reisinger-Amir-Regular.woff') format('woff'),
+       url('/fonts/reisinger-amir/Reisinger-Amir-Regular.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Shimshon';
-  src: url('/fonts/shimshon/Shimshon-Thin.ttf') format('truetype');
+  font-family: 'Reisinger Amir';
+  src: url('/fonts/reisinger-amir/Reisinger-Amir-Regular.woff2') format('woff2'),
+       url('/fonts/reisinger-amir/Reisinger-Amir-Regular.woff') format('woff'),
+       url('/fonts/reisinger-amir/Reisinger-Amir-Regular.ttf') format('truetype');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Shimshon';
-  src: url('/fonts/shimshon/Shimshon-Italic.ttf') format('truetype');
+  font-family: 'Reisinger Amir';
+  src: url('/fonts/reisinger-amir/Reisinger-Amir-Regular.woff2') format('woff2'),
+       url('/fonts/reisinger-amir/Reisinger-Amir-Regular.woff') format('woff'),
+       url('/fonts/reisinger-amir/Reisinger-Amir-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: italic;
   font-display: swap;
@@ -55,10 +63,10 @@
   --color-btn-gray: #EEEEEE;
 
   /* Font Families */
-  --font-shimshon: 'Shimshon', sans-serif;
+  --font-headline: 'Reisinger Amir', sans-serif;
   --font-ibm: 'IBM Plex Sans Hebrew', sans-serif;
   --font-jersey: 'Jersey 20', sans-serif;
-  --font-mixed: 'Jersey 20', 'Shimshon', sans-serif;
+  --font-mixed: 'Jersey 20', 'Reisinger Amir', sans-serif;
   --font-rubik: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   /* Shadows - צללים ברוטליסטיים */
@@ -95,7 +103,7 @@
   }
 
   body {
-    font-family: var(--font-shimshon);
+    font-family: var(--font-headline);
     background-color: var(--color-off-white);
     color: var(--color-off-black);
     line-height: 1.6;
@@ -103,14 +111,14 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Headings, nav, buttons use Shimshon */
+  /* Headings, nav, buttons use Reisinger Amir */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    font-family: var(--font-shimshon);
+    font-family: var(--font-headline);
     line-height: 1.3;
     font-weight: 700;
   }
@@ -143,7 +151,7 @@
     font-family: var(--font-jersey);
   }
 
-  /* Mixed font (Jersey 20 + Shimshon fallback) to cleanly handle tags with both */
+  /* Mixed font (Jersey 20 + Reisinger Amir fallback) to cleanly handle tags with both */
   .font-mixed {
     font-family: var(--font-mixed);
   }

@@ -46,7 +46,7 @@ const lazyWithChunkRecovery = (importer) =>
   });
 
 const ToolboxSection = lazyWithChunkRecovery(() => import('@/components/sections/ToolboxSection'));
-const HallOfFameSection = lazyWithChunkRecovery(() => import('@/components/sections/HallOfFameSection'));
+const DictionarySection = lazyWithChunkRecovery(() => import('@/components/sections/DictionarySection'));
 const MuseumSection = lazyWithChunkRecovery(() => import('@/components/sections/MuseumSection'));
 const LibrarySection = lazyWithChunkRecovery(() => import('@/components/sections/LibrarySection'));
 const MapSection = lazyWithChunkRecovery(() => import('@/components/sections/MapSection'));
@@ -61,7 +61,7 @@ const navSections = [
   { id: 'toolbox', label: 'ארגז הכלים' },
   { id: 'museum', label: 'המוזיאון' },
   { id: 'library', label: 'הספרייה' },
-  { id: 'hallOfFame', label: 'היכל התהילה' },
+  { id: 'dictionary', label: 'המילון' },
   { id: 'map', label: 'המפה' },
   { id: 'tips', label: 'טיפים' },
   { id: 'lucky', label: 'הפתעה' },
@@ -72,14 +72,14 @@ const categories = [
   { id: 'toolbox', title: 'ארגז הכלים', desc: 'כלים חינמיים ומומלצים לעיצוב', color: 'purple', shape: 'T' },
   { id: 'museum', title: 'המוזיאון', desc: 'מעצבים ויצירות שחובה להכיר', color: 'orange', shape: 'L' },
   { id: 'library', title: 'הספרייה', desc: 'ספרים וחומרי לימוד מומלצים', color: 'blue', shape: 'I' },
-  { id: 'hallOfFame', title: 'היכל התהילה', desc: 'מאסטרים, זרמים ושפות חזותיות שחובה ללמוד', color: 'yellow', shape: 'Z' },
+  { id: 'dictionary', title: 'המילון', desc: 'אינדקס פונטים עבריים מסונן', color: 'yellow', shape: 'Z' },
   { id: 'map', title: 'המפה', desc: 'מיקומים שימושיים לסטודנטים', color: 'green', shape: 'O' },
   { id: 'tips', title: 'טיפים', desc: 'טיפים וביקורות מסטודנטים', color: 'pink', shape: 'S' },
   { id: 'lucky', title: 'הפתעה', desc: 'דף הפתעה עם כרטיס אקראי במיוחד בשבילך', color: 'cyan', shape: 'J', isLucky: true },
 ];
 
 /** Sections that can be selected by the fortune cookie */
-const luckySectionIds = ['toolbox', 'museum', 'library', 'hallOfFame'];
+const luckySectionIds = ['toolbox', 'museum', 'library', 'dictionary'];
 
 /** Quick suggestions for the search dropdown */
 const quickSuggestions = [
@@ -234,10 +234,9 @@ const App = () => {
           }
         };
 
-        const [resourcesJson, museumJson, hallJson, booksJson] = await Promise.all([
+        const [resourcesJson, museumJson, booksJson] = await Promise.all([
           fetchJsonOrEmpty('/api/resources', 'resources'),
           fetchJsonOrEmpty('/api/museum', 'museum'),
-          fetchJsonOrEmpty('/api/hall-of-fame', 'hall-of-fame'),
           fetchJsonOrEmpty('/api/books', 'books')
         ]);
 
@@ -280,27 +279,6 @@ const App = () => {
             ...toArray(item.era)
           ].filter(Boolean),
           targetId: makeTargetId('museum', item.id)
-        }));
-
-        const hallItems = (hallJson?.results || []).map((item) => ({
-          id: item.id,
-          sectionId: 'hallOfFame',
-          sectionLabel: 'היכל התהילה',
-          titleHe: item.nameHe || item.name || '',
-          titleEn: item.nameEn || '',
-          description: item.description || '',
-          link: item.link || '',
-          tags: [...toArray(item.styles), ...toArray(item.fields)],
-          keywords: [
-            item.name,
-            item.nameHe,
-            item.nameEn,
-            item.description,
-            ...toArray(item.styles),
-            ...toArray(item.fields),
-            ...toArray(item.era)
-          ].filter(Boolean),
-          targetId: makeTargetId('hallOfFame', item.id)
         }));
 
         const libraryItems = (booksJson?.results || []).map((item) => ({
@@ -435,7 +413,7 @@ const App = () => {
         ];
 
         if (!cancelled) {
-          setGlobalSearchItems([...resources, ...museumItems, ...hallItems, ...libraryItems, ...mapItems]);
+          setGlobalSearchItems([...resources, ...museumItems, ...libraryItems, ...mapItems]);
         }
       } catch (error) {
         console.error('Global search index error:', error);
@@ -614,7 +592,7 @@ const App = () => {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-off-white text-off-black font-shimshon animate-app-fade-in">
+    <div dir="rtl" className="min-h-screen bg-off-white text-off-black font-headline animate-app-fade-in">
 
       {/* ===== NAVBAR - Dark for differentiation ===== */}
       <Header
@@ -699,8 +677,8 @@ const App = () => {
                 className={cn(
                   "w-full bg-transparent",
                   "text-off-black text-base",
-                  isEnglishText(searchQuery) ? "font-jersey" : "font-shimshon",
-                  "placeholder:text-mid-gray placeholder:font-shimshon",
+                  isEnglishText(searchQuery) ? "font-jersey" : "font-headline",
+                  "placeholder:text-mid-gray placeholder:font-headline",
                   "outline-none border-none",
                   "text-right"
                 )}
@@ -731,7 +709,7 @@ const App = () => {
               >
                 {!searchQuery.trim() ? (
                   <>
-                    <p className="text-xs font-shimshon text-dark-gray mb-3 text-right">
+                    <p className="text-xs font-headline text-dark-gray mb-3 text-right">
                       חיפוש מהיר
                     </p>
                     <div className="flex flex-wrap gap-2 justify-end">
@@ -743,7 +721,7 @@ const App = () => {
                           onClick={() => handleSuggestionClick(suggestion.query)}
                           className={cn(
                             "px-3 py-1.5",
-                            "font-shimshon text-sm",
+                            "font-headline text-sm",
                             suggestion.bgClass,
                             suggestionTextClass(suggestion.bgClass),
                             "border-2 border-off-black",
@@ -783,11 +761,11 @@ const App = () => {
                             )}
                           >
                             <div className="flex items-start justify-between gap-2">
-                              <span className="text-xs font-shimshon px-2 py-0.5 bg-off-white border border-off-black">
+                              <span className="text-xs font-headline px-2 py-0.5 bg-off-white border border-off-black">
                                 {result.sectionLabel}
                               </span>
                               <div className="flex-1">
-                                <p className={cn("text-sm font-bold text-off-black", isEnglishText(result.titleHe || result.titleEn) ? "font-jersey" : "font-shimshon")}>
+                                <p className={cn("text-sm font-bold text-off-black", isEnglishText(result.titleHe || result.titleEn) ? "font-jersey" : "font-headline")}>
                                   {result.titleHe || result.titleEn}
                                 </p>
                                 {result.titleEn && result.titleEn !== result.titleHe && (
@@ -841,7 +819,7 @@ const App = () => {
                     <TetrisShape type={card.shape} color={card.color} size={14} />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-off-black text-right mb-2 font-shimshon">
+                <h3 className="text-2xl font-bold text-off-black text-right mb-2 font-headline">
                   {card.title}
                 </h3>
                 <p className="text-base text-dark-gray text-right font-ibm">
@@ -861,7 +839,7 @@ const App = () => {
                 onClick={() => setActiveSection(null)}
                 className={cn(
                   "px-4 py-2",
-                  "font-shimshon text-sm font-bold text-off-black",
+                  "font-headline text-sm font-bold text-off-black",
                   "bg-light-gray",
                   "border-2 border-off-black",
                   "shadow-brutalist-xs",
@@ -878,16 +856,16 @@ const App = () => {
           </div>
         )}
 
-        {/* ===== HALL OF FAME SECTION ===== */}
-        {activeSection === 'hallOfFame' && (
-          <div className="mt-12" id="section-hallOfFame">
+        {/* ===== DICTIONARY SECTION ===== */}
+        {activeSection === 'dictionary' && (
+          <div className="mt-12" id="section-dictionary">
             <div className="flex justify-end mb-4">
               <button
                 type="button"
                 onClick={() => setActiveSection(null)}
                 className={cn(
                   "px-4 py-2",
-                  "font-shimshon text-sm font-bold text-off-black",
+                  "font-headline text-sm font-bold text-off-black",
                   "bg-light-gray",
                   "border-2 border-off-black",
                   "shadow-brutalist-xs",
@@ -899,7 +877,7 @@ const App = () => {
               </button>
             </div>
             <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
-              <HallOfFameSection pendingNavigation={pendingNavigation} />
+              <DictionarySection />
             </Suspense>
           </div>
         )}
@@ -913,7 +891,7 @@ const App = () => {
                 onClick={() => setActiveSection(null)}
                 className={cn(
                   "px-4 py-2",
-                  "font-shimshon text-sm font-bold text-off-black",
+                  "font-headline text-sm font-bold text-off-black",
                   "bg-light-gray",
                   "border-2 border-off-black",
                   "shadow-brutalist-xs",
@@ -939,7 +917,7 @@ const App = () => {
                 onClick={() => setActiveSection(null)}
                 className={cn(
                   "px-4 py-2",
-                  "font-shimshon text-sm font-bold text-off-black",
+                  "font-headline text-sm font-bold text-off-black",
                   "bg-light-gray",
                   "border-2 border-off-black",
                   "shadow-brutalist-xs",
@@ -965,7 +943,7 @@ const App = () => {
                 onClick={() => setActiveSection(null)}
                 className={cn(
                   "px-4 py-2",
-                  "font-shimshon text-sm font-bold text-off-black",
+                  "font-headline text-sm font-bold text-off-black",
                   "bg-light-gray",
                   "border-2 border-off-black",
                   "shadow-brutalist-xs",
@@ -991,7 +969,7 @@ const App = () => {
                 onClick={() => setActiveSection(null)}
                 className={cn(
                   "px-4 py-2",
-                  "font-shimshon text-sm font-bold text-off-black",
+                  "font-headline text-sm font-bold text-off-black",
                   "bg-light-gray",
                   "border-2 border-off-black",
                   "shadow-brutalist-xs",
@@ -1022,7 +1000,7 @@ const App = () => {
                     onClick={handleFeelingLucky}
                     className={cn(
                       "px-4 py-2",
-                      "font-shimshon text-sm font-bold text-off-black",
+                      "font-headline text-sm font-bold text-off-black",
                       "bg-tetris-cyan border-2 border-off-black shadow-brutalist-xs",
                       "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
                       "transition-all duration-200"
@@ -1040,7 +1018,7 @@ const App = () => {
                 ) : (
                   <div className="text-right">
                     <p className="text-xs font-bold text-dark-gray mb-2">{luckyPick.sectionLabel}</p>
-                    <h3 className={cn("text-3xl font-bold text-off-black mb-2", isEnglishText(luckyPick.titleHe || luckyPick.titleEn) ? "font-jersey" : "font-shimshon")}>
+                    <h3 className={cn("text-3xl font-bold text-off-black mb-2", isEnglishText(luckyPick.titleHe || luckyPick.titleEn) ? "font-jersey" : "font-headline")}>
                       {luckyPick.titleHe || luckyPick.titleEn}
                     </h3>
                     {luckyPick.titleEn && luckyPick.titleEn !== luckyPick.titleHe && (
@@ -1056,7 +1034,7 @@ const App = () => {
                         {luckyPick.tags.slice(0, 5).map((tag) => (
                           <span
                             key={`${luckyPick.id}-${tag}`}
-                            className={cn("px-2 py-1 bg-light-gray border border-off-black text-xs font-normal", isEnglishText(tag) ? "font-jersey" : "font-shimshon")}
+                            className={cn("px-2 py-1 bg-light-gray border border-off-black text-xs font-normal", isEnglishText(tag) ? "font-jersey" : "font-headline")}
                           >
                             {tag}
                           </span>
@@ -1071,7 +1049,7 @@ const App = () => {
                           rel="noopener noreferrer"
                           className={cn(
                             "px-4 py-2",
-                            "font-shimshon text-sm font-bold text-off-black",
+                            "font-headline text-sm font-bold text-off-black",
                             "bg-tetris-yellow border-2 border-off-black shadow-brutalist-xs",
                             "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
                             "transition-all duration-200"
@@ -1092,7 +1070,7 @@ const App = () => {
                           }}
                           className={cn(
                             "px-4 py-2",
-                            "font-shimshon text-sm font-bold text-off-black",
+                            "font-headline text-sm font-bold text-off-black",
                             "bg-tetris-green border-2 border-off-black shadow-brutalist-xs",
                             "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
                             "transition-all duration-200"
@@ -1118,7 +1096,7 @@ const App = () => {
                 onClick={() => setActiveSection(null)}
                 className={cn(
                   "px-4 py-2",
-                  "font-shimshon text-sm font-bold text-off-black",
+                  "font-headline text-sm font-bold text-off-black",
                   "bg-light-gray",
                   "border-2 border-off-black",
                   "shadow-brutalist-xs",
@@ -1145,7 +1123,7 @@ const App = () => {
               onClick={() => setIsSuggestionModalOpen(true)}
               className={cn(
                 'inline-flex items-center gap-2 px-4 py-2',
-                'bg-tetris-green text-off-black text-sm font-bold font-shimshon',
+                'bg-tetris-green text-off-black text-sm font-bold font-headline',
                 'border-2 border-off-white',
                 'shadow-brutalist-xs',
                 'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
@@ -1161,7 +1139,7 @@ const App = () => {
               onClick={() => setIsSupportModalOpen(true)}
               className={cn(
                 'inline-flex items-center gap-2 px-4 py-2',
-                'bg-tetris-purple text-off-white text-sm font-bold font-shimshon',
+                'bg-tetris-purple text-off-white text-sm font-bold font-headline',
                 'border-2 border-off-black',
                 'shadow-brutalist-xs',
                 'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',

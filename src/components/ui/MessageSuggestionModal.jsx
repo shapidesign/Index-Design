@@ -139,7 +139,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
           <X size={18} />
         </button>
 
-        <h3 className="text-2xl font-bold font-shimshon text-off-black mb-2">
+        <h3 className="text-2xl font-bold font-headline text-off-black mb-2">
           שליחת הצעה לאתר
         </h3>
         <p className="text-sm text-dark-gray font-ibm mb-5">
@@ -148,19 +148,19 @@ const MessageSuggestionModal = ({ open, onClose }) => {
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <label className="block">
-            <span className="text-xs font-bold font-shimshon text-off-black">שם מלא *</span>
+            <span className="text-xs font-bold font-headline text-off-black">שם מלא *</span>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 w-full px-3 py-2 bg-off-white border-2 border-off-black text-right font-shimshon outline-none"
+              className="mt-1 w-full px-3 py-2 bg-off-white border-2 border-off-black text-right font-headline outline-none"
               placeholder="השם שלך"
               autoComplete="name"
             />
           </label>
 
           <label className="block">
-            <span className="text-xs font-bold font-shimshon text-off-black">אימייל *</span>
+            <span className="text-xs font-bold font-headline text-off-black">אימייל *</span>
             <input
               type="email"
               value={email}
@@ -172,11 +172,11 @@ const MessageSuggestionModal = ({ open, onClose }) => {
           </label>
 
           <label className="block">
-            <span className="text-xs font-bold font-shimshon text-off-black">קטגוריה *</span>
+            <span className="text-xs font-bold font-headline text-off-black">קטגוריה *</span>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="mt-1 w-full px-3 py-2 bg-off-white border-2 border-off-black text-right font-shimshon outline-none"
+              className="mt-1 w-full px-3 py-2 bg-off-white border-2 border-off-black text-right font-headline outline-none"
             >
               <option value="">בחרו קטגוריה</option>
               {CATEGORY_OPTIONS.map((option) => (
@@ -188,7 +188,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
           </label>
 
           <label className="block">
-            <span className="text-xs font-bold font-shimshon text-off-black">הודעה / הצעה *</span>
+            <span className="text-xs font-bold font-headline text-off-black">הודעה / הצעה *</span>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -198,7 +198,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
           </label>
 
           <label className="block">
-            <span className="text-xs font-bold font-shimshon text-off-black">קישור רלוונטי (אופציונלי)</span>
+            <span className="text-xs font-bold font-headline text-off-black">קישור רלוונטי (אופציונלי)</span>
             <div className="mt-1 flex items-center gap-2 px-3 py-2 border-2 border-off-black bg-off-white">
               <LinkIcon size={14} className="text-dark-gray shrink-0" />
               <input
@@ -229,7 +229,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
               className={cn(
                 'inline-flex items-center gap-2 px-5 py-2.5',
                 'bg-tetris-green border-2 border-off-black',
-                'font-bold font-shimshon text-off-black shadow-brutalist-xs',
+                'font-bold font-headline text-off-black shadow-brutalist-xs',
                 'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
                 'transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed'
               )}

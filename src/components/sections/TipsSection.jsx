@@ -83,7 +83,7 @@ const TipsSection = () => {
   return (
     <section id="section-tips" className="py-12 md:py-16 relative" dir="rtl">
       <div className="mb-8 md:mb-12">
-        <h2 className="text-4xl md:text-5xl font-bold font-shimshon text-off-black mb-4">
+        <h2 className="text-4xl md:text-5xl font-bold font-headline text-off-black mb-4">
           טיפים
         </h2>
         <p className="text-lg text-dark-gray font-ibm max-w-2xl">
@@ -102,14 +102,14 @@ const TipsSection = () => {
           {/* Filters */}
           <div className="flex flex-col gap-4 mb-8 bg-off-white border-3 border-off-black p-4 shadow-brutalist-sm">
             <div className="flex items-center gap-3">
-              <span className="font-bold font-shimshon text-off-black shrink-0 w-16">סוג:</span>
+              <span className="font-bold font-headline text-off-black shrink-0 w-16">סוג:</span>
               <div className="flex flex-wrap gap-2">
                 {types.map((type) => (
                   <button
                     key={`type-${type}`}
                     onClick={() => setSelectedType(selectedType === type ? null : type)}
                     className={cn(
-                      'px-3 py-1 font-shimshon border-2 border-off-black transition-all',
+                      'px-3 py-1 font-headline border-2 border-off-black transition-all',
                       selectedType === type
                         ? 'bg-tetris-purple text-off-white shadow-none translate-x-[2px] translate-y-[2px] font-bold'
                         : 'bg-white text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] font-bold'
@@ -121,7 +121,7 @@ const TipsSection = () => {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="font-bold font-shimshon text-off-black shrink-0 w-16 pt-1">נושא:</span>
+              <span className="font-bold font-headline text-off-black shrink-0 w-16 pt-1">נושא:</span>
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag) => {
                   const tagBg = getTagColor(tag);
@@ -173,7 +173,7 @@ const TipsSection = () => {
                     <div className={cn('h-[40%] border-b-3 border-off-black relative p-4', headColor)}>
                       <div className="absolute inset-0 bg-noise opacity-30 mix-blend-overlay" />
                       {tip.type && (
-                        <div className="absolute top-4 right-4 bg-off-black text-off-white px-2 py-1 text-xs font-bold font-shimshon shadow-brutalist-xs">
+                        <div className="absolute top-4 right-4 bg-off-black text-off-white px-2 py-1 text-xs font-bold font-headline shadow-brutalist-xs">
                           {tip.type}
                         </div>
                       )}
@@ -181,7 +181,7 @@ const TipsSection = () => {
 
                     {/* Content Area */}
                     <div className="p-4 flex-1 flex flex-col min-h-0 bg-noise mix-blend-multiply">
-                      <h3 className="text-xl md:text-2xl font-bold font-shimshon text-off-black mb-2 line-clamp-3 leading-tight group-hover:text-tetris-purple transition-colors">
+                      <h3 className="text-xl md:text-2xl font-bold font-headline text-off-black mb-2 line-clamp-3 leading-tight group-hover:text-tetris-purple transition-colors">
                         {tip.title}
                       </h3>
                       
@@ -207,7 +207,7 @@ const TipsSection = () => {
                           );
                         })}
                         {tip.tags?.length > 3 && (
-                          <span className="text-xs text-mid-gray shrink-0 pt-0.5 font-shimshon">
+                          <span className="text-xs text-mid-gray shrink-0 pt-0.5 font-headline">
                             +{tip.tags.length - 3}
                           </span>
                         )}

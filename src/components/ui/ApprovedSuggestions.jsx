@@ -27,7 +27,7 @@ const ApprovedSuggestions = () => {
 
   return (
     <div className="mt-8 pt-8 border-t-2 border-off-black/10">
-      <h3 className="text-2xl font-bold font-shimshon text-off-black mb-4">
+      <h3 className="text-2xl font-bold font-headline text-off-black mb-4">
         הצעות שאושרו
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -70,8 +70,8 @@ const ApprovedSuggestions = () => {
               <div className="flex items-center justify-between mt-auto pt-2 border-t border-off-black/10">
                 {name && (
                   <span className={cn(
-                    'text-xs font-shimshon',
-                    isEnglish(name) ? 'font-jersey' : 'font-shimshon'
+                    'text-xs font-headline',
+                    isEnglish(name) ? 'font-jersey' : 'font-headline'
                   )}>
                     {name}
                   </span>

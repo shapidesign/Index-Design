@@ -11,14 +11,14 @@ import vcLogo from '@/assets/svg/vc-logo-small.svg';
  * - Logo on the right (RTL) - white version for dark bg
  * - Nav buttons: #EEEEEE fill, square edges, 4px shadow
  * - Purple hamburger button with white lines
- * - Shimshon pixel font for all nav text
+ * - Reisinger Amir font for all nav text
  */
 
 const navSections = [
   { id: 'toolbox', label: 'ארגז כלים' },
   { id: 'museum', label: 'מוזיאון' },
   { id: 'library', label: 'ספרייה' },
-  { id: 'hallOfFame', label: 'היכל התהילה' },
+  { id: 'dictionary', label: 'המילון' },
   { id: 'map', label: 'מפה' },
   { id: 'tips', label: 'טיפים' },
   { id: 'lucky', label: 'הפתעה' },
@@ -69,7 +69,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
                 onClick={() => onSectionChange?.(section.id)}
                 className={cn(
                   'px-4 py-2',
-                  'text-sm font-shimshon whitespace-nowrap',
+                  'text-sm font-headline whitespace-nowrap',
                   'border border-dark-gray',
                   'transition-all duration-200',
                   section.id === 'lucky'
@@ -89,7 +89,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
             onClick={() => onHelpClick?.()}
             className={cn(
               'px-4 py-2',
-              'text-sm font-shimshon whitespace-nowrap',
+              'text-sm font-headline whitespace-nowrap',
               'bg-tetris-purple text-off-white',
               'border border-dark-gray shadow-brutalist-nav',
               'transition-all duration-200',
@@ -164,7 +164,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
               }}
               className={cn(
                 'px-6 py-4 text-right',
-                'font-shimshon text-lg',
+                'font-headline text-lg',
                 'border border-dark-gray',
                 'shadow-brutalist-nav',
                 'transition-all duration-200',
@@ -186,7 +186,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
             }}
             className={cn(
               'px-6 py-4 text-right',
-              'font-shimshon text-lg',
+              'font-headline text-lg',
               'border border-dark-gray',
               'bg-tetris-purple text-off-white',
               'shadow-brutalist-nav',

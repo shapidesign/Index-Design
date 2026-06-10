@@ -141,7 +141,7 @@ const CategoryGroup = ({ category, places, defaultOpen, reviewsMap, onOpenReview
           decoding="async"
         />
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold font-shimshon text-off-black text-lg">
+          <h3 className="font-bold font-headline text-off-black text-lg">
             {category.label}
           </h3>
           <p className="text-xs text-dark-gray font-ibm mt-0.5">
@@ -181,7 +181,7 @@ const CategoryGroup = ({ category, places, defaultOpen, reviewsMap, onOpenReview
                 <div className="flex-1 min-w-0">
                   {/* Name + review stats row */}
                   <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                    <p className="font-bold font-shimshon text-off-black text-sm md:text-base leading-snug">
+                    <p className="font-bold font-headline text-off-black text-sm md:text-base leading-snug">
                       {place.name}
                     </p>
                     {reviewCount > 0 && (
@@ -220,7 +220,7 @@ const CategoryGroup = ({ category, places, defaultOpen, reviewsMap, onOpenReview
                             <p className="line-clamp-2">“{rev.recommendation}”</p>
                           )}
                           <div className="flex items-center justify-between mt-1 gap-2">
-                            <span className="font-shimshon text-off-black text-[11px]">— {rev.name}</span>
+                            <span className="font-headline text-off-black text-[11px]">— {rev.name}</span>
                             {rev.rating && (
                               <span className="flex items-center gap-0.5" dir="ltr">
                                 <img src={StarIcon} alt="" className="w-2.5 h-2.5" />
@@ -369,10 +369,10 @@ const MapSection = () => {
     <section dir="rtl" className="animate-tetris-stack">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-3xl font-bold text-off-black font-shimshon">
+          <h2 className="text-3xl font-bold text-off-black font-headline">
             המפה
           </h2>
-          <span className="font-shimshon text-sm text-dark-gray">
+          <span className="font-headline text-sm text-dark-gray">
             אינדקס מקומות למעצבים
           </span>
         </div>
@@ -420,7 +420,7 @@ const MapSection = () => {
         {viewMode === 'map' && (
           <>
             <div className="mb-4 border-3 border-off-black bg-light-gray p-3 md:p-4 shadow-brutalist-sm">
-              <h3 className="text-sm md:text-base font-bold text-off-black font-shimshon text-right mb-3">
+              <h3 className="text-sm md:text-base font-bold text-off-black font-headline text-right mb-3">
                 מקרא
               </h3>
               <div className="flex flex-wrap justify-end gap-3 md:gap-4">
@@ -429,7 +429,7 @@ const MapSection = () => {
                     key={item.id}
                     className="inline-flex items-center gap-2 border-2 border-off-black bg-off-white px-3 py-2"
                   >
-                    <span className="text-sm font-shimshon text-off-black">{item.label}</span>
+                    <span className="text-sm font-headline text-off-black">{item.label}</span>
                     <img
                       src={item.image}
                       alt={`סמל ${item.label}`}
@@ -465,7 +465,7 @@ const MapSection = () => {
                 type="button"
                 onClick={selectAll}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-shimshon font-bold',
+                  'px-3 py-1.5 text-xs font-headline font-bold',
                   'border-2 border-off-black',
                   'transition-all duration-200',
                   activeFilters.size === CATEGORIES.length
@@ -487,7 +487,7 @@ const MapSection = () => {
                         : toggleFilter(cat.id)
                   }
                   className={cn(
-                    'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-shimshon font-bold',
+                    'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-headline font-bold',
                     'border-2 border-off-black',
                     'transition-all duration-200',
                     activeFilters.has(cat.id) && activeFilters.size < CATEGORIES.length
@@ -535,7 +535,7 @@ const MapSection = () => {
             className={cn(
               'inline-flex items-center gap-2 px-4 py-2',
               'bg-tetris-green text-off-black',
-              'font-shimshon text-sm font-bold',
+              'font-headline text-sm font-bold',
               'border-2 border-off-black shadow-brutalist-xs',
               'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
               'transition-all duration-200'

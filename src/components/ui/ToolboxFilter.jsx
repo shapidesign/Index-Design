@@ -48,7 +48,7 @@ const FilterChip = ({ label, isActive, activeBg, onClick, className }) => (
     className={cn(
       'px-3 py-1.5',
       'text-xs font-bold',
-      isEnglish(label) ? 'font-jersey' : 'font-shimshon',
+      isEnglish(label) ? 'font-jersey' : 'font-headline',
       'border-2 border-off-black',
       'whitespace-nowrap',
       'transition-all duration-200',
@@ -91,7 +91,7 @@ const ToolboxFilter = ({
     >
       {/* Header row */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-shimshon font-bold text-base text-off-black">
+        <h3 className="font-headline font-bold text-base text-off-black">
           סינון
         </h3>
         {hasActiveFilters && (
@@ -100,7 +100,7 @@ const ToolboxFilter = ({
             onClick={onClearFilters}
             className={cn(
               'px-3 py-1',
-              'font-shimshon text-xs font-bold',
+              'font-headline text-xs font-bold',
               'text-off-black bg-tetris-pink',
               'border-2 border-off-black',
               'shadow-brutalist-xs',
@@ -115,7 +115,7 @@ const ToolboxFilter = ({
 
       {/* Pricing filter */}
       <div className="mb-3">
-        <p className="font-shimshon text-xs text-dark-gray mb-2">מחיר</p>
+        <p className="font-headline text-xs text-dark-gray mb-2">מחיר</p>
         <div className="flex flex-wrap gap-2">
           {pricingOptions.map((opt) => (
             <FilterChip
@@ -132,7 +132,7 @@ const ToolboxFilter = ({
       {/* Type filter */}
       {availableTypes.length > 0 && (
         <div className="mb-3">
-          <p className="font-shimshon text-xs text-dark-gray mb-2">סוג</p>
+          <p className="font-headline text-xs text-dark-gray mb-2">סוג</p>
           <div className="flex flex-wrap gap-2 pb-1 pe-1 overflow-visible">
             {availableTypes.map((type) => (
               <FilterChip
@@ -150,7 +150,7 @@ const ToolboxFilter = ({
       {/* Tag filter */}
       {availableTags.length > 0 && (
         <div>
-          <p className="font-shimshon text-xs text-dark-gray mb-2">תגיות</p>
+          <p className="font-headline text-xs text-dark-gray mb-2">תגיות</p>
           <div className="flex flex-wrap gap-2 pb-1 pe-1 overflow-visible">
             {availableTags.map((tag) => (
               <FilterChip

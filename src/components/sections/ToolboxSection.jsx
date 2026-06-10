@@ -123,7 +123,7 @@ const ToolboxSection = ({ pendingNavigation }) => {
         )}
       >
         <TetrisShape type="O" color="yellow" size={40} className="mb-6" />
-        <h2 className="text-2xl font-bold text-off-black mb-4 font-shimshon">
+        <h2 className="text-2xl font-bold text-off-black mb-4 font-headline">
           אופס! משהו השתבש
         </h2>
         <p className="text-dark-gray font-ibm mb-6">{error}</p>
@@ -132,7 +132,7 @@ const ToolboxSection = ({ pendingNavigation }) => {
           className={cn(
             'px-6 py-3',
             'bg-tetris-green',
-            'font-shimshon font-bold',
+            'font-headline font-bold',
             'border-3 border-off-black',
             'shadow-brutalist',
             'hover:shadow-brutalist-sm hover:translate-x-[3px] hover:translate-y-[3px]',
@@ -150,10 +150,10 @@ const ToolboxSection = ({ pendingNavigation }) => {
       {/* Section header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-3xl font-bold text-off-black font-shimshon">
+          <h2 className="text-3xl font-bold text-off-black font-headline">
             ארגז הכלים
           </h2>
-          <span className="font-shimshon text-sm text-dark-gray">
+          <span className="font-headline text-sm text-dark-gray">
             {filteredResources.length} משאבים
             {hasActiveFilters && ` (מסוננים מתוך ${resources.length})`}
           </span>
@@ -239,7 +239,7 @@ const ToolboxSection = ({ pendingNavigation }) => {
           )}
         >
           <TetrisShape type="T" color="purple" size={32} className="mb-4 opacity-40" />
-          <p className="text-lg font-bold text-dark-gray font-shimshon mb-2">
+          <p className="text-lg font-bold text-dark-gray font-headline mb-2">
             לא נמצאו תוצאות
           </p>
           <p className="text-sm text-mid-gray font-ibm mb-4">
@@ -250,7 +250,7 @@ const ToolboxSection = ({ pendingNavigation }) => {
             className={cn(
               'px-4 py-2',
               'bg-tetris-pink',
-              'font-shimshon text-sm font-bold',
+              'font-headline text-sm font-bold',
               'border-2 border-off-black',
               'shadow-brutalist-xs',
               'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',

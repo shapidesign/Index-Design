@@ -16,7 +16,7 @@ const Badge = ({
   ...props
 }) => {
   const text = typeof children === 'string' ? children : '';
-  const fontClass = isEnglish(text) ? 'font-jersey' : 'font-shimshon';
+  const fontClass = isEnglish(text) ? 'font-jersey' : 'font-headline';
 
   return (
     <span

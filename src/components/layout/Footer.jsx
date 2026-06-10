@@ -89,7 +89,7 @@ const Footer = () => {
               className={cn(
                 'inline-flex items-center gap-2 px-4 py-2',
                 'bg-tetris-purple text-off-white',
-                'text-sm font-bold font-shimshon',
+                'text-sm font-bold font-headline',
                 'border-2 border-off-black',
                 'shadow-brutalist-xs',
                 'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',

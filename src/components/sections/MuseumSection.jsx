@@ -56,7 +56,7 @@ const SearchableDropdown = ({ label, options, selected, onToggle, onClear }) => 
                     'bg-off-white',
                     'border-2 border-off-black',
                     'shadow-brutalist-xs',
-                    'font-shimshon text-sm text-right',
+                    'font-headline text-sm text-right',
                     'transition-all duration-200',
                     'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
                     open && 'shadow-none translate-x-[2px] translate-y-[2px]',
@@ -98,7 +98,7 @@ const SearchableDropdown = ({ label, options, selected, onToggle, onClear }) => 
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="חיפוש..."
-                                className="w-full bg-transparent text-xs font-shimshon outline-none text-right"
+                                className="w-full bg-transparent text-xs font-headline outline-none text-right"
                                 dir="rtl"
                                 autoFocus
                             />
@@ -115,7 +115,7 @@ const SearchableDropdown = ({ label, options, selected, onToggle, onClear }) => 
                                     onClick={() => onToggle(opt)}
                                     className={cn(
                                         'w-full text-right px-3 py-1.5',
-                                        'text-xs font-shimshon',
+                                        'text-xs font-headline',
                                         'hover:bg-light-gray',
                                         'transition-colors',
                                         selected.includes(opt) && 'bg-tetris-yellow/30 font-bold'
@@ -225,7 +225,7 @@ const MuseumModal = ({ item, onClose }) => {
                         {item.country && (
                             <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 bg-off-white border-2 border-off-black shadow-brutalist-xs">
                                 {flagPath && <img src={flagPath} alt={item.country} className="w-4 h-auto" />}
-                                <span className="text-sm font-bold font-shimshon">{item.country}</span>
+                                <span className="text-sm font-bold font-headline">{item.country}</span>
                             </div>
                         )}
                     </div>
@@ -234,7 +234,7 @@ const MuseumModal = ({ item, onClose }) => {
                     <div className="flex-1 p-6 md:p-8">
                         {/* Name */}
                         <div className="mb-5">
-                            <h2 className="text-2xl md:text-3xl font-bold font-shimshon text-off-black mb-1">
+                            <h2 className="text-2xl md:text-3xl font-bold font-headline text-off-black mb-1">
                                 {item.nameHe || item.name}
                             </h2>
                             {item.nameEn && (
@@ -245,12 +245,12 @@ const MuseumModal = ({ item, onClose }) => {
                         {/* Type + Era Tags */}
                         <div className="flex flex-wrap gap-2 mb-5">
                             {item.type?.map((t) => (
-                                <span key={t} className={cn("px-3 py-1 text-xs font-normal bg-tetris-cyan/30 border border-off-black", isEnglish(t) ? 'font-jersey' : 'font-shimshon')}>
+                                <span key={t} className={cn("px-3 py-1 text-xs font-normal bg-tetris-cyan/30 border border-off-black", isEnglish(t) ? 'font-jersey' : 'font-headline')}>
                                     {t}
                                 </span>
                             ))}
                             {item.era?.map((e) => (
-                                <span key={e} className={cn("px-3 py-1 text-xs font-normal bg-tetris-purple text-off-white border border-off-black", isEnglish(e) ? 'font-jersey' : 'font-shimshon')}>
+                                <span key={e} className={cn("px-3 py-1 text-xs font-normal bg-tetris-purple text-off-white border border-off-black", isEnglish(e) ? 'font-jersey' : 'font-headline')}>
                                     {e}
                                 </span>
                             ))}
@@ -260,7 +260,7 @@ const MuseumModal = ({ item, onClose }) => {
                         <div className="space-y-4 mb-6">
                             {item.description && (
                                 <div>
-                                    <h4 className="text-sm font-bold font-shimshon text-off-black mb-1">תיאור</h4>
+                                    <h4 className="text-sm font-bold font-headline text-off-black mb-1">תיאור</h4>
                                     <p className="text-sm text-dark-gray font-ibm leading-relaxed">
                                         {item.description}
                                     </p>
@@ -269,7 +269,7 @@ const MuseumModal = ({ item, onClose }) => {
 
                             {item.famousWork && (
                                 <div>
-                                    <h4 className="text-sm font-bold font-shimshon text-off-black mb-1">עבודות בולטות</h4>
+                                    <h4 className="text-sm font-bold font-headline text-off-black mb-1">עבודות בולטות</h4>
                                     <p className="text-sm text-dark-gray font-ibm">
                                         {item.famousWork}
                                     </p>
@@ -278,14 +278,14 @@ const MuseumModal = ({ item, onClose }) => {
 
                             {item.tags?.length > 0 && (
                                 <div>
-                                    <h4 className="text-sm font-bold font-shimshon text-off-black mb-2">תגיות</h4>
+                                    <h4 className="text-sm font-bold font-headline text-off-black mb-2">תגיות</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {item.tags.map((tag) => (
                                             <span
                                                 key={tag}
                                                 className={cn(
                                                     'px-2.5 py-1',
-                                                    'text-xs font-normal font-shimshon',
+                                                    'text-xs font-normal font-headline',
                                                     'border border-off-black',
                                                     getTagColor(tag),
                                                     getTagTextClass(getTagColor(tag)),
@@ -309,7 +309,7 @@ const MuseumModal = ({ item, onClose }) => {
                                 className={cn(
                                     'inline-flex items-center gap-2 px-5 py-2.5',
                                     'bg-off-black text-off-white',
-                                    'font-bold font-shimshon text-sm',
+                                    'font-bold font-headline text-sm',
                                     'border-2 border-off-black',
                                     'hover:bg-tetris-purple transition-colors'
                                 )}
@@ -503,7 +503,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                 )}
             >
                 <TetrisShape type="Z" color="yellow" size={40} className="mb-6" />
-                <h2 className="text-2xl font-bold text-off-black mb-4 font-shimshon">
+                <h2 className="text-2xl font-bold text-off-black mb-4 font-headline">
                     אופס! משהו השתבש
                 </h2>
                 <p className="text-dark-gray font-ibm mb-6">{error}</p>
@@ -512,7 +512,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                     className={cn(
                         'px-6 py-3',
                         'bg-tetris-green',
-                        'font-shimshon font-bold',
+                        'font-headline font-bold',
                         'border-3 border-off-black',
                         'shadow-brutalist',
                         'hover:shadow-brutalist-sm hover:translate-x-[3px] hover:translate-y-[3px]',
@@ -535,10 +535,10 @@ const MuseumSection = ({ pendingNavigation }) => {
             {/* ===== SECTION HEADER + VIEW TOGGLE ===== */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-3xl font-bold text-off-black font-shimshon">
+                    <h2 className="text-3xl font-bold text-off-black font-headline">
                         המוזיאון
                     </h2>
-                    <span className="font-shimshon text-sm text-dark-gray">
+                    <span className="font-headline text-sm text-dark-gray">
                         {filteredItems.length} מקומות
                         {hasActiveFilters && ` (מסוננים מתוך ${items.length})`}
                     </span>
@@ -593,7 +593,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onFocus={() => setSearchFocused(true)}
                             placeholder="חיפוש לפי תגיות, תיאור, שם, מדינה או סוג..."
-                            className="w-full bg-transparent text-sm font-shimshon outline-none text-right"
+                            className="w-full bg-transparent text-sm font-headline outline-none text-right"
                             dir="rtl"
                         />
                         {searchQuery && (
@@ -610,7 +610,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                             'bg-off-white border-2 border-off-black shadow-brutalist',
                             'animate-tetris-stack'
                         )}>
-                            <p className="text-xs font-shimshon text-dark-gray mb-2 text-right">חיפוש מהיר</p>
+                            <p className="text-xs font-headline text-dark-gray mb-2 text-right">חיפוש מהיר</p>
                             <div className="flex flex-wrap gap-1.5 justify-end">
                                 {quickSearches.map((q) => (
                                     <button
@@ -618,7 +618,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                                         onClick={() => { setSearchQuery(q); setSearchFocused(false); }}
                                         className={cn(
                                             'px-2.5 py-1',
-                                            'font-shimshon text-xs text-off-black',
+                                            'font-headline text-xs text-off-black',
                                             'bg-light-gray border border-off-black',
                                             'shadow-brutalist-xs',
                                             'hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px]',
@@ -679,7 +679,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                             onClick={clearAll}
                             className={cn(
                                 'px-3 py-1.5',
-                                'font-shimshon text-xs font-bold text-off-black',
+                                'font-headline text-xs font-bold text-off-black',
                                 'bg-tetris-pink border-2 border-off-black',
                                 'shadow-brutalist-xs',
                                 'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
@@ -736,7 +736,7 @@ const MuseumSection = ({ pendingNavigation }) => {
             ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                     <TetrisShape type="Z" color="yellow" size={32} className="mb-4 opacity-40" />
-                    <p className="text-lg font-bold text-dark-gray font-shimshon mb-2">
+                    <p className="text-lg font-bold text-dark-gray font-headline mb-2">
                         לא נמצאו תוצאות
                     </p>
                     <p className="text-sm text-mid-gray font-ibm mb-4">
@@ -747,7 +747,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                         className={cn(
                             'px-4 py-2',
                             'bg-tetris-pink',
-                            'font-shimshon text-sm font-bold',
+                            'font-headline text-sm font-bold',
                             'border-2 border-off-black',
                             'shadow-brutalist-xs',
                             'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',

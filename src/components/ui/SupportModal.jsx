@@ -72,7 +72,7 @@ const SupportModal = ({ open, onClose }) => {
         </div>
 
         {/* Heading */}
-        <h3 className="text-2xl font-bold font-shimshon text-off-black mb-3 text-center">
+        <h3 className="text-2xl font-bold font-headline text-off-black mb-3 text-center">
           תמיכה ביוצר
         </h3>
 
@@ -94,7 +94,7 @@ const SupportModal = ({ open, onClose }) => {
               'inline-flex items-center gap-2 px-6 py-3',
               'bg-tetris-purple text-off-white',
               'border-2 border-off-black',
-              'font-bold font-shimshon text-base',
+              'font-bold font-headline text-base',
               'shadow-brutalist-sm',
               'hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]',
               'transition-all duration-200'

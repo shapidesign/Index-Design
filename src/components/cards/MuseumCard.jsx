@@ -66,7 +66,7 @@ const MuseumCard = ({
                 <div className="flex-1 min-w-0">
                     <div className="flex flex-col gap-1 mb-1">
                         <div className="flex flex-col min-w-0">
-                            <h3 className="font-shimshon font-bold text-lg text-off-black leading-tight line-clamp-2 break-words">
+                            <h3 className="font-headline font-bold text-lg text-off-black leading-tight line-clamp-2 break-words">
                                 {nameHe}
                             </h3>
                             {nameEn && (
@@ -88,7 +88,7 @@ const MuseumCard = ({
                 {/* Type Tags */}
                 <div className="hidden sm:flex gap-1">
                     {type.slice(0, 2).map((t) => (
-                        <span key={t} className={cn("px-2 py-0.5 text-xs bg-tetris-cyan/20 border border-off-black", isEnglish(t) ? 'font-jersey' : 'font-shimshon')}>
+                        <span key={t} className={cn("px-2 py-0.5 text-xs bg-tetris-cyan/20 border border-off-black", isEnglish(t) ? 'font-jersey' : 'font-headline')}>
                             {t}
                         </span>
                     ))}
@@ -103,7 +103,7 @@ const MuseumCard = ({
                                 className={cn(
                                     'px-2 py-0.5',
                                     'text-xs font-normal',
-                                    isEnglish(tag) ? 'font-jersey' : 'font-shimshon',
+                                    isEnglish(tag) ? 'font-jersey' : 'font-headline',
                                     'border border-off-black',
                                     getTagColor(tag),
                                     getTagTextClass(getTagColor(tag)),
@@ -114,7 +114,7 @@ const MuseumCard = ({
                             </span>
                         ))}
                         {tags.length > 3 && (
-                            <span className="text-xs font-shimshon text-mid-gray">
+                            <span className="text-xs font-headline text-mid-gray">
                                 +{tags.length - 3}
                             </span>
                         )}
@@ -177,7 +177,7 @@ const MuseumCard = ({
                 {country && (
                     <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-off-white border-2 border-off-black shadow-brutalist-xs z-10">
                         {flagPath && <img src={flagPath} alt={country} className="w-4 h-auto" />}
-                        <span className={cn("text-xs font-bold", isEnglish(country) ? 'font-jersey' : 'font-shimshon')}>{country}</span>
+                        <span className={cn("text-xs font-bold", isEnglish(country) ? 'font-jersey' : 'font-headline')}>{country}</span>
                     </div>
                 )}
             </div>
@@ -185,7 +185,7 @@ const MuseumCard = ({
             {/* Content */}
             <div className="flex-1 p-4 flex flex-col">
                 <div className="flex flex-col mb-3">
-                    <h3 className="text-xl font-bold font-shimshon leading-tight text-off-black group-hover:text-tetris-purple transition-colors">
+                    <h3 className="text-xl font-bold font-headline leading-tight text-off-black group-hover:text-tetris-purple transition-colors">
                         {nameHe}
                     </h3>
                     {nameEn && (
@@ -196,7 +196,7 @@ const MuseumCard = ({
                 {/* Type Tags */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
                     {type.slice(0, 3).map((t) => (
-                        <span key={t} className={cn("px-2 py-0.5 text-xs font-normal bg-tetris-cyan/30 border border-off-black", isEnglish(t) ? 'font-jersey' : 'font-shimshon')}>
+                        <span key={t} className={cn("px-2 py-0.5 text-xs font-normal bg-tetris-cyan/30 border border-off-black", isEnglish(t) ? 'font-jersey' : 'font-headline')}>
                             {t}
                         </span>
                     ))}
@@ -211,7 +211,7 @@ const MuseumCard = ({
                                 className={cn(
                                     'px-2 py-0.5',
                                     'text-xs font-normal',
-                                    isEnglish(tag) ? 'font-jersey' : 'font-shimshon',
+                                    isEnglish(tag) ? 'font-jersey' : 'font-headline',
                                     'border border-off-black',
                                     getTagColor(tag),
                                     getTagTextClass(getTagColor(tag)),
@@ -222,7 +222,7 @@ const MuseumCard = ({
                             </span>
                         ))}
                         {tags.length > 4 && (
-                            <span className="px-2 py-0.5 text-xs font-shimshon text-mid-gray border border-off-black/30 bg-light-gray">
+                            <span className="px-2 py-0.5 text-xs font-headline text-mid-gray border border-off-black/30 bg-light-gray">
                                 +{tags.length - 4}
                             </span>
                         )}
@@ -244,7 +244,7 @@ const MuseumCard = ({
                             className={cn(
                                 'flex items-center gap-2 px-3 py-1.5',
                                 'bg-off-black text-off-white',
-                                'text-xs font-bold font-shimshon',
+                                'text-xs font-bold font-headline',
                                 'hover:bg-tetris-purple transition-colors'
                             )}
                         >
@@ -252,7 +252,7 @@ const MuseumCard = ({
                             <ExternalLink size={12} />
                         </a>
                     ) : (
-                        <span className="text-xs text-mid-gray font-shimshon">אין קישור</span>
+                        <span className="text-xs text-mid-gray font-headline">אין קישור</span>
                     )}
                 </div>
             </div>

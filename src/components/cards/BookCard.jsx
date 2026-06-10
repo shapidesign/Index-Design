@@ -23,7 +23,7 @@ const BookCard = ({
 }) => {
   const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
   const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(String(value || ''));
-  const textFontClass = (value) => (isEnglish(value) || isSymbolHeavyText(value) ? 'font-jersey' : 'font-shimshon');
+  const textFontClass = (value) => (isEnglish(value) || isSymbolHeavyText(value) ? 'font-jersey' : 'font-headline');
   const coverAlt = title ? `כריכת הספר ${title}` : 'כריכת ספר';
 
   const coverElement = coverUrl ? (
@@ -36,7 +36,7 @@ const BookCard = ({
     />
   ) : (
     <div className="w-full h-full bg-light-gray flex items-center justify-center text-center px-2">
-      <span className="text-xs font-shimshon text-dark-gray">אין כריכה זמינה</span>
+      <span className="text-xs font-headline text-dark-gray">אין כריכה זמינה</span>
     </div>
   );
 
@@ -61,7 +61,7 @@ const BookCard = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="flex-1 min-w-0">
-                <h3 className={cn("text-lg font-bold text-off-black text-right mb-1 break-words", isEnglish(title) ? 'font-jersey' : 'font-shimshon')}>{title}</h3>
+                <h3 className={cn("text-lg font-bold text-off-black text-right mb-1 break-words", isEnglish(title) ? 'font-jersey' : 'font-headline')}>{title}</h3>
                 {year && (
                   <div className="flex justify-end mb-1">
                     <span className="inline-flex w-fit items-center px-3 py-0.5 text-sm font-normal font-jersey bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
@@ -151,7 +151,7 @@ const BookCard = ({
         </div>
       </div>
 
-      <h3 className={cn("text-xl font-bold text-off-black text-right mb-1 line-clamp-2 min-h-[56px]", isEnglish(title) ? 'font-jersey' : 'font-shimshon')}>{title}</h3>
+      <h3 className={cn("text-xl font-bold text-off-black text-right mb-1 line-clamp-2 min-h-[56px]", isEnglish(title) ? 'font-jersey' : 'font-headline')}>{title}</h3>
       {year && (
         <div className="flex justify-end mb-2">
           <span className="inline-flex w-fit items-center px-3 py-0.5 text-base font-normal font-jersey bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
@@ -207,7 +207,7 @@ const BookCard = ({
             rel="noopener noreferrer"
             className={cn(
               'inline-flex items-center gap-1.5',
-              'text-sm font-bold font-shimshon text-off-black',
+              'text-sm font-bold font-headline text-off-black',
               'px-3 py-1.5 bg-tetris-cyan border-2 border-off-black shadow-brutalist-xs',
               'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
               'transition-all duration-200'

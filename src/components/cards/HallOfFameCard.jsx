@@ -96,7 +96,7 @@ const GalleryCard = ({
                         className="absolute bottom-0 left-0 leading-none pointer-events-none select-none"
                         style={{
                             fontSize: '120px',
-                            fontFamily: isEnglish(initial) ? "'Jersey 20', sans-serif" : "'Shimshon', sans-serif",
+                            fontFamily: isEnglish(initial) ? "'Jersey 20', sans-serif" : "'Reisinger Amir', sans-serif",
                             fontWeight: 700,
                             color: '#1F1F1F',
                             opacity: 0.07,
@@ -117,7 +117,7 @@ const GalleryCard = ({
                                 'text-sm font-normal text-off-white',
                                 'border-2 border-off-black',
                                 'shadow-brutalist-xs',
-                                'font-shimshon',
+                                'font-headline',
                                 eraColor
                             )}
                         >
@@ -147,7 +147,7 @@ const GalleryCard = ({
             {/* ===== CARD BODY ===== */}
             <div className="p-4">
                 {/* Name: Hebrew above, English below */}
-                <h3 className="text-lg font-bold text-off-black text-right mb-1 leading-tight font-shimshon">
+                <h3 className="text-lg font-bold text-off-black text-right mb-1 leading-tight font-headline">
                     {nameHe}
                 </h3>
                 {nameEn && (
@@ -169,7 +169,7 @@ const GalleryCard = ({
                                         'text-xs font-normal',
                                         'border border-off-black',
                                         'shadow-brutalist-xs',
-                                        isEnglish(style) ? 'font-jersey' : 'font-shimshon',
+                                        isEnglish(style) ? 'font-jersey' : 'font-headline',
                                         bgColor,
                                         needsWhiteText(bgColor) ? 'text-off-white' : 'text-off-black'
                                     )}
@@ -194,7 +194,7 @@ const GalleryCard = ({
                                         'text-xs font-normal',
                                         'border border-off-black',
                                         'shadow-brutalist-xs',
-                                        isEnglish(field) ? 'font-jersey' : 'font-shimshon',
+                                        isEnglish(field) ? 'font-jersey' : 'font-headline',
                                         bgColor,
                                         needsWhiteText(bgColor) ? 'text-off-white' : 'text-off-black'
                                     )}
@@ -261,13 +261,13 @@ const ListRow = ({
                         loading="lazy"
                     />
                 ) : (
-                    <span className="text-sm font-bold font-shimshon text-off-black/20 select-none">{initial}</span>
+                    <span className="text-sm font-bold font-headline text-off-black/20 select-none">{initial}</span>
                 )}
             </div>
 
             {/* Name column */}
             <div className="min-w-[150px] max-w-[240px] shrink-0">
-                <h3 className="text-base font-bold text-off-black font-shimshon leading-tight line-clamp-2 break-words">
+                <h3 className="text-base font-bold text-off-black font-headline leading-tight line-clamp-2 break-words">
                     {nameHe}
                 </h3>
                 {nameEn && (
@@ -279,7 +279,7 @@ const ListRow = ({
                             'inline-flex w-fit items-center mt-1 px-1.5 py-0',
                             'text-xs font-normal text-off-white leading-tight',
                             'border border-off-black',
-                            'font-shimshon',
+                            'font-headline',
                             eraColor
                         )}
                     >
@@ -304,7 +304,7 @@ const ListRow = ({
                                 'inline-block px-1.5 py-0.5',
                                 'text-xs font-normal',
                                 'border border-off-black',
-                                isEnglish(style) ? 'font-jersey' : 'font-shimshon',
+                                isEnglish(style) ? 'font-jersey' : 'font-headline',
                                 bgColor,
                                 needsWhiteText(bgColor) ? 'text-off-white' : 'text-off-black'
                             )}

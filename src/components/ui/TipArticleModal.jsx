@@ -123,7 +123,7 @@ const TipArticleModal = ({ tip, open, onClose, onNext, onPrev, hasNext, hasPrev 
             {/* Meta tags */}
             <div className="flex flex-wrap gap-2 items-center">
               {tip.type && (
-                <span className="bg-tetris-purple text-off-white text-sm font-bold font-shimshon px-3 py-1 border-2 border-off-black shadow-brutalist-xs">
+                <span className="bg-tetris-purple text-off-white text-sm font-bold font-headline px-3 py-1 border-2 border-off-black shadow-brutalist-xs">
                   {tip.type}
                 </span>
               )}
@@ -144,7 +144,7 @@ const TipArticleModal = ({ tip, open, onClose, onNext, onPrev, hasNext, hasPrev 
               })}
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-black font-shimshon text-off-black leading-tight border-b-2 border-off-black/10 pb-4">
+            <h2 className="text-4xl md:text-5xl font-black font-headline text-off-black leading-tight border-b-2 border-off-black/10 pb-4">
               {tip.title}
             </h2>
 
@@ -154,12 +154,12 @@ const TipArticleModal = ({ tip, open, onClose, onNext, onPrev, hasNext, hasPrev 
 
             {tip.author && (
               <div className="mt-8 pt-6 border-t-2 border-off-black/10 flex items-center gap-3">
-                <div className="w-10 h-10 bg-tetris-cyan border-2 border-off-black flex items-center justify-center font-bold font-shimshon text-lg">
+                <div className="w-10 h-10 bg-tetris-cyan border-2 border-off-black flex items-center justify-center font-bold font-headline text-lg">
                   {tip.author.charAt(0)}
                 </div>
                 <div>
                   <p className="text-xs text-mid-gray font-ibm">נכתב על ידי</p>
-                  <p className="text-base font-bold font-shimshon text-off-black">{tip.author}</p>
+                  <p className="text-base font-bold font-headline text-off-black">{tip.author}</p>
                 </div>
               </div>
             )}
@@ -170,7 +170,7 @@ const TipArticleModal = ({ tip, open, onClose, onNext, onPrev, hasNext, hasPrev 
         <footer className="flex-none border-t-4 border-off-black bg-off-white p-4 flex items-center justify-between">
           <button
             onClick={onClose}
-            className="font-bold font-shimshon text-off-black hover:bg-light-gray px-4 py-2 border-2 border-transparent hover:border-off-black transition-all"
+            className="font-bold font-headline text-off-black hover:bg-light-gray px-4 py-2 border-2 border-transparent hover:border-off-black transition-all"
           >
             חזרה לטיפים
           </button>
@@ -179,7 +179,7 @@ const TipArticleModal = ({ tip, open, onClose, onNext, onPrev, hasNext, hasPrev 
             {hasPrev && (
               <button
                 onClick={onPrev}
-                className="font-bold font-shimshon text-dark-gray hover:text-off-black flex items-center gap-1"
+                className="font-bold font-headline text-dark-gray hover:text-off-black flex items-center gap-1"
               >
                 <ChevronRight size={16} /> קודם
               </button>
@@ -187,7 +187,7 @@ const TipArticleModal = ({ tip, open, onClose, onNext, onPrev, hasNext, hasPrev 
             {hasNext && (
               <button
                 onClick={onNext}
-                className="font-bold font-shimshon text-dark-gray hover:text-off-black flex items-center gap-1"
+                className="font-bold font-headline text-dark-gray hover:text-off-black flex items-center gap-1"
               >
                 הבא <ChevronLeft size={16} />
               </button>
