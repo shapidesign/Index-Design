@@ -1,6 +1,67 @@
 import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { ExternalLink, Search, X } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { getTagColor, getTagTextClass } from "@/lib/tagColors";
+
+const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test((text || "").trim());
+
+const usesWhiteText = (bgClass) => bgClass === "bg-tetris-purple";
+
+const FilterChip = ({ label, isActive, activeBg, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      "px-3 py-1.5",
+      "text-xs font-bold",
+      isEnglish(label) ? "font-jersey" : "font-headline",
+      "border-2 border-off-black",
+      "whitespace-nowrap",
+      "transition-all duration-200",
+      isActive
+        ? [
+            activeBg,
+            usesWhiteText(activeBg) ? "text-off-white" : "text-off-black",
+            "shadow-none translate-x-[2px] translate-y-[2px]",
+          ]
+        : [
+            "bg-light-gray",
+            "text-off-black",
+            "shadow-brutalist-xs",
+            "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+          ]
+    )}
+    aria-pressed={isActive}
+  >
+    {label}
+  </button>
+);
+
+const FilterGroup = ({ label, children }) => (
+  <div className="mb-3 last:mb-0">
+    <p className="font-headline text-xs text-dark-gray mb-2">{label}</p>
+    <div className="flex flex-wrap gap-2 pb-1 pe-1 overflow-visible">{children}</div>
+  </div>
+);
+
+const FontTag = ({ label, highlight = false }) => {
+  const bg = highlight ? "bg-tetris-green" : getTagColor(label);
+  return (
+    <span
+      className={cn(
+        "inline-block px-2 py-0.5",
+        "text-xs font-normal",
+        isEnglish(label) ? "font-jersey" : "font-headline",
+        "border border-off-black",
+        "shadow-brutalist-xs",
+        bg,
+        getTagTextClass(bg)
+      )}
+    >
+      {label}
+    </span>
+  );
+};
 
 /* ============================================================
    אינדקס הפונט העברי — Hebrew Type Index
@@ -387,7 +448,7 @@ const FONTS = [
 
 const norm = (s) => (s || "").toLowerCase();
 
-export default function HebrewTypeIndex() {
+export default function DictionarySection() {
   const [query, setQuery] = useState("");
   const [foundries, setFoundries] = useState([]);
   const [styles, setStyles] = useState([]);
@@ -438,154 +499,267 @@ export default function HebrewTypeIndex() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      
-      <div className="mb-8 border-3 border-off-black bg-tetris-yellow p-6 shadow-brutalist relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, black 1px, transparent 0)', backgroundSize: '14px 14px' }}></div>
-        <div className="relative z-10">
-          <p className="text-xs font-bold tracking-widest text-off-black/70 mb-2">אינדקס ◌ משאבים לסטודנטים לעיצוב גרפי</p>
-          <h1 className="font-shimshon text-4xl sm:text-5xl md:text-6xl mb-3">אינדקס <span className="text-tetris-purple">הפונט העברי</span></h1>
-          <p className="text-off-black/80 text-sm sm:text-base max-w-2xl font-ibm">
-            {FONTS.length} משפחות פונטים מ־{Object.keys(FOUNDRIES).length} בתי פונטים ישראליים עצמאיים.
-            סינון לפי סגנון, שימוש, מעצב/ת, תקופה ומאפיינים — כל פונט מקושר לעמוד המקורי שלו.
-          </p>
+    <section dir="rtl" className="animate-tetris-stack">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h2 className="text-3xl font-bold text-off-black font-headline">מילון</h2>
+          <span className="font-headline text-sm text-dark-gray">
+            {results.length} פונטים
+            {activeCount > 0 && " (מסוננים)"}
+          </span>
         </div>
+        {activeCount > 0 && (
+          <button
+            type="button"
+            onClick={clearAll}
+            className={cn(
+              "px-3 py-1",
+              "font-headline text-xs font-bold",
+              "text-off-black bg-tetris-pink",
+              "border-2 border-off-black",
+              "shadow-brutalist-xs",
+              "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+              "transition-all duration-200"
+            )}
+          >
+            נקה פילטרים ({activeCount})
+          </button>
+        )}
+      </div>
+
+      <div className="mb-6 p-4 bg-tetris-yellow border-3 border-off-black shadow-brutalist-sm">
+        <p className="text-off-black/80 text-sm font-ibm leading-relaxed">
+          {FONTS.length} משפחות פונטים מ־{Object.keys(FOUNDRIES).length} בתי פונטים ישראליים עצמאיים.
+          סינון לפי סגנון, שימוש, מעצב/ת, תקופה ומאפיינים — כל פונט מקושר לעמוד המקורי שלו.
+        </p>
       </div>
 
       <div className="flex flex-wrap gap-3 items-center mb-6">
-        <div className="flex-1 min-w-[260px] relative">
-          <input
-            className="w-full border-3 border-off-black bg-off-white px-4 py-2.5 font-ibm text-base outline-none focus:shadow-brutalist transition-shadow"
-            placeholder="חיפוש פונט, שם לועזי או מעצב/ת…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-        <select className="border-3 border-off-black bg-off-white px-3 py-2.5 font-ibm text-sm cursor-pointer outline-none focus:shadow-brutalist transition-shadow" value={designer} onChange={(e) => setDesigner(e.target.value)}>
+        <input
+          className={cn(
+            "flex-1 min-w-[260px]",
+            "border-3 border-off-black bg-off-white",
+            "px-4 py-2.5 font-headline text-base text-off-black",
+            "outline-none focus:shadow-brutalist transition-shadow"
+          )}
+          placeholder="חיפוש פונט, שם לועזי או מעצב/ת…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <select
+          className={cn(
+            "border-3 border-off-black bg-off-white",
+            "px-3 py-2.5 font-headline text-sm text-off-black",
+            "cursor-pointer outline-none focus:shadow-brutalist transition-shadow"
+          )}
+          value={designer}
+          onChange={(e) => setDesigner(e.target.value)}
+        >
           <option value="">כל המעצבים/ות</option>
-          {designers.map((d) => <option key={d} value={d}>{d}</option>)}
+          {designers.map((d) => (
+            <option key={d} value={d}>{d}</option>
+          ))}
         </select>
-        <select className="border-3 border-off-black bg-off-white px-3 py-2.5 font-ibm text-sm cursor-pointer outline-none focus:shadow-brutalist transition-shadow" value={sort} onChange={(e) => setSort(e.target.value)}>
+        <select
+          className={cn(
+            "border-3 border-off-black bg-off-white",
+            "px-3 py-2.5 font-headline text-sm text-off-black",
+            "cursor-pointer outline-none focus:shadow-brutalist transition-shadow"
+          )}
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+        >
           <option value="name">מיון: א—ת</option>
           <option value="newest">מיון: חדש → ישן</option>
           <option value="oldest">מיון: ישן → חדש</option>
           <option value="weights">מיון: הכי הרבה משקלים</option>
         </select>
-        {activeCount > 0 && (
-          <button className="border-3 border-off-black bg-off-black text-off-white px-4 py-2.5 font-ibm text-sm font-bold cursor-pointer hover:bg-tetris-purple transition-colors flex items-center gap-2" onClick={clearAll}>
-            ניקוי ({activeCount})
-          </button>
-        )}
       </div>
 
-      <div className="flex flex-col gap-4 mb-8 bg-off-white border-3 border-off-black p-5 shadow-brutalist">
-        <div className="flex flex-wrap gap-2 items-baseline">
-          <span className="text-xs font-bold tracking-widest text-off-black/70 min-w-[76px]">בית פונטים</span>
+      <div className="mb-8 p-4 bg-off-white border-3 border-off-black shadow-brutalist-sm">
+        <h3 className="font-headline font-bold text-base text-off-black mb-4">סינון</h3>
+
+        <FilterGroup label="בית פונטים">
           {Object.entries(FOUNDRIES).map(([id, fo]) => (
-            <button
+            <FilterChip
               key={id}
-              className={cn(
-                "border-2 border-off-black px-3 py-1 text-sm rounded-full transition-transform hover:-translate-y-0.5 font-ibm",
-                foundries.includes(id) ? "text-white" : "bg-off-white"
-              )}
-              style={foundries.includes(id) ? { background: fo.color, borderColor: fo.color } : { borderColor: fo.color, color: fo.color }}
+              label={fo.name}
+              isActive={foundries.includes(id)}
+              activeBg={getTagColor(fo.name)}
               onClick={() => toggle(setFoundries)(id)}
-            >
-              {fo.name}
-            </button>
+            />
           ))}
-        </div>
-        <div className="flex flex-wrap gap-2 items-baseline">
-          <span className="text-xs font-bold tracking-widest text-off-black/70 min-w-[76px]">סגנון</span>
+        </FilterGroup>
+
+        <FilterGroup label="סגנון">
           {Object.entries(STYLES).map(([id, label]) => (
-            <button key={id} className={cn("border-2 border-off-black px-3 py-1 text-sm rounded-full transition-transform hover:-translate-y-0.5 font-ibm", styles.includes(id) ? "bg-off-black text-off-white" : "bg-off-white text-off-black")} onClick={() => toggle(setStyles)(id)}>{label}</button>
+            <FilterChip
+              key={id}
+              label={label}
+              isActive={styles.includes(id)}
+              activeBg={getTagColor(label)}
+              onClick={() => toggle(setStyles)(id)}
+            />
           ))}
-        </div>
-        <div className="flex flex-wrap gap-2 items-baseline">
-          <span className="text-xs font-bold tracking-widest text-off-black/70 min-w-[76px]">שימוש</span>
+        </FilterGroup>
+
+        <FilterGroup label="שימוש">
           {Object.entries(USES).map(([id, label]) => (
-            <button key={id} className={cn("border-2 border-off-black px-3 py-1 text-sm rounded-full transition-transform hover:-translate-y-0.5 font-ibm", uses.includes(id) ? "bg-off-black text-off-white" : "bg-off-white text-off-black")} onClick={() => toggle(setUses)(id)}>{label}</button>
+            <FilterChip
+              key={id}
+              label={label}
+              isActive={uses.includes(id)}
+              activeBg={getTagColor(label)}
+              onClick={() => toggle(setUses)(id)}
+            />
           ))}
-        </div>
-        <div className="flex flex-wrap gap-2 items-baseline">
-          <span className="text-xs font-bold tracking-widest text-off-black/70 min-w-[76px]">מאפיינים</span>
+        </FilterGroup>
+
+        <FilterGroup label="מאפיינים">
           {Object.entries(TAGS).map(([id, label]) => (
-            <button key={id} className={cn("border-2 border-off-black px-3 py-1 text-sm rounded-full transition-transform hover:-translate-y-0.5 font-ibm", tags.includes(id) ? "bg-off-black text-off-white" : "bg-off-white text-off-black")} onClick={() => toggle(setTags)(id)}>{label}</button>
+            <FilterChip
+              key={id}
+              label={label}
+              isActive={tags.includes(id)}
+              activeBg={getTagColor(label)}
+              onClick={() => toggle(setTags)(id)}
+            />
           ))}
-        </div>
-        <div className="flex flex-wrap gap-2 items-baseline">
-          <span className="text-xs font-bold tracking-widest text-off-black/70 min-w-[76px]">VIBE</span>
+        </FilterGroup>
+
+        <FilterGroup label="VIBE">
           {Object.entries(VIBES).map(([id, label]) => (
-            <button key={id} className={cn("border-2 border-off-black px-3 py-1 text-sm rounded-full transition-transform hover:-translate-y-0.5 font-ibm", vibes.includes(id) ? "bg-tetris-purple text-off-white border-tetris-purple" : "bg-off-white text-off-black")} onClick={() => toggle(setVibes)(id)}>{label}</button>
+            <FilterChip
+              key={id}
+              label={label}
+              isActive={vibes.includes(id)}
+              activeBg={getTagColor(label)}
+              onClick={() => toggle(setVibes)(id)}
+            />
           ))}
-        </div>
-        <div className="flex flex-wrap gap-2 items-baseline">
-          <span className="text-xs font-bold tracking-widest text-off-black/70 min-w-[76px]">תקופה</span>
+        </FilterGroup>
+
+        <FilterGroup label="תקופה">
           {ERAS.map((e) => (
-            <button key={e.id} className={cn("border-2 border-off-black px-3 py-1 text-sm rounded-full transition-transform hover:-translate-y-0.5 font-ibm", eras.includes(e.id) ? "bg-off-black text-off-white" : "bg-off-white text-off-black")} onClick={() => toggle(setEras)(e.id)}>{e.label}</button>
+            <FilterChip
+              key={e.id}
+              label={e.label}
+              isActive={eras.includes(e.id)}
+              activeBg={getTagColor(e.label)}
+              onClick={() => toggle(setEras)(e.id)}
+            />
           ))}
-        </div>
-      </div>
+        </FilterGroup>
 
-      <div className="flex justify-between items-baseline mb-6 flex-wrap gap-3">
-        <div className="font-shimshon text-2xl">
-          <b className="text-tetris-purple">{results.length}</b> פונטים נמצאו
-        </div>
-        {(tags.length + vibes.length) > 1 && <div className="text-xs text-off-black/70 font-ibm">מאפיינים מסוננים יחד (וגם־וגם)</div>}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {results.length === 0 && (
-          <div className="col-span-full border-3 border-dashed border-off-black/30 p-12 text-center text-off-black/60 font-ibm text-lg">
-            לא נמצאו פונטים שעונים על כל התנאים.<br />נסו להסיר חלק מהסינונים.
-          </div>
+        {(tags.length + vibes.length) > 1 && (
+          <p className="text-xs text-dark-gray font-ibm mt-1">
+            מאפיינים מסוננים יחד (וגם־וגם)
+          </p>
         )}
-        {results.map((x, i) => {
-          const fo = FOUNDRIES[x.fo];
-          return (
-            <article 
-              className="border-3 border-off-black bg-off-white p-5 flex flex-col gap-2 transition-all hover:-translate-y-1 hover:-translate-x-1 group" 
-              key={x.lat + i} 
-              style={{ boxShadow: `4px 4px 0 ${fo.color}` }}
-            >
-              <div className="flex justify-between items-center gap-2 mb-1">
-                <span className="text-[11px] font-bold text-white px-2.5 py-0.5 rounded-full whitespace-nowrap" style={{ background: fo.color }}>{fo.name}</span>
-                <span className="text-xs text-off-black/60 font-mono">{x.y ?? "—"}</span>
-              </div>
-              <h3 className="font-shimshon text-3xl leading-tight m-0">{x.n}</h3>
-              <div className="text-sm text-off-black/60 tracking-wide dir-ltr text-right -mt-1 font-ibm">{x.lat}</div>
-              <div className="text-sm font-ibm mt-1"><span className="text-off-black/60">עיצוב: </span>{x.d ?? "—"}</div>
-              
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {x.st.map((s) => <span key={s} className="text-[11px] border border-off-black/40 px-2 py-0.5 rounded-full text-off-black/70">{STYLES[s]}</span>)}
-                {x.tg.includes("free") && <span className="text-[11px] border border-tetris-purple bg-tetris-purple text-white font-bold px-2 py-0.5 rounded-full">חינמי</span>}
-                {x.tg.includes("variable") && <span className="text-[11px] border border-tetris-purple text-tetris-purple font-semibold px-2 py-0.5 rounded-full">וריאבלי</span>}
-                {x.tg.includes("trilingual") && <span className="text-[11px] border border-tetris-purple text-tetris-purple font-semibold px-2 py-0.5 rounded-full">עב׳·ער׳·אנ׳</span>}
-                {x.tg.includes("bilingual") && !x.tg.includes("trilingual") && <span className="text-[11px] border border-off-black/40 px-2 py-0.5 rounded-full text-off-black/70">דו־לשוני</span>}
-                {x.tg.includes("narrow") && <span className="text-[11px] border border-off-black/40 px-2 py-0.5 rounded-full text-off-black/70">צר</span>}
-                {x.tg.includes("wide") && <span className="text-[11px] border border-off-black/40 px-2 py-0.5 rounded-full text-off-black/70">רחב</span>}
-                {x.tg.includes("rounded") && <span className="text-[11px] border border-off-black/40 px-2 py-0.5 rounded-full text-off-black/70">מעוגל</span>}
-                {x.tg.includes("nostalgic") && <span className="text-[11px] border border-off-black/40 px-2 py-0.5 rounded-full text-off-black/70">נוסטלגי</span>}
-                {x.tg.includes("classic") && <span className="text-[11px] border border-off-black/40 px-2 py-0.5 rounded-full text-off-black/70">קלאסי</span>}
-                {x.vb.map((v) => <span key={v} className="text-[11px] border border-dashed border-tetris-purple text-tetris-purple px-2 py-0.5 rounded-full">{VIBES[v] || v}</span>)}
-              </div>
-              
-              <div className="flex justify-between items-center mt-auto pt-4 border-t border-dashed border-off-black/30">
-                <span className="text-xs text-off-black/60 font-ibm">{x.w ? `${x.w} משקלים` : "מס׳ משקלים —"}</span>
-                <a className="text-sm font-bold text-off-black no-underline hover:text-tetris-purple flex items-center gap-1 font-ibm transition-colors" href={x.url} target="_blank" rel="noreferrer">
-                  לעמוד הפונט
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </div>
-            </article>
-          );
-        })}
       </div>
 
-      <footer className="mt-10 text-xs text-off-black/60 border-t-2 border-off-black pt-4 flex justify-between flex-wrap gap-3 font-ibm">
+      {results.length === 0 ? (
+        <div className="border-3 border-dashed border-off-black/30 p-12 text-center text-dark-gray font-ibm text-lg bg-off-white">
+          לא נמצאו פונטים שעונים על כל התנאים.
+          <br />
+          נסו להסיר חלק מהסינונים.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {results.map((x, i) => {
+            const fo = FOUNDRIES[x.fo];
+            const foundryBg = getTagColor(fo.name);
+            const cardTags = [
+              ...x.st.map((s) => STYLES[s]),
+              ...(x.tg.includes("free") ? ["חינמי"] : []),
+              ...(x.tg.includes("variable") ? ["וריאבלי"] : []),
+              ...(x.tg.includes("trilingual") ? ["עב׳·ער׳·אנ׳"] : []),
+              ...(x.tg.includes("bilingual") && !x.tg.includes("trilingual") ? ["דו־לשוני"] : []),
+              ...(x.tg.includes("narrow") ? ["צר"] : []),
+              ...(x.tg.includes("wide") ? ["רחב"] : []),
+              ...(x.tg.includes("rounded") ? ["מעוגל"] : []),
+              ...(x.tg.includes("nostalgic") ? ["נוסטלגי"] : []),
+              ...(x.tg.includes("classic") ? ["קלאסי"] : []),
+              ...x.vb.map((v) => VIBES[v] || v),
+            ];
+
+            return (
+              <article
+                key={x.lat + i}
+                className={cn(
+                  "flex flex-col",
+                  "bg-off-white",
+                  "border-3 border-off-black",
+                  "shadow-brutalist",
+                  "hover:shadow-brutalist-sm hover:translate-x-[3px] hover:translate-y-[3px]",
+                  "transition-all duration-200",
+                  "overflow-hidden"
+                )}
+              >
+                <div className="p-4 flex-1 flex flex-col gap-2">
+                  <div className="flex justify-between items-center gap-2">
+                    <span
+                      className={cn(
+                        "px-2 py-0.5 text-xs font-bold border border-off-black shadow-brutalist-xs",
+                        foundryBg,
+                        getTagTextClass(foundryBg),
+                        "font-headline"
+                      )}
+                    >
+                      {fo.name}
+                    </span>
+                    <span className="text-xs text-mid-gray font-jersey tabular-nums">{x.y ?? "—"}</span>
+                  </div>
+
+                  <h3 className={cn("text-xl font-bold text-off-black text-right leading-tight", isEnglish(x.n) ? "font-jersey" : "font-headline")}>
+                    {x.n}
+                  </h3>
+                  <p className="text-sm text-mid-gray font-jersey text-right">{x.lat}</p>
+                  <p className="text-sm text-dark-gray font-ibm">
+                    <span className="text-mid-gray">עיצוב: </span>
+                    {x.d ?? "—"}
+                  </p>
+
+                  {cardTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {cardTags.map((tag, tagIndex) => (
+                        <FontTag key={`${tag}-${tagIndex}`} label={tag} highlight={tag === "חינמי"} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="px-4 py-3 border-t-3 border-off-black bg-light-gray flex justify-between items-center gap-3">
+                  <span className="text-xs text-dark-gray font-ibm">
+                    {x.w ? `${x.w} משקלים` : "מס׳ משקלים —"}
+                  </span>
+                  <a
+                    href={x.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3 py-1.5",
+                      "font-headline text-xs font-bold text-off-black",
+                      "bg-tetris-yellow border-2 border-off-black",
+                      "shadow-brutalist-xs",
+                      "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                      "transition-all duration-200 no-underline"
+                    )}
+                  >
+                    לעמוד הפונט
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      <footer className="mt-10 pt-4 border-t-3 border-off-black text-xs text-dark-gray font-ibm flex justify-between flex-wrap gap-3">
         <span>הנתונים נאספו מאתרי בתי הפונטים. שדות המסומנים ב־“—” טרם אומתו.</span>
-        <span>המילון · index-design-hit</span>
+        <span>מילון · index-design-hit</span>
       </footer>
-    </div>
+    </section>
   );
 }

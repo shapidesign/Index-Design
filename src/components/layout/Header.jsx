@@ -18,7 +18,7 @@ const navSections = [
   { id: 'toolbox', label: 'ארגז כלים' },
   { id: 'museum', label: 'מוזיאון' },
   { id: 'library', label: 'ספרייה' },
-  { id: 'dictionary', label: 'המילון' },
+  { id: 'dictionary', label: 'מילון' },
   { id: 'map', label: 'מפה' },
   { id: 'tips', label: 'טיפים' },
   { id: 'lucky', label: 'הפתעה' },
