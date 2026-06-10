@@ -140,9 +140,9 @@ const getPreviewText = (text, max = 85) => {
 };
 
 /** Bump this to show "What's New" again for returning users */
-const WHATS_NEW_VERSION = 'v1';
+const WHATS_NEW_VERSION = 'v2';
 
-const WHATS_NEW_STORAGE_KEY = 'index-whats-new-seen';
+const WHATS_NEW_STORAGE_KEY = `index-whats-new-seen-${WHATS_NEW_VERSION}`;
 
 const App = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -177,7 +177,7 @@ const App = () => {
     if (isInitialLoading) return;
     const timer = window.setTimeout(() => {
       try {
-        const seen = localStorage.getItem('index_whats_new_dont_show');
+        const seen = localStorage.getItem(WHATS_NEW_STORAGE_KEY);
         if (seen !== 'true') {
           setIsWhatsNewOpen(true);
         }
@@ -193,7 +193,7 @@ const App = () => {
     setIsWhatsNewOpen(false);
     if (dontShowAgain) {
       try {
-        localStorage.setItem('index_whats_new_dont_show', 'true');
+        localStorage.setItem(WHATS_NEW_STORAGE_KEY, 'true');
       } catch {
         /* localStorage unavailable */
       }
