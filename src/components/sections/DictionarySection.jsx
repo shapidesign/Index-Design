@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ChevronDown } from "lucide-react";
 import { getTagColor, getTagTextClass } from "@/lib/tagColors";
 
 const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test((text || "").trim());
@@ -37,10 +37,41 @@ const FilterChip = ({ label, isActive, activeBg, onClick }) => (
   </button>
 );
 
-const FilterGroup = ({ label, children }) => (
-  <div className="mb-3 last:mb-0">
-    <p className="font-headline text-xs text-dark-gray mb-2">{label}</p>
-    <div className="flex flex-wrap gap-2 pb-1 pe-1 overflow-visible">{children}</div>
+const FilterAccordion = ({ label, activeCount = 0, isOpen, onToggle, toolbar, scrollable = false, children }) => (
+  <div className="border-2 border-off-black mb-2 last:mb-0">
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={isOpen}
+      className={cn(
+        "w-full flex items-center justify-between gap-2 px-3 py-2.5",
+        "text-right transition-colors duration-200",
+        isOpen ? "bg-tetris-yellow" : "bg-light-gray hover:bg-light-gray/70"
+      )}
+    >
+      <span className="flex items-center gap-2">
+        <span className="font-headline text-sm font-bold text-off-black">{label}</span>
+        {activeCount > 0 && (
+          <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-tetris-pink border-2 border-off-black text-[11px] font-bold text-off-black">
+            {activeCount}
+          </span>
+        )}
+      </span>
+      <ChevronDown
+        className={cn(
+          "w-4 h-4 text-off-black transition-transform duration-200 shrink-0",
+          isOpen && "rotate-180"
+        )}
+      />
+    </button>
+    {isOpen && (
+      <div className="p-3 border-t-2 border-off-black bg-off-white">
+        {toolbar && <div className="mb-3">{toolbar}</div>}
+        <div className={cn("flex flex-wrap gap-2", scrollable && "max-h-60 overflow-y-auto pe-1")}>
+          {children}
+        </div>
+      </div>
+    )}
   </div>
 );
 
@@ -622,14 +653,25 @@ export default function DictionarySection() {
   const [eras, setEras] = useState([]);
   const [designer, setDesigner] = useState("");
   const [sort, setSort] = useState("name");
+  const [openGroup, setOpenGroup] = useState(null);
+  const [vibeQuery, setVibeQuery] = useState("");
 
   const designers = useMemo(() => {
     const set = new Set(FONTS.map((x) => x.d).filter(Boolean));
     return [...set].sort((a, b) => a.localeCompare(b, "he"));
   }, []);
 
+  const vibeEntries = useMemo(() => {
+    const all = Object.entries(VIBES);
+    const q = vibeQuery.trim().toLowerCase();
+    if (!q) return all;
+    return all.filter(([, label]) => label.toLowerCase().includes(q));
+  }, [vibeQuery]);
+
   const toggle = (setter) => (val) =>
     setter((prev) => (prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]));
+
+  const toggleGroup = (id) => setOpenGroup((prev) => (prev === id ? null : id));
 
   const results = useMemo(() => {
     let out = FONTS.filter((x) => {
@@ -659,7 +701,7 @@ export default function DictionarySection() {
     foundries.length + styles.length + uses.length + tags.length + vibes.length + eras.length + (designer ? 1 : 0) + (query ? 1 : 0);
 
   const clearAll = () => {
-    setQuery(""); setFoundries([]); setStyles([]); setUses([]); setTags([]); setVibes([]); setEras([]); setDesigner("");
+    setQuery(""); setFoundries([]); setStyles([]); setUses([]); setTags([]); setVibes([]); setEras([]); setDesigner(""); setVibeQuery("");
   };
 
   return (
@@ -741,9 +783,17 @@ export default function DictionarySection() {
       </div>
 
       <div className="mb-8 p-4 bg-off-white border-3 border-off-black shadow-brutalist-sm">
-        <h3 className="font-headline font-bold text-base text-off-black mb-4">סינון</h3>
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h3 className="font-headline font-bold text-base text-off-black">סינון</h3>
+          <span className="font-ibm text-xs text-dark-gray">לחצו על קטגוריה כדי לפתוח</span>
+        </div>
 
-        <FilterGroup label="בית פונטים">
+        <FilterAccordion
+          label="בית פונטים"
+          activeCount={foundries.length}
+          isOpen={openGroup === "foundries"}
+          onToggle={() => toggleGroup("foundries")}
+        >
           {Object.entries(FOUNDRIES).map(([id, fo]) => (
             <FilterChip
               key={id}
@@ -753,9 +803,14 @@ export default function DictionarySection() {
               onClick={() => toggle(setFoundries)(id)}
             />
           ))}
-        </FilterGroup>
+        </FilterAccordion>
 
-        <FilterGroup label="סגנון">
+        <FilterAccordion
+          label="סגנון"
+          activeCount={styles.length}
+          isOpen={openGroup === "styles"}
+          onToggle={() => toggleGroup("styles")}
+        >
           {Object.entries(STYLES).map(([id, label]) => (
             <FilterChip
               key={id}
@@ -765,9 +820,14 @@ export default function DictionarySection() {
               onClick={() => toggle(setStyles)(id)}
             />
           ))}
-        </FilterGroup>
+        </FilterAccordion>
 
-        <FilterGroup label="שימוש">
+        <FilterAccordion
+          label="שימוש"
+          activeCount={uses.length}
+          isOpen={openGroup === "uses"}
+          onToggle={() => toggleGroup("uses")}
+        >
           {Object.entries(USES).map(([id, label]) => (
             <FilterChip
               key={id}
@@ -777,9 +837,14 @@ export default function DictionarySection() {
               onClick={() => toggle(setUses)(id)}
             />
           ))}
-        </FilterGroup>
+        </FilterAccordion>
 
-        <FilterGroup label="מאפיינים">
+        <FilterAccordion
+          label="מאפיינים"
+          activeCount={tags.length}
+          isOpen={openGroup === "tags"}
+          onToggle={() => toggleGroup("tags")}
+        >
           {Object.entries(TAGS).map(([id, label]) => (
             <FilterChip
               key={id}
@@ -789,21 +854,48 @@ export default function DictionarySection() {
               onClick={() => toggle(setTags)(id)}
             />
           ))}
-        </FilterGroup>
+        </FilterAccordion>
 
-        <FilterGroup label="VIBE">
-          {Object.entries(VIBES).map(([id, label]) => (
-            <FilterChip
-              key={id}
-              label={label}
-              isActive={vibes.includes(id)}
-              activeBg={getTagColor(label)}
-              onClick={() => toggle(setVibes)(id)}
+        <FilterAccordion
+          label="VIBE"
+          activeCount={vibes.length}
+          isOpen={openGroup === "vibes"}
+          onToggle={() => toggleGroup("vibes")}
+          scrollable
+          toolbar={
+            <input
+              className={cn(
+                "w-full border-2 border-off-black bg-off-white",
+                "px-3 py-2 font-headline text-sm text-off-black",
+                "outline-none focus:shadow-brutalist-xs transition-shadow"
+              )}
+              placeholder="חיפוש מאפיין ויזואלי…"
+              value={vibeQuery}
+              onChange={(e) => setVibeQuery(e.target.value)}
             />
-          ))}
-        </FilterGroup>
+          }
+        >
+          {vibeEntries.length === 0 ? (
+            <p className="w-full text-xs text-dark-gray font-ibm py-1">לא נמצאו מאפיינים תואמים.</p>
+          ) : (
+            vibeEntries.map(([id, label]) => (
+              <FilterChip
+                key={id}
+                label={label}
+                isActive={vibes.includes(id)}
+                activeBg={getTagColor(label)}
+                onClick={() => toggle(setVibes)(id)}
+              />
+            ))
+          )}
+        </FilterAccordion>
 
-        <FilterGroup label="תקופה">
+        <FilterAccordion
+          label="תקופה"
+          activeCount={eras.length}
+          isOpen={openGroup === "eras"}
+          onToggle={() => toggleGroup("eras")}
+        >
           {ERAS.map((e) => (
             <FilterChip
               key={e.id}
@@ -813,10 +905,10 @@ export default function DictionarySection() {
               onClick={() => toggle(setEras)(e.id)}
             />
           ))}
-        </FilterGroup>
+        </FilterAccordion>
 
         {(tags.length + vibes.length) > 1 && (
-          <p className="text-xs text-dark-gray font-ibm mt-1">
+          <p className="text-xs text-dark-gray font-ibm mt-3">
             מאפיינים מסוננים יחד (וגם־וגם)
           </p>
         )}
