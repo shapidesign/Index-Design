@@ -1152,7 +1152,16 @@ const App = () => {
             */}
           </div>
           <p className="text-sm text-tetris-green font-ibm">
-            נבנה על ידי יהונתן שפירא, 2026
+            נבנה על ידי{' '}
+            <a
+              href="https://www.alefsofit.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-off-white transition-colors"
+            >
+              יהונתן שפירא
+            </a>
+            , 2026
           </p>
         </div>
       </footer>

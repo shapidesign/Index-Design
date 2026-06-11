@@ -73,7 +73,16 @@ const Footer = () => {
                 'text-off-black text-xs font-bold',
                 'border-2 border-off-black',
               )}>
-                נבנה על ידי יהונתן שפירא, 2026
+                נבנה על ידי{' '}
+                <a
+                  href="https://www.alefsofit.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2 hover:opacity-80 transition-opacity"
+                >
+                  יהונתן שפירא
+                </a>
+                , 2026
               </span>
               <span className={cn(
                 'inline-block px-2 py-1',
