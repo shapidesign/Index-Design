@@ -8,6 +8,7 @@
  */
 
 import { Client } from '@notionhq/client';
+import { applyGuard } from './_guard.js';
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const NOTION_MAP_REVIEWS_DB =
@@ -112,11 +113,7 @@ const getPlainText = (prop) => {
 
 /* ── Handler ── */
 export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (applyGuard(req, res, { methods: 'GET, POST, OPTIONS' })) return;
 
     if (!NOTION_API_KEY) {
         return res.status(500).json({ error: 'Server configuration error: missing API key.' });
