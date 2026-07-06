@@ -26,4 +26,11 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    // Node-side files (Vercel functions, dev server, one-off scripts)
+    files: ['api/**/*.js', 'scripts/**/*.{js,mjs}', 'server.dev.js', 'load-env.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])

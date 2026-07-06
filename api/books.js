@@ -171,6 +171,7 @@ function transformBook(page) {
     tags,
     link,
     coverUrl,
+    createdTime: page.created_time || null,
   };
 }
 

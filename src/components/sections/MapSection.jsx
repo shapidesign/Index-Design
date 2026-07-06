@@ -7,6 +7,7 @@ import pinProfessionals from '../../../Pins/p4-2.png';
 import pinSuppliers from '../../../Pins/p5-2.png';
 import StarIcon from '@/assets/star.svg';
 import MapReviewModal from '../ui/MapReviewModal';
+import FilterToggle from '@/components/ui/FilterToggle';
 
 const GOOGLE_MAPS_EMBED_URL =
   'https://www.google.com/maps/d/u/0/embed?mid=1F_s6PIi59T-J0hgTAwJAzbzG9Ru_Kgo&ehbc=2E312F&noprof=1';
@@ -302,6 +303,7 @@ const CategoryGroup = ({ category, places, defaultOpen, reviewsMap, onOpenReview
 const MapSection = () => {
   const [viewMode, setViewMode] = useState('map');
   const [activeFilters, setActiveFilters] = useState(new Set(CATEGORIES.map((c) => c.id)));
+  const [showFilters, setShowFilters] = useState(false);
   
   const [reviewsMap, setReviewsMap] = useState({});
   const [reviewModalPlace, setReviewModalPlace] = useState(null);
@@ -377,7 +379,15 @@ const MapSection = () => {
           </span>
         </div>
 
-        {/* View toggle */}
+        {/* Filter toggle (list view) + view toggle */}
+        <div className="flex items-center gap-2">
+        {viewMode === 'list' && (
+          <FilterToggle
+            isOpen={showFilters}
+            onToggle={() => setShowFilters((prev) => !prev)}
+            activeCount={activeFilters.size < CATEGORIES.length ? activeFilters.size : 0}
+          />
+        )}
         <div className="flex border-2 border-off-black">
           <button
             type="button"
@@ -401,6 +411,7 @@ const MapSection = () => {
           >
             <List size={16} />
           </button>
+        </div>
         </div>
       </div>
 
@@ -460,6 +471,7 @@ const MapSection = () => {
         {viewMode === 'list' && (
           <>
             {/* Category filter chips */}
+            {showFilters && (
             <div className="mb-4 flex flex-wrap items-center gap-2 justify-end">
               <button
                 type="button"
@@ -505,6 +517,7 @@ const MapSection = () => {
                 </button>
               ))}
             </div>
+            )}
 
             {/* Places count */}
             <p className="text-xs text-mid-gray font-ibm text-right mb-3">

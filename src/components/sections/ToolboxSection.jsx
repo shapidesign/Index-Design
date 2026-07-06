@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import useData from '@/hooks/useData';
 import ToolboxCard from '@/components/cards/ToolboxCard';
 import ToolboxFilter from '@/components/ui/ToolboxFilter';
+import FilterToggle from '@/components/ui/FilterToggle';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import { LayoutGrid, List } from 'lucide-react';
@@ -24,6 +25,7 @@ const ToolboxSection = ({ pendingNavigation }) => {
   const { data, loading, error, refetch } = useData('/api/resources');
   const [filters, setFilters] = useState(emptyFilters);
   const [viewMode, setViewMode] = useState('gallery');
+  const [showFilters, setShowFilters] = useState(false);
 
   /** Clear filters when navigating from search to a specific card */
   useEffect(() => {
@@ -100,10 +102,9 @@ const ToolboxSection = ({ pendingNavigation }) => {
     });
   }, [resources, filters]);
 
-  const hasActiveFilters =
-    filters.pricing.length > 0 ||
-    filters.types.length > 0 ||
-    filters.tags.length > 0;
+  const activeFilterCount =
+    filters.pricing.length + filters.types.length + filters.tags.length;
+  const hasActiveFilters = activeFilterCount > 0;
 
   // ===== LOADING STATE =====
   if (loading) {
@@ -159,39 +160,48 @@ const ToolboxSection = ({ pendingNavigation }) => {
           </span>
         </div>
 
-        {/* View toggle */}
-        <div className="flex border-2 border-off-black">
-          <button
-            onClick={() => setViewMode('gallery')}
-            className={cn(
-              'p-2 transition-colors',
-              viewMode === 'gallery' ? 'bg-tetris-purple text-off-white' : 'bg-off-white text-off-black hover:bg-light-gray'
-            )}
-            aria-label="תצוגת גלריה"
-          >
-            <LayoutGrid size={16} />
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={cn(
-              'p-2 border-r-2 border-off-black transition-colors',
-              viewMode === 'list' ? 'bg-tetris-purple text-off-white' : 'bg-off-white text-off-black hover:bg-light-gray'
-            )}
-            aria-label="תצוגת רשימה"
-          >
-            <List size={16} />
-          </button>
+        {/* Filter toggle + view toggle */}
+        <div className="flex items-center gap-2">
+          <FilterToggle
+            isOpen={showFilters}
+            onToggle={() => setShowFilters((prev) => !prev)}
+            activeCount={activeFilterCount}
+          />
+          <div className="flex border-2 border-off-black">
+            <button
+              onClick={() => setViewMode('gallery')}
+              className={cn(
+                'p-2 transition-colors',
+                viewMode === 'gallery' ? 'bg-tetris-purple text-off-white' : 'bg-off-white text-off-black hover:bg-light-gray'
+              )}
+              aria-label="תצוגת גלריה"
+            >
+              <LayoutGrid size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={cn(
+                'p-2 border-r-2 border-off-black transition-colors',
+                viewMode === 'list' ? 'bg-tetris-purple text-off-white' : 'bg-off-white text-off-black hover:bg-light-gray'
+              )}
+              aria-label="תצוגת רשימה"
+            >
+              <List size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Filters */}
-      <ToolboxFilter
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onClearFilters={handleClearFilters}
-        availableTypes={availableTypes}
-        availableTags={availableTags}
-      />
+      {showFilters && (
+        <ToolboxFilter
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onClearFilters={handleClearFilters}
+          availableTypes={availableTypes}
+          availableTags={availableTags}
+        />
+      )}
 
       {/* Card grid */}
       {filteredResources.length > 0 ? (

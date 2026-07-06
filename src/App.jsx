@@ -1,9 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect, lazy, Suspense } from 'react';
-import { cn } from '@/lib/utils';
-import logoDark from '@/assets/svg/logo-dark.svg';
+import { cn, withinOneEdit } from '@/lib/utils';
 import logoHero from '@/assets/svg/logo-hero-purple.svg';
-import logoIcon from '@/assets/svg/logo-icon.svg';
-import hitLogo from '@/assets/images/hit-logo.png';
 import { Menu, MessageSquare, Heart } from 'lucide-react';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
@@ -13,7 +10,7 @@ import WhatsNewModal from '@/components/ui/WhatsNewModal';
 import EyeLogo from '@/components/ui/EyeLogo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import pkg from '../package.json';
+import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
 
 /** Lazy-loaded section components */
 const CHUNK_RELOAD_FLAG = 'chunk-reload-attempted';
@@ -98,6 +95,14 @@ const quickSuggestions = [
 const suggestionTextClass = (bgClass) =>
   bgClass === 'bg-tetris-purple' ? 'text-off-white' : 'text-off-black';
 
+/** Section id → tetris color class, derived from the category cards */
+const sectionBadgeBg = Object.fromEntries(
+  categories.map((c) => [c.id, `bg-tetris-${c.color}`])
+);
+
+/** How far back an item counts as "new" for the homepage badges */
+const NEW_ITEM_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
 /** Search icon from Figma (purple variant) */
 const SearchIcon = ({ className }) => (
   <svg
@@ -139,15 +144,20 @@ const getPreviewText = (text, max = 85) => {
   return clean.length > max ? `${clean.slice(0, max)}...` : clean;
 };
 
+/** Read the active section from the URL hash (#/toolbox etc.) */
+const sectionFromHash = () => {
+  const id = window.location.hash.match(/^#\/([a-z]+)/)?.[1];
+  return navSections.some((s) => s.id === id) ? id : null;
+};
+
 /** Bump this to show "What's New" again for returning users */
-const WHATS_NEW_VERSION = 'v2';
+const WHATS_NEW_VERSION = 'v3';
 
 const WHATS_NEW_STORAGE_KEY = `index-whats-new-seen-${WHATS_NEW_VERSION}`;
 
 const App = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState(sectionFromHash);
   const [luckyHighlight, setLuckyHighlight] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
@@ -163,6 +173,32 @@ const App = () => {
   const highlightedTargetRef = useRef(null);
   const highlightTimeoutRef = useRef(null);
   const lastLuckyTargetRef = useRef(null);
+  const prevSectionRef = useRef(activeSection);
+
+  /** Hash routing: keep URL in sync + react to back/forward */
+  useEffect(() => {
+    const onHashChange = () => setActiveSection(sectionFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  useEffect(() => {
+    if (sectionFromHash() !== activeSection) {
+      window.location.hash = activeSection ? `#/${activeSection}` : '';
+    }
+  }, [activeSection]);
+
+  /** On real section change: clear stale search text, scroll to top */
+  useEffect(() => {
+    if (prevSectionRef.current === activeSection) return;
+    prevSectionRef.current = activeSection;
+    setSearchQuery('');
+    setSearchFocused(false);
+    setActiveResultIndex(-1);
+    if (!pendingNavigation) {
+      window.scrollTo({ top: 0 });
+    }
+  }, [activeSection, pendingNavigation]);
 
   /** Initial website loading animation */
   useEffect(() => {
@@ -234,10 +270,11 @@ const App = () => {
           }
         };
 
-        const [resourcesJson, museumJson, booksJson] = await Promise.all([
+        const [resourcesJson, museumJson, booksJson, tipsJson] = await Promise.all([
           fetchJsonOrEmpty('/api/resources', 'resources'),
           fetchJsonOrEmpty('/api/museum', 'museum'),
-          fetchJsonOrEmpty('/api/books', 'books')
+          fetchJsonOrEmpty('/api/books', 'books'),
+          fetchJsonOrEmpty('/api/tips', 'tips')
         ]);
 
         const resources = (resourcesJson?.results || []).map((item) => ({
@@ -255,6 +292,7 @@ const App = () => {
             ...toArray(item.tags),
             ...toArray(item.types)
           ].filter(Boolean),
+          createdTime: item.createdTime || null,
           targetId: makeTargetId('toolbox', item.id)
         }));
 
@@ -278,6 +316,7 @@ const App = () => {
             ...toArray(item.type),
             ...toArray(item.era)
           ].filter(Boolean),
+          createdTime: item.createdTime || null,
           targetId: makeTargetId('museum', item.id)
         }));
 
@@ -297,7 +336,54 @@ const App = () => {
             item.description,
             ...toArray(item.tags)
           ].filter(Boolean),
+          createdTime: item.createdTime || null,
           targetId: makeTargetId('library', item.id)
+        }));
+
+        const tipsItems = (tipsJson?.results || []).map((item) => ({
+          id: item.id,
+          sectionId: 'tips',
+          sectionLabel: 'טיפים',
+          titleHe: item.title || '',
+          titleEn: '',
+          description: item.content || '',
+          link: '',
+          tags: toArray(item.tags),
+          keywords: [
+            item.title,
+            item.content,
+            item.author,
+            item.type,
+            ...toArray(item.tags)
+          ].filter(Boolean),
+          createdTime: item.createdAt || null,
+          targetId: makeTargetId('tips', item.id)
+        }));
+
+        const fontItems = FONTS.map((font, index) => ({
+          id: `font-${index}`,
+          sectionId: 'dictionary',
+          sectionLabel: 'מילון',
+          titleHe: font.n || '',
+          titleEn: font.lat || '',
+          description: [FOUNDRIES[font.fo]?.name, font.d].filter(Boolean).join(' · '),
+          link: font.url || '',
+          tags: (font.st || []).map((s) => STYLES[s]).filter(Boolean),
+          keywords: [
+            font.n,
+            font.lat,
+            font.d,
+            'פונט',
+            'פונטים',
+            'גופן',
+            'טיפוגרפיה',
+            FOUNDRIES[font.fo]?.name,
+            ...(font.st || []).map((s) => STYLES[s]),
+            ...(font.use || []).map((u) => USES[u]),
+            ...(font.tg || []).map((t) => TAGS[t]),
+            ...(font.vb || [])
+          ].filter(Boolean),
+          targetId: makeTargetId('dictionary', font.lat || font.n)
         }));
 
         /** Map places — hardcoded names for global search */
@@ -413,7 +499,7 @@ const App = () => {
         ];
 
         if (!cancelled) {
-          setGlobalSearchItems([...resources, ...museumItems, ...libraryItems, ...mapItems]);
+          setGlobalSearchItems([...resources, ...museumItems, ...libraryItems, ...fontItems, ...tipsItems, ...mapItems]);
         }
       } catch (error) {
         console.error('Global search index error:', error);
@@ -456,6 +542,18 @@ const App = () => {
         if (keywordsText.includes(query)) score += 5;
         if (description.includes(query)) score += 3;
 
+        // Typo tolerance: single-edit word match, only when exact matching found nothing
+        if (score === 0) {
+          const queryWords = query.split(' ').filter((w) => w.length >= 4);
+          if (queryWords.length > 0) {
+            const itemWords = `${titleHe} ${titleEn} ${tagsText} ${keywordsText}`.split(' ');
+            const allMatch = queryWords.every((qw) =>
+              itemWords.some((w) => withinOneEdit(qw, w))
+            );
+            if (allMatch) score += 4;
+          }
+        }
+
         return { ...item, score };
       })
       .filter((item) => item.score > 0)
@@ -464,6 +562,19 @@ const App = () => {
   }, [globalSearchItems, searchQuery]);
 
   const displayCategories = categories;
+
+  /** Per-section count of items added within the "new" window */
+  const newCounts = useMemo(() => {
+    const cutoff = Date.now() - NEW_ITEM_WINDOW_MS;
+    const counts = {};
+    for (const item of globalSearchItems) {
+      const t = item.createdTime ? Date.parse(item.createdTime) : NaN;
+      if (!Number.isNaN(t) && t >= cutoff) {
+        counts[item.sectionId] = (counts[item.sectionId] || 0) + 1;
+      }
+    }
+    return counts;
+  }, [globalSearchItems]);
   const luckyItems = useMemo(
     () => globalSearchItems.filter((item) => luckySectionIds.includes(item.sectionId) && item.targetId),
     [globalSearchItems]
@@ -498,7 +609,7 @@ const App = () => {
   const handleResultSelect = useCallback((result) => {
     if (!result) return;
     clearSearchTargetHighlight();
-    setSearchQuery(result.titleHe || result.titleEn || '');
+    setSearchQuery('');
     setSearchFocused(false);
     setActiveResultIndex(-1);
     setActiveSection(result.sectionId);
@@ -610,11 +721,11 @@ const App = () => {
             <section className="text-center mb-8 py-4 flex flex-col items-center">
               {/* Eye Logo Animation */}
               <div className="mb-6">
-                <EyeLogo className="w-32 h-32 md:w-40 md:h-40" />
+                <EyeLogo className="w-20 h-20 md:w-28 md:h-28" />
               </div>
 
               {/* Logo "אינדקס" from Figma */}
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-center mb-1 md:mb-4">
                 <img
                   src={logoHero}
                   alt="אינדקס"
@@ -720,7 +831,7 @@ const App = () => {
                           aria-selected={searchQuery === suggestion.query}
                           onClick={() => handleSuggestionClick(suggestion.query)}
                           className={cn(
-                            "px-3 py-1.5",
+                            "px-3 py-2.5 md:py-1.5",
                             "font-headline text-sm",
                             suggestion.bgClass,
                             suggestionTextClass(suggestion.bgClass),
@@ -761,7 +872,11 @@ const App = () => {
                             )}
                           >
                             <div className="flex items-start justify-between gap-2">
-                              <span className="text-xs font-headline px-2 py-0.5 bg-off-white border border-off-black">
+                              <span className={cn(
+                                "text-xs font-headline px-2 py-0.5 border border-off-black",
+                                sectionBadgeBg[result.sectionId] || 'bg-off-white',
+                                suggestionTextClass(sectionBadgeBg[result.sectionId])
+                              )}>
                                 {result.sectionLabel}
                               </span>
                               <div className="flex-1">
@@ -791,14 +906,14 @@ const App = () => {
 
         {/* ===== CATEGORY CARDS (hidden when any section is active) ===== */}
         {!activeSection && (
-          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <section className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {displayCategories.map((card) => (
               <article
                 key={card.id}
                 id={`card-${card.id}`}
                 onClick={() => card.isLucky ? handleFeelingLucky() : setActiveSection(card.id)}
                 className={cn(
-                  "p-6",
+                  "relative p-4 md:p-6",
                   "bg-off-white",
                   "border-3 border-off-black",
                   "shadow-brutalist",
@@ -809,6 +924,12 @@ const App = () => {
                   card.isLucky && "bg-tetris-cyan/10"
                 )}
               >
+                {/* "N new resources" badge */}
+                {newCounts[card.id] > 0 && (
+                  <span className="absolute top-2 left-2 px-2 py-0.5 bg-tetris-yellow border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold text-off-black">
+                    {newCounts[card.id] === 1 ? 'משאב חדש' : `${newCounts[card.id]} משאבים חדשים`}
+                  </span>
+                )}
                 {/* Tetris shape icon - size=14 means each cube is 14px */}
                 <div className="mb-4 flex items-center justify-start overflow-hidden">
                   <div className={cn(
@@ -819,10 +940,10 @@ const App = () => {
                     <TetrisShape type={card.shape} color={card.color} size={14} />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-off-black text-right mb-2 font-headline">
+                <h3 className="text-xl md:text-2xl font-bold text-off-black text-right mb-2 font-headline">
                   {card.title}
                 </h3>
-                <p className="text-base text-dark-gray text-right font-ibm">
+                <p className="text-sm md:text-base text-dark-gray text-right font-ibm">
                   {card.desc}
                 </p>
               </article>

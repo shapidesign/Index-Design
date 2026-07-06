@@ -397,6 +397,23 @@
   margin-bottom: calc(8 * 15px);
 }
 
+/* Loading text sits inside the base's bottom margin to keep the loader balanced */
+.tetris-loader-text {
+  margin-top: calc(-8 * 15px + 20px);
+}
+
+.loader-dots::after {
+  content: '';
+  animation: loader-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes loader-dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+}
+
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
 

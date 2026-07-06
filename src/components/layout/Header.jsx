@@ -126,7 +126,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
           <button
             className={cn(
               'md:hidden',
-              'w-[34px] h-[34px]',
+              'w-11 h-11',
               'flex items-center justify-center',
               'bg-tetris-purple',
               'border-[1.7px] border-dark-gray',
@@ -138,9 +138,9 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
             aria-label={mobileMenuOpen ? 'סגור תפריט' : 'פתח תפריט'}
           >
             {mobileMenuOpen ? (
-              <X size={18} strokeWidth={1.7} className="text-off-white" />
+              <X size={22} strokeWidth={1.7} className="text-off-white" />
             ) : (
-              <Menu size={18} strokeWidth={1.7} className="text-off-white" />
+              <Menu size={22} strokeWidth={1.7} className="text-off-white" />
             )}
           </button>
         </div>
@@ -149,7 +149,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
       {/* Mobile Menu Overlay */}
       <div
         className={cn(
-          'md:hidden fixed inset-0 top-[65px] bg-off-black z-40 p-6 overflow-y-auto',
+          'md:hidden fixed inset-0 top-[79px] bg-off-black z-40 p-6 overflow-y-auto',
           'transition-transform duration-300',
           mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         )}

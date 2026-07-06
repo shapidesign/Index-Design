@@ -8,6 +8,7 @@ import TetrisShape from '@/components/tetris/TetrisShape';
 import { LayoutGrid, List, ChevronDown, X, Search, ExternalLink } from 'lucide-react';
 import { getFlagPath, getRandomThumbnail } from '@/lib/museum';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
+import FilterToggle from '@/components/ui/FilterToggle';
 
 /** Check if a string is primarily Latin/English */
 const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
@@ -331,6 +332,7 @@ const MuseumSection = ({ pendingNavigation }) => {
     const { data, loading, error, refetch } = useData('/api/museum');
     const [bootLoading, setBootLoading] = useState(true);
     const [viewMode, setViewMode] = useState('gallery');
+    const [showFilters, setShowFilters] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchFocused, setSearchFocused] = useState(false);
     const [selectedCountries, setSelectedCountries] = useState([]);
@@ -544,7 +546,13 @@ const MuseumSection = ({ pendingNavigation }) => {
                     </span>
                 </div>
 
-                {/* View toggle */}
+                {/* Filter toggle + view toggle */}
+                <div className="flex items-center gap-2">
+                <FilterToggle
+                    isOpen={showFilters}
+                    onToggle={() => setShowFilters((prev) => !prev)}
+                    activeCount={selectedCountries.length + selectedTypes.length + selectedTags.length + selectedEras.length}
+                />
                 <div className="flex border-2 border-off-black">
                     <button
                         onClick={() => setViewMode('gallery')}
@@ -566,6 +574,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                     >
                         <List size={16} />
                     </button>
+                </div>
                 </div>
             </div>
 
@@ -634,6 +643,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                 </div>
 
                 {/* Filter row: dropdowns */}
+                {showFilters && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     {/* Country dropdown */}
                     <SearchableDropdown
@@ -671,6 +681,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                         onClear={() => setSelectedEras([])}
                     />
                 </div>
+                )}
 
                 {/* Clear all filters */}
                 {hasActiveFilters && (

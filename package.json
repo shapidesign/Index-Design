@@ -8,6 +8,7 @@
     "dev:api": "node server.dev.js",
     "dev:full": "node server.dev.js & vite",
     "build": "vite build",
+    "scrape:fonts": "node scripts/scrape-font-previews.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -32,6 +33,8 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "express": "^5.2.1",
     "globals": "^16.5.0",
+    "playwright": "^1.61.1",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4.1.18",
     "vite": "^7.3.1"
   }

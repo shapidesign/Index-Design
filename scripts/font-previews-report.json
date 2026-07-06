@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-07-06T09:52:57.065Z",
+  "perFoundry": {
+    "aaa": {
+      "ok": 0,
+      "fail": 0,
+      "skipped": 37
+    },
+    "fontimonim": {
+      "ok": 0,
+      "fail": 0,
+      "skipped": 73
+    },
+    "ezer": {
+      "ok": 0,
+      "fail": 0,
+      "skipped": 33
+    },
+    "hafontia": {
+      "ok": 0,
+      "fail": 0,
+      "skipped": 26
+    },
+    "hagilda": {
+      "ok": 0,
+      "fail": 0,
+      "skipped": 73
+    },
+    "fontef": {
+      "ok": 0,
+      "fail": 0,
+      "skipped": 40
+    },
+    "reisinger": {
+      "ok": 6,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "failures": []
+}

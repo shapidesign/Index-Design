@@ -92,7 +92,7 @@ const TetrisLoader = ({ className, fullScreen = false }) => {
       )}
       role="status"
       aria-live="polite"
-      aria-label="טוען..."
+      aria-label="טוען את המשאבים"
     >
       <div ref={scope} dir="ltr">
         <div className="tetris-loader-grid">
@@ -190,6 +190,14 @@ const TetrisLoader = ({ className, fullScreen = false }) => {
           />
         </div>
         <div className="tetris-loader-base" />
+        <p
+          dir="rtl"
+          className="tetris-loader-text text-center font-headline text-lg text-off-black"
+          aria-hidden="true"
+        >
+          טוען את המשאבים
+          <span className="loader-dots" />
+        </p>
       </div>
     </div>
   );

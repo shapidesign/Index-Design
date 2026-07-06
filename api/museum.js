@@ -295,6 +295,7 @@ function transformPage(page) {
         quote,
         link,
         imageUrl,
+        createdTime: page.created_time || null,
     };
 }
 

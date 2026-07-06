@@ -18,7 +18,9 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
-        changeOrigin: true,
+        // Keep the original Host header so the API guard's same-origin
+        // referer check passes in local dev (guard compares Referer host to Host)
+        changeOrigin: false,
       },
     },
   },

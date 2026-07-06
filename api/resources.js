@@ -61,6 +61,7 @@ function transformResource(page) {
     link,
     pricing,
     image,
+    createdTime: page.created_time || null,
   };
 }
 

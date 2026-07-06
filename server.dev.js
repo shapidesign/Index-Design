@@ -7,7 +7,6 @@
 import './load-env.js'; // Must be first to populate env before other imports run
 import dotenv from 'dotenv';
 import path from 'path';
-import fs from 'fs';
 
 // Use absolute path for .env.local (dotenv fallback)
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
@@ -17,6 +16,7 @@ import resourcesHandler from './api/resources.js';
 import hallOfFameHandler from './api/hall-of-fame.js';
 import museumHandler from './api/museum.js';
 import booksHandler from './api/books.js';
+import tipsHandler from './api/tips.js';
 import suggestionsHandler from './api/suggestions.js';
 
 const app = express();
@@ -43,6 +43,7 @@ app.all('/api/resources', wrapHandler(resourcesHandler));
 app.all('/api/hall-of-fame', wrapHandler(hallOfFameHandler));
 app.all('/api/museum', wrapHandler(museumHandler));
 app.all('/api/books', wrapHandler(booksHandler));
+app.all('/api/tips', wrapHandler(tipsHandler));
 app.all('/api/suggestions', wrapHandler(suggestionsHandler));
 
 app.listen(PORT, () => {

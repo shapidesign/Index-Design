@@ -6,6 +6,7 @@ import TetrisLoader from '@/components/tetris/TetrisLoader';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import { LayoutGrid, List, Search, X, ChevronDown } from 'lucide-react';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
+import FilterToggle from '@/components/ui/FilterToggle';
 
 const normalizeText = (value) =>
   String(value || '')
@@ -195,6 +196,7 @@ const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
 const LibrarySection = ({ pendingNavigation }) => {
   const { data, loading, error, refetch } = useData('/api/books');
   const [viewMode, setViewMode] = useState('gallery');
+  const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [yearRange, setYearRange] = useState([0, 0]);
@@ -343,33 +345,40 @@ const LibrarySection = ({ pendingNavigation }) => {
         )}
       >
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2 border-2 border-off-black px-2 py-1.5 bg-light-gray">
-            <button
-              type="button"
-              onClick={() => setViewMode('gallery')}
-              aria-label="תצוגת גלריה"
-              className={cn(
-                'p-2 border-2 border-off-black transition-all duration-200',
-                viewMode === 'gallery'
-                  ? 'bg-tetris-purple text-off-white'
-                  : 'bg-off-white text-off-black hover:bg-tetris-purple/20'
-              )}
-            >
-              <LayoutGrid size={16} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              aria-label="תצוגת רשימה"
-              className={cn(
-                'p-2 border-2 border-off-black transition-all duration-200',
-                viewMode === 'list'
-                  ? 'bg-tetris-purple text-off-white'
-                  : 'bg-off-white text-off-black hover:bg-tetris-purple/20'
-              )}
-            >
-              <List size={16} />
-            </button>
+          <div className="flex items-center gap-2">
+            <FilterToggle
+              isOpen={showFilters}
+              onToggle={() => setShowFilters((prev) => !prev)}
+              activeCount={selectedTags.length + (yearBounds && (yearRange[0] !== yearBounds[0] || yearRange[1] !== yearBounds[1]) ? 1 : 0)}
+            />
+            <div className="flex items-center gap-2 border-2 border-off-black px-2 py-1.5 bg-light-gray">
+              <button
+                type="button"
+                onClick={() => setViewMode('gallery')}
+                aria-label="תצוגת גלריה"
+                className={cn(
+                  'p-2 border-2 border-off-black transition-all duration-200',
+                  viewMode === 'gallery'
+                    ? 'bg-tetris-purple text-off-white'
+                    : 'bg-off-white text-off-black hover:bg-tetris-purple/20'
+                )}
+              >
+                <LayoutGrid size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                aria-label="תצוגת רשימה"
+                className={cn(
+                  'p-2 border-2 border-off-black transition-all duration-200',
+                  viewMode === 'list'
+                    ? 'bg-tetris-purple text-off-white'
+                    : 'bg-off-white text-off-black hover:bg-tetris-purple/20'
+                )}
+              >
+                <List size={16} />
+              </button>
+            </div>
           </div>
 
           <div className="relative flex-1 max-w-xl">
@@ -391,7 +400,7 @@ const LibrarySection = ({ pendingNavigation }) => {
           </div>
         </div>
 
-        {allTags.length > 0 && (
+        {showFilters && allTags.length > 0 && (
           <div className="mt-3 pt-3 border-t-2 border-off-black/20">
             <div className="flex justify-end">
               <TagFilterDropdown
@@ -404,7 +413,7 @@ const LibrarySection = ({ pendingNavigation }) => {
           </div>
         )}
 
-        {yearBounds && (
+        {showFilters && yearBounds && (
           <div className="mt-3 pt-3 border-t-2 border-off-black/20">
             <div className="flex flex-col md:flex-row md:items-end gap-3">
               <div className="flex-1">

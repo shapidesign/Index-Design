@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import TipArticleModal from '../ui/TipArticleModal';
+import FilterToggle from '@/components/ui/FilterToggle';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
@@ -20,6 +21,7 @@ const TipsSection = () => {
   // Filters — null means 'show all'
   const [selectedType, setSelectedType] = useState(null);
   const [selectedTag, setSelectedTag] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Modal State
   const [activeTipIndex, setActiveTipIndex] = useState(null);
@@ -99,7 +101,17 @@ const TipsSection = () => {
         </div>
       ) : (
         <>
+          {/* Filter toggle */}
+          <div className="flex justify-end mb-4">
+            <FilterToggle
+              isOpen={showFilters}
+              onToggle={() => setShowFilters((prev) => !prev)}
+              activeCount={(selectedType ? 1 : 0) + (selectedTag ? 1 : 0)}
+            />
+          </div>
+
           {/* Filters */}
+          {showFilters && (
           <div className="flex flex-col gap-4 mb-8 bg-off-white border-3 border-off-black p-4 shadow-brutalist-sm">
             <div className="flex items-center gap-3">
               <span className="font-bold font-headline text-off-black shrink-0 w-16">סוג:</span>
@@ -139,11 +151,12 @@ const TipsSection = () => {
                     >
                       {tag}
                     </button>
-                  );
-                })}
+                );
+              })}
               </div>
             </div>
           </div>
+          )}
 
           <div className="text-sm font-ibm text-mid-gray mb-4">
             מציג {filteredTips.length} טיפים
@@ -161,6 +174,7 @@ const TipsSection = () => {
                 return (
                   <button
                     key={tip.id}
+                    id={`search-item-tips-${String(tip.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`}
                     onClick={() => handleOpenTip(tip.id)}
                     className={cn(
                       'group relative overflow-hidden bg-off-white text-right',

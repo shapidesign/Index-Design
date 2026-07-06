@@ -10,8 +10,6 @@ const EyeLogo = ({ className }) => {
   const frameRef = useRef(null);
 
   useEffect(() => {
-    const maxDistance = 170;
-    const maxOffset = 82;
     const lerp = 0.16;
 
     const animate = () => {
@@ -31,6 +29,9 @@ const EyeLogo = ({ className }) => {
     const handlePointerMove = (e) => {
       if (!eyeRef.current) return;
       const rect = eyeRef.current.getBoundingClientRect();
+      const size = rect.width;
+      const maxDistance = size * 0.88;
+      const maxOffset = size * 0.43;
       const eyeCenterX = rect.left + rect.width / 2;
       const eyeCenterY = rect.top + rect.height / 2;
 
@@ -83,7 +84,7 @@ const EyeLogo = ({ className }) => {
       type="button"
       ref={eyeRef}
       onClick={handleBlink}
-      className={cn("relative w-48 h-48 cursor-pointer", className)}
+      className={cn("relative cursor-pointer", className)}
       aria-label="לוגו עין - לחיצה למצמוץ"
     >
       <svg
