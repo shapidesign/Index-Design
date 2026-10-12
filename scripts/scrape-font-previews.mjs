@@ -2,7 +2,7 @@
  * One-time scraper: builds specimen preview images for the מילון font index.
  *
  * Strategies per foundry:
- *  - HTML image extraction (fontimonim, alefalefalef, ezertypehouse, hafontia, reisinger)
+ *  - HTML image extraction (fontimonim, alefalefalef, ezertypehouse, hafontia, reisinger, nomad)
  *  - Playwright page screenshot fallback (hagilda, fontef - specimens are live webfont text)
  *
  * Output:
@@ -57,6 +57,8 @@ const htmlExtractors = {
       .map((m) => m[0]);
     return all.find((u) => !/logo|icon|fav/i.test(u));
   },
+  // specimen/2 is the alphabet sheet; specimen/1 is the poster
+  nomad: (html) => html.match(/photos\/[^"' )\s]+\/specimen\/2\.jpg/)?.[0],
 };
 
 // reisinger: first page image is a portrait photo, not a specimen - screenshot instead

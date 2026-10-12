@@ -18,6 +18,7 @@ export const FOUNDRIES = {
   ezer:       { name: "עזר טייפ האוס",      color: "#0E7490", site: "ezertypehouse.com" },
   hafontia:   { name: "הפונטיה",            color: "#A16207", site: "hafontia.com" },
   reisinger:  { name: "ריזינגר × הפונטיה",  color: "#DE6235", site: "reisinger.hafontia.com" },
+  nomad:      { name: "Nomad Type",         color: "#FF3B21", site: "nomad-type.com" },
 };
 
 export const STYLES = {
@@ -540,6 +541,8 @@ export const FONTS = [
   {n:"אמיר (קשב)",lat:"Amir",fo:"reisinger",d:"דן ריזינגר / הפונטיה",y:2024,st:["sans"],use:["display"],tg:["bilingual", "free"],w:null,url:"https://reisinger.hafontia.com/",vb:["וינטג׳", "גאומטרי"]},
   {n:"נטע (מלון)",lat:"Neta",fo:"reisinger",d:"דן ריזינגר / הפונטיה",y:2024,st:["sans"],use:["display"],tg:["bilingual", "free"],w:null,url:"https://reisinger.hafontia.com/",vb:["וינטג׳", "גאומטרי"]},
   {n:"יונתן",lat:"Yonatan",fo:"reisinger",d:"דן ריזינגר / הפונטיה",y:2024,st:["sans"],use:["display"],tg:["bilingual", "free"],w:null,url:"https://reisinger.hafontia.com/",vb:["וינטג׳", "גאומטרי"]},
+  /* ---- nomad (1) ---- */
+  {n:"דולומיט",lat:"Dolomit",fo:"nomad",d:"ליעד שדמי",y:2026,st:["sans"],use:["display"],tg:["bilingual", "variable"],w:2,url:"https://www.nomad-type.com/dolomit",vb:["גאומטרי", "באוהאוס", "כותרות", "מודרני"]},
 ];
 
 /** Slug used for preview image filenames (public/font-previews/{slug}.webp) */
