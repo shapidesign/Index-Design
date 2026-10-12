@@ -6,6 +6,18 @@ import { X, Check } from 'lucide-react';
  * WhatsNewModal - "מה חדש אצלנו?" popup.
  * Shows once per user per version. Update WHATS_NEW_VERSION to show again for returning users.
  */
+
+/** Keep an English name in one LTR run inside Hebrew copy. */
+const En = ({ children }) => (
+  <bdi dir="ltr" className="whitespace-nowrap">{children}</bdi>
+);
+
+const listClass = cn(
+  'space-y-3 font-ibm text-dark-gray text-base leading-relaxed',
+  'list-disc list-inside text-right',
+  'ps-4 marker:text-tetris-purple'
+);
+
 const WhatsNewModal = ({ open, onClose }) => {
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
@@ -69,16 +81,13 @@ const WhatsNewModal = ({ open, onClose }) => {
             <h3 className="text-sm font-bold font-headline text-off-black mb-2 text-right">
               עדכונים
             </h3>
-            <ul
-              dir="rtl"
-              className={cn(
-                'space-y-3 font-ibm text-dark-gray text-base leading-relaxed',
-                'list-disc list-inside text-right',
-                'ps-4 marker:text-tetris-purple'
-              )}
-            >
-              <li>לארגז הכלים נוספו מאגרי השראה ומחקר: מוזיאון הכרזות השווייצרי, אוספי V&A ומוזיאון העיצוב בציריך, גלריית Chisholm Larsson, 50 Watts, Annual Report Gallery, ארכיון עטיפות הממתקים, Heritage Type, Peculiar Manicule ו-Standards Manual.</li>
-              <li>נוסף Type Electives - אקדמיה מקוונת לעיצוב פונטים, לטרינג וטיפוגרפיה.</li>
+            <ul dir="rtl" className={listClass}>
+              <li>
+                לארגז הכלים נוספו מאגרי השראה ומחקר: מוזיאון הכרזות השווייצרי, אוספי <En>V&A</En> ומוזיאון העיצוב בציריך, גלריית <En>Chisholm Larsson</En>, <En>50 Watts</En>, <En>Annual Report Gallery</En>, ארכיון עטיפות הממתקים, <En>Heritage Type</En>, <En>Peculiar Manicule</En> ו־<En>Standards Manual</En>.
+              </li>
+              <li>
+                נוסף <En>Type Electives</En> - אקדמיה מקוונת לעיצוב פונטים, לטרינג וטיפוגרפיה.
+              </li>
             </ul>
           </section>
 
@@ -86,17 +95,16 @@ const WhatsNewModal = ({ open, onClose }) => {
             <h3 className="text-sm font-bold font-headline text-off-black mb-2 text-right">
               כלים חדשים
             </h3>
-            <ul
-              dir="rtl"
-              className={cn(
-                'space-y-3 font-ibm text-dark-gray text-base leading-relaxed',
-                'list-disc list-inside text-right',
-                'ps-4 marker:text-tetris-purple'
-              )}
-            >
-              <li>Depth of Field Visualizer - המחשה חינמית של עומק שדה, לצילום ולתלת-ממד.</li>
-              <li>YoFont - יצירת גופנים בעזרת בינה מלאכותית.</li>
-              <li>וגם מהגל האחרון: Colir, Ditther, SHRTCTS, Tinkerfont, Name That UI ו-VibeUI.</li>
+            <ul dir="rtl" className={listClass}>
+              <li>
+                <En>Depth of Field Visualizer</En> - המחשה חינמית של עומק שדה, לצילום ולתלת-ממד.
+              </li>
+              <li>
+                <En>YoFont</En> - יצירת גופנים בעזרת בינה מלאכותית.
+              </li>
+              <li>
+                וגם מהגל האחרון: <En>Colir</En>, <En>Ditther</En>, <En>SHRTCTS</En>, <En>Tinkerfont</En>, <En>Name That UI</En> ו־<En>VibeUI</En>.
+              </li>
             </ul>
           </section>
         </div>
