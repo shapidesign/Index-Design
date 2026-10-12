@@ -151,7 +151,7 @@ const sectionFromHash = () => {
 };
 
 /** Bump this to show "What's New" again for returning users */
-const WHATS_NEW_VERSION = 'v4';
+const WHATS_NEW_VERSION = 'v5';
 
 const WHATS_NEW_STORAGE_KEY = `index-whats-new-seen-${WHATS_NEW_VERSION}`;
 
@@ -227,7 +227,8 @@ const App = () => {
 
   const handleWhatsNewClose = useCallback((dontShowAgain) => {
     setIsWhatsNewOpen(false);
-    if (dontShowAgain) {
+    // A click event is truthy. Only the checked "don't show again" box dismisses this version.
+    if (dontShowAgain === true) {
       try {
         localStorage.setItem(WHATS_NEW_STORAGE_KEY, 'true');
       } catch {

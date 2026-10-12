@@ -29,13 +29,14 @@ const WhatsNewModal = ({ open, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-off-black/80 backdrop-blur-sm"
-      onClick={onClose}
+      className="fixed inset-0 z-[9999] overflow-y-auto bg-off-black/80 backdrop-blur-sm"
+      onClick={() => onClose(dontShowAgain)}
       role="dialog"
       aria-modal="true"
       aria-labelledby="whats-new-title"
       aria-label="מה חדש באתר"
     >
+      <div className="flex min-h-full items-center justify-center p-4">
       <div
         dir="rtl"
         className={cn(
@@ -109,6 +110,7 @@ const WhatsNewModal = ({ open, onClose }) => {
             הבנתי
           </button>
         </div>
+      </div>
       </div>
     </div>
   );
