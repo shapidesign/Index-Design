@@ -147,13 +147,19 @@ function pickCallNumber(doc) {
   return String(fromDelivery || fromDisplay || '').replace(BIDI_RE, '').trim();
 }
 
-function availabilityLabel(doc) {
+function availabilityStatus(doc) {
   const flags = doc?.delivery?.availability || [];
-  const status = doc?.delivery?.bestlocation?.availabilityStatus;
-  if (flags.includes('available_in_library') || status === 'available') {
-    return 'זמין בספרייה';
-  }
-  return 'בדקו זמינות';
+  const location = doc?.delivery?.bestlocation || {};
+  const status = location.availabilityStatus;
+  const process = location.singleUnavailableItemProcessType;
+  if (flags.includes('available_in_library') || status === 'available') return 'available';
+  if (
+    flags.includes('unavailable')
+    || flags.includes('unavailable_in_library')
+    || status === 'unavailable'
+    || process === 'LOAN'
+  ) return 'taken';
+  return 'unknown';
 }
 
 function typeLabel(pnx) {
@@ -190,7 +196,7 @@ export function mapPrimoDoc(doc) {
     type: typeLabel(pnx),
     publisher: String(first(display.publisher) || first(pnx.addata?.pub) || '').replace(/\s+/g, ' ').trim(),
     callNumber: pickCallNumber(doc),
-    availability: availabilityLabel(doc),
+    availability: availabilityStatus(doc),
     link: id ? recordLink(id) : '',
     coverUrl: isbn ? `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg` : '',
   };

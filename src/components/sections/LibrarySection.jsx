@@ -368,7 +368,8 @@ const CatalogSearch = () => {
                 author={item.author}
                 year={item.year}
                 why={detail}
-                tags={[item.availability, item.type].filter(Boolean)}
+                tags={[item.type].filter(Boolean)}
+                availability={item.availability}
                 coverUrl={item.coverUrl}
                 link={item.link}
                 linkLabel="לקטלוג"

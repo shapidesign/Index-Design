@@ -4,6 +4,12 @@ import Badge from '@/components/ui/Badge';
 import { ExternalLink } from 'lucide-react';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
+const AVAILABILITY_MARK = {
+  available: { label: 'זמין להשאלה', color: 'bg-tetris-green' },
+  taken: { label: 'מושאל', color: 'bg-tetris-pink' },
+  unknown: { label: 'בדקו זמינות', color: 'bg-light-gray' },
+};
+
 /**
  * BookCard - כרטיס ספר
  * Displays a book recommendation with cover, author, and description
@@ -17,6 +23,7 @@ const BookCard = ({
   year,
   link,
   linkLabel,
+  availability,
   viewMode = 'gallery',
   featured = false,
   category,
@@ -28,6 +35,23 @@ const BookCard = ({
   const coverAlt = title ? `כריכת הספר ${title}` : 'כריכת ספר';
   const [coverState, setCoverState] = useState({ url: '', failed: false });
   const coverFailed = coverState.url === coverUrl && coverState.failed;
+  const availabilityMark = AVAILABILITY_MARK[availability];
+  const availabilityBadge = availabilityMark ? (
+    <span
+      className={cn(
+        'inline-flex items-center justify-center h-6 px-2',
+        'text-xs font-normal font-headline border border-off-black shadow-brutalist-xs',
+        availabilityMark.color
+      )}
+    >
+      {availabilityMark.label}
+    </span>
+  ) : null;
+  const yearBadge = year ? (
+    <span className="inline-flex w-fit items-center px-3 py-0.5 text-sm font-normal font-jersey bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
+      {year}
+    </span>
+  ) : null;
 
   const coverElement = coverUrl && !coverFailed ? (
     <img
@@ -65,15 +89,13 @@ const BookCard = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="flex-1 min-w-0">
-                <h3 className={cn("text-lg font-bold text-off-black text-right mb-1 break-words", isEnglish(title) ? 'font-jersey' : 'font-headline')}>{title}</h3>
-                {year && (
+                <h3 className="text-lg font-bold font-mixed text-off-black text-right mb-1 break-words">{title}</h3>
+                {year && !link && (
                   <div className="flex justify-end mb-1">
-                    <span className="inline-flex w-fit items-center px-3 py-0.5 text-sm font-normal font-jersey bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
-                      {year}
-                    </span>
+                    {yearBadge}
                   </div>
                 )}
-                {author && <p className={cn("text-sm text-dark-gray text-right mb-1", isEnglish(author) ? 'font-jersey' : 'font-ibm')}>{author}</p>}
+                {author && <p className="text-sm font-mixed text-dark-gray text-right mb-1">{author}</p>}
                 {category && (
                   <div className="flex flex-wrap gap-2 justify-end">
                     <Badge color="bg-tetris-blue">{category}</Badge>
@@ -81,32 +103,36 @@ const BookCard = ({
                 )}
               </div>
               {link && (
-                <a
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={linkLabel ? `${linkLabel}: ${title}` : `קישור לספר ${title}`}
-                  className={cn(
-                    'inline-flex items-center justify-center gap-1 p-2',
-                    'bg-tetris-cyan border-2 border-off-black shadow-brutalist-xs',
-                    'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
-                    'transition-all duration-200 shrink-0'
-                  )}
-                >
-                  {linkLabel && <span className="text-xs font-bold font-headline">{linkLabel}</span>}
-                  <ExternalLink size={14} />
-                </a>
+                <div className="flex flex-col items-center gap-2 shrink-0">
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={linkLabel ? `${linkLabel}: ${title}` : `קישור לספר ${title}`}
+                    className={cn(
+                      'inline-flex items-center justify-center gap-1 p-2',
+                      'bg-tetris-cyan border-2 border-off-black shadow-brutalist-xs',
+                      'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                      'transition-all duration-200'
+                    )}
+                  >
+                    {linkLabel && <span className="text-xs font-bold font-headline">{linkLabel}</span>}
+                    <ExternalLink size={14} />
+                  </a>
+                  {yearBadge}
+                </div>
               )}
             </div>
 
             {why && (
-              <p className="text-sm text-off-black text-right leading-relaxed line-clamp-3">
+              <p className="text-sm font-mixed text-off-black text-right leading-relaxed line-clamp-3">
                 {why}
               </p>
             )}
 
-            {tags.length > 0 && (
+            {(tags.length > 0 || availabilityBadge) && (
               <div className="flex flex-wrap gap-2 justify-end mt-3">
+                {availabilityBadge}
                 {tags.slice(0, 6).map((tag) => (
                   (() => {
                     const bgColor = getTagColor(tag);
@@ -156,7 +182,7 @@ const BookCard = ({
         </div>
       </div>
 
-      <h3 className={cn("text-xl font-bold text-off-black text-right mb-1 line-clamp-2 min-h-[56px]", isEnglish(title) ? 'font-jersey' : 'font-headline')}>{title}</h3>
+      <h3 className="text-xl font-bold font-mixed text-off-black text-right mb-1 line-clamp-2 min-h-[56px]">{title}</h3>
       {year && (
         <div className="flex justify-end mb-2">
           <span className="inline-flex w-fit items-center px-3 py-0.5 text-base font-normal font-jersey bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
@@ -164,7 +190,7 @@ const BookCard = ({
           </span>
         </div>
       )}
-      {author && <p className={cn("text-sm text-dark-gray text-right mb-3 line-clamp-1 min-h-[20px]", isEnglish(author) ? 'font-jersey' : 'font-ibm')}>{author}</p>}
+      {author && <p className="text-sm font-mixed text-dark-gray text-right mb-3 line-clamp-1 min-h-[20px]">{author}</p>}
       {category && (
         <div className="mb-3 flex items-center gap-2 justify-end">
           <Badge color="bg-tetris-blue">{category}</Badge>
@@ -173,14 +199,15 @@ const BookCard = ({
 
       {why && (
         <div className="mt-3 pt-3 border-t-3 border-light-gray min-h-[112px]">
-          <p className="text-sm text-off-black text-right leading-relaxed line-clamp-4">
+          <p className="text-sm font-mixed text-off-black text-right leading-relaxed line-clamp-4">
             <span className="font-bold">למה לקרוא: </span>{why}
           </p>
         </div>
       )}
 
-      {tags.length > 0 && (
+      {(tags.length > 0 || availabilityBadge) && (
         <div className="mt-3 flex flex-wrap gap-2 justify-end">
+          {availabilityBadge}
           {tags.slice(0, 5).map((tag) => (
             (() => {
               const bgColor = getTagColor(tag);

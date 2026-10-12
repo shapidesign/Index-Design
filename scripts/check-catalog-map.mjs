@@ -57,7 +57,7 @@ assert.equal(mapped.author, 'חפשי, יהודה');
 assert.equal(mapped.year, '2025');
 assert.equal(mapped.type, 'ספר');
 assert.equal(mapped.callNumber, '766(569.4) נרק (חופ)');
-assert.equal(mapped.availability, 'זמין בספרייה');
+assert.equal(mapped.availability, 'available');
 assert.equal(mapped.coverUrl, 'https://covers.openlibrary.org/b/isbn/9789657434611-M.jpg');
 assert.equal(mapped.title, 'צבי נרקיס : טיפוגרפיה ועיצוב');
 assert.match(mapped.link, /docid=alma99930783406866/);
@@ -66,7 +66,19 @@ assert.match(mapped.link, /tab=HIT_BOOKS/);
 
 const fallback = mapPrimoDoc(noDelivery);
 assert.equal(fallback.author, 'עזרא, נדב');
-assert.equal(fallback.availability, 'בדקו זמינות');
+assert.equal(fallback.availability, 'unknown');
+
+const taken = mapPrimoDoc({
+  pnx: {
+    display: { type: ['book'], title: ['Checked out '] },
+    control: { recordid: ['alma1'] },
+  },
+  delivery: {
+    bestlocation: { availabilityStatus: 'unavailable', singleUnavailableItemProcessType: 'LOAN' },
+    availability: ['unavailable_in_library'],
+  },
+});
+assert.equal(taken.availability, 'taken');
 assert.equal(fallback.type, 'כתב עת');
 assert.equal(fallback.coverUrl, '');
 assert.equal(fallback.year, '2010');
