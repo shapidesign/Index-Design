@@ -19,6 +19,7 @@ const availableBook = {
       title: ['צבי נרקיס : טיפוגרפיה ועיצוב '],
       creationdate: ['2025'],
       creator: ['חפשי, יהודה מחבר$$Qחפשי, יהודה'],
+      contributor: ['זקין, איל, עורך$$Qזקין, איל'],
       publisher: ['ישראל : אסיה'],
       identifier: ['$$CISBN$$V9789657434611'],
       lds02: ['\u202a766(569.4) נרק (חופ)'],

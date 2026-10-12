@@ -109,13 +109,16 @@ function cleanName(value) {
 
 function pickAuthor(pnx) {
   const display = pnx?.display || {};
-  const raw = [
-    ...(Array.isArray(display.creator) ? display.creator : []),
-    ...(Array.isArray(display.contributor) ? display.contributor : []),
-    ...(Array.isArray(pnx?.addata?.au) ? pnx.addata.au : []),
-  ];
-  const names = raw.map(cleanName).filter(Boolean);
-  return [...new Set(names)].slice(0, 2).join(' · ');
+  const creators = (Array.isArray(display.creator) ? display.creator : [])
+    .map(cleanName)
+    .filter(Boolean);
+  const fallback = creators.length > 0
+    ? creators
+    : [
+        ...(Array.isArray(display.contributor) ? display.contributor : []),
+        ...(Array.isArray(pnx?.addata?.au) ? pnx.addata.au : []),
+      ].map(cleanName).filter(Boolean);
+  return [...new Set(fallback)].slice(0, 2).join(' · ');
 }
 
 function pickYear(pnx) {
