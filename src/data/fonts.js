@@ -541,8 +541,19 @@ export const FONTS = [
   {n:"אמיר (קשב)",lat:"Amir",fo:"reisinger",d:"דן ריזינגר / הפונטיה",y:2024,st:["sans"],use:["display"],tg:["bilingual", "free"],w:null,url:"https://reisinger.hafontia.com/",vb:["וינטג׳", "גאומטרי"]},
   {n:"נטע (מלון)",lat:"Neta",fo:"reisinger",d:"דן ריזינגר / הפונטיה",y:2024,st:["sans"],use:["display"],tg:["bilingual", "free"],w:null,url:"https://reisinger.hafontia.com/",vb:["וינטג׳", "גאומטרי"]},
   {n:"יונתן",lat:"Yonatan",fo:"reisinger",d:"דן ריזינגר / הפונטיה",y:2024,st:["sans"],use:["display"],tg:["bilingual", "free"],w:null,url:"https://reisinger.hafontia.com/",vb:["וינטג׳", "גאומטרי"]},
-  /* ---- nomad (1) ---- */
+  /* ---- nomad (12) ---- */
+  {n:"קלדנית",lat:"Kaldanit",fo:"nomad",d:"ניר זברי יני",y:2021,st:["sans"],use:["text", "display"],tg:[],w:3,url:"https://www.nomad-type.com/kaldanit",vb:["מכונת כתיבה", "מונוליין"]},
+  {n:"ספרא",lat:"Safra",fo:"nomad",d:"ניר זברי יני",y:2025,st:["serif", "sans"],use:["text", "display"],tg:["trilingual"],w:4,url:"https://www.nomad-type.com/safra",vb:["מודרני", "נקי"]},
+  {n:"Kilo Text",lat:"Kilo Text",fo:"nomad",d:"ניר זברי יני",y:2025,st:["sans"],use:["text", "book"],tg:[],w:1,url:"https://www.nomad-type.com/kilo-text",vb:["מודרני", "נקי"]},
+  {n:"מידל איסט",lat:"Middle East",fo:"nomad",d:"ניר זברי יני",y:2023,st:["sans"],use:["display", "brand"],tg:["trilingual"],w:1,url:"https://www.nomad-type.com/middle-east",vb:["גאומטרי", "כותרות"]},
+  {n:"יפה נפש",lat:"Yeffe Nefesh",fo:"nomad",d:"ניר זברי יני",y:2024,st:["sans"],use:["display", "book"],tg:[],w:1,url:"https://www.nomad-type.com/yeffe",vb:["דקיק", "מונוליין", "כותרות"]},
   {n:"דולומיט",lat:"Dolomit",fo:"nomad",d:"ליעד שדמי",y:2026,st:["sans"],use:["display"],tg:["bilingual", "variable"],w:2,url:"https://www.nomad-type.com/dolomit",vb:["גאומטרי", "באוהאוס", "כותרות", "מודרני"]},
+  {n:"Kilo Display",lat:"Kilo Display",fo:"nomad",d:"ניר זברי יני",y:2025,st:["sans"],use:["display", "brand"],tg:["variable", "rounded"],w:4,url:"https://www.nomad-type.com/kilo-display",vb:["גאומטרי", "כותרות", "שמן"]},
+  {n:"Dear AI",lat:"Dear AI",fo:"nomad",d:"ניר זברי יני",y:2024,st:["sans"],use:["display"],tg:[],w:1,url:"https://www.nomad-type.com/dear-ai",vb:["נסיוני", "קונטרסט הפוך"]},
+  {n:"The Bizarre",lat:"The Bizarre",fo:"nomad",d:"ניר זברי יני",y:2024,st:["sans"],use:["display"],tg:[],w:1,url:"https://www.nomad-type.com/the-bizarre",vb:["נסיוני", "גראנג׳", "שמן"]},
+  {n:"Werd",lat:"Werd",fo:"nomad",d:"ניר זברי יני",y:2022,st:["serif"],use:["text", "book"],tg:[],w:5,url:"https://www.nomad-type.com/werd",vb:["מגזיני", "קונטרסט נמוך"]},
+  {n:"Romanisch Spitz",lat:"Romanisch Spitz",fo:"nomad",d:"ניר זברי יני",y:2024,st:["serif"],use:["text", "display"],tg:[],w:1,url:"https://www.nomad-type.com/spitz",vb:["אלגנטי", "מגזיני"]},
+  {n:"Sugar",lat:"Sugar",fo:"nomad",d:"ניר זברי יני",y:2024,st:["serif"],use:["display", "text"],tg:[],w:2,url:"https://www.nomad-type.com/sugar",vb:["אלגנטי", "קונטרסט גבוה"]},
 ];
 
 /** Slug used for preview image filenames (public/font-previews/{slug}.webp) */

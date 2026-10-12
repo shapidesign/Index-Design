@@ -57,8 +57,11 @@ const htmlExtractors = {
       .map((m) => m[0]);
     return all.find((u) => !/logo|icon|fav/i.test(u));
   },
-  // specimen/2 is the alphabet sheet; specimen/1 is the poster
-  nomad: (html) => html.match(/photos\/[^"' )\s]+\/specimen\/2\.jpg/)?.[0],
+  // specimen sheet first; in-use photo if the page has none. Paths sometimes contain spaces.
+  nomad: (html) => {
+    const imgs = [...html.matchAll(/photos\/[^"']+?\.(?:jpg|jpeg|png|webp)/gi)].map((m) => m[0]);
+    return imgs.find((u) => /specimen/i.test(u)) || imgs.find((u) => /in[- ]use/i.test(u));
+  },
 };
 
 // reisinger: first page image is a portrait photo, not a specimen - screenshot instead
