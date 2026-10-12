@@ -103,7 +103,7 @@ const BookCard = ({
                 )}
               </div>
               {link && (
-                <div className="flex flex-col items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <a
                     href={link}
                     target="_blank"
