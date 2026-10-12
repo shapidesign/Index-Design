@@ -39,7 +39,7 @@ const WhatsNewModal = ({ open, onClose }) => {
       <div
         dir="rtl"
         className={cn(
-          'relative w-full max-w-md',
+          'relative w-full max-w-lg max-h-[90vh] overflow-y-auto',
           'bg-off-white border-3 border-off-black shadow-brutalist',
           'p-6 md:p-7',
           'animate-tetris-stack'
@@ -64,19 +64,42 @@ const WhatsNewModal = ({ open, onClose }) => {
           מה חדש אצלנו?
         </h2>
 
-        <ul
-          dir="rtl"
-          className={cn(
-            'space-y-3 font-ibm text-dark-gray text-base leading-relaxed',
-            'list-disc list-inside text-right',
-            'ps-4 marker:text-tetris-purple'
-          )}
-        >
-          <li>ה״מילון״ קיבל שדרוג: כל פונט מציג עכשיו תצוגה מקדימה ויזואלית מהאתר של בית הפונטים.</li>
-          <li>החיפוש השתפר - הוא מוצא עכשיו גם פונטים מהמילון וטיפים, וסלחני לשגיאות הקלדה.</li>
-          <li>לכל מדור יש עכשיו כתובת משלו - אפשר לשתף קישור ישיר, וכפתור ״אחורה״ בדפדפן עובד כמו שצריך.</li>
-          <li>מדורים שנוספו אליהם משאבים חדשים לאחרונה מסומנים בתגית בעמוד הבית.</li>
-        </ul>
+        <div className="space-y-5">
+          <section>
+            <h3 className="text-sm font-bold font-headline text-off-black mb-2 text-right">
+              עדכונים
+            </h3>
+            <ul
+              dir="rtl"
+              className={cn(
+                'space-y-3 font-ibm text-dark-gray text-base leading-relaxed',
+                'list-disc list-inside text-right',
+                'ps-4 marker:text-tetris-purple'
+              )}
+            >
+              <li>לארגז הכלים נוספו מאגרי השראה ומחקר: מוזיאון הכרזות השווייצרי, אוספי V&A ומוזיאון העיצוב בציריך, גלריית Chisholm Larsson, 50 Watts, Annual Report Gallery, ארכיון עטיפות הממתקים, Heritage Type, Peculiar Manicule ו-Standards Manual.</li>
+              <li>נוסף Type Electives - אקדמיה מקוונת לעיצוב פונטים, לטרינג וטיפוגרפיה.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="text-sm font-bold font-headline text-off-black mb-2 text-right">
+              כלים חדשים
+            </h3>
+            <ul
+              dir="rtl"
+              className={cn(
+                'space-y-3 font-ibm text-dark-gray text-base leading-relaxed',
+                'list-disc list-inside text-right',
+                'ps-4 marker:text-tetris-purple'
+              )}
+            >
+              <li>Depth of Field Visualizer - המחשה חינמית של עומק שדה, לצילום ולתלת-ממד.</li>
+              <li>YoFont - יצירת גופנים בעזרת בינה מלאכותית.</li>
+              <li>וגם מהגל האחרון: Colir, Ditther, SHRTCTS, Tinkerfont, Name That UI ו-VibeUI.</li>
+            </ul>
+          </section>
+        </div>
 
         <div className="mt-8 pt-4 border-t-2 border-off-black/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <label className="flex items-center gap-2 cursor-pointer group">
