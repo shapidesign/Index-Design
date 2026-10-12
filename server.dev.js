@@ -16,6 +16,7 @@ import resourcesHandler from './api/resources.js';
 import hallOfFameHandler from './api/hall-of-fame.js';
 import museumHandler from './api/museum.js';
 import booksHandler from './api/books.js';
+import catalogHandler from './api/catalog.js';
 import tipsHandler from './api/tips.js';
 import suggestionsHandler from './api/suggestions.js';
 
@@ -43,6 +44,7 @@ app.all('/api/resources', wrapHandler(resourcesHandler));
 app.all('/api/hall-of-fame', wrapHandler(hallOfFameHandler));
 app.all('/api/museum', wrapHandler(museumHandler));
 app.all('/api/books', wrapHandler(booksHandler));
+app.all('/api/catalog', wrapHandler(catalogHandler));
 app.all('/api/tips', wrapHandler(tipsHandler));
 app.all('/api/suggestions', wrapHandler(suggestionsHandler));
 
