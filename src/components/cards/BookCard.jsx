@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
 import { ExternalLink } from 'lucide-react';
@@ -16,6 +16,7 @@ const BookCard = ({
   tags = [],
   year,
   link,
+  linkLabel,
   viewMode = 'gallery',
   featured = false,
   category,
@@ -25,14 +26,17 @@ const BookCard = ({
   const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(String(value || ''));
   const textFontClass = (value) => (isEnglish(value) || isSymbolHeavyText(value) ? 'font-jersey' : 'font-headline');
   const coverAlt = title ? `כריכת הספר ${title}` : 'כריכת ספר';
+  const [coverState, setCoverState] = useState({ url: '', failed: false });
+  const coverFailed = coverState.url === coverUrl && coverState.failed;
 
-  const coverElement = coverUrl ? (
+  const coverElement = coverUrl && !coverFailed ? (
     <img
       src={coverUrl}
       alt={coverAlt}
       loading="lazy"
       decoding="async"
       className="w-full h-full object-cover"
+      onError={() => setCoverState({ url: coverUrl, failed: true })}
     />
   ) : (
     <div className="w-full h-full bg-light-gray flex items-center justify-center text-center px-2">
@@ -81,14 +85,15 @@ const BookCard = ({
                   href={link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`קישור לספר ${title}`}
+                  aria-label={linkLabel ? `${linkLabel}: ${title}` : `קישור לספר ${title}`}
                   className={cn(
-                    'inline-flex items-center justify-center p-2',
+                    'inline-flex items-center justify-center gap-1 p-2',
                     'bg-tetris-cyan border-2 border-off-black shadow-brutalist-xs',
                     'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
                     'transition-all duration-200 shrink-0'
                   )}
                 >
+                  {linkLabel && <span className="text-xs font-bold font-headline">{linkLabel}</span>}
                   <ExternalLink size={14} />
                 </a>
               )}
@@ -214,7 +219,7 @@ const BookCard = ({
             )}
           >
             <ExternalLink size={14} />
-            קישור
+            {linkLabel || 'קישור'}
           </a>
         </div>
       )}

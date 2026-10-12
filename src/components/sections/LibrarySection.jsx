@@ -4,7 +4,8 @@ import useData from '@/hooks/useData';
 import BookCard from '@/components/cards/BookCard';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import TetrisShape from '@/components/tetris/TetrisShape';
-import { LayoutGrid, List, Search, X, ChevronDown } from 'lucide-react';
+import { LayoutGrid, List, Search, X, ChevronDown, ExternalLink } from 'lucide-react';
+import { buildCatalogSearchUrl } from '@/lib/catalog';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 import FilterToggle from '@/components/ui/FilterToggle';
 
@@ -193,8 +194,236 @@ const TagFilterDropdown = ({ options, selected, onToggle, onClear }) => {
   );
 };
 
+const ModeToggle = ({ mode, onChange }) => (
+  <div className="flex justify-end mb-4" role="group" aria-label="סוג חיפוש בספרייה">
+    <div className="inline-flex gap-1 p-1 bg-light-gray border-2 border-off-black">
+      {[
+        { id: 'picks', label: 'המלצות' },
+        { id: 'catalog', label: 'קטלוג HIT' },
+      ].map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          aria-pressed={mode === option.id}
+          onClick={() => onChange(option.id)}
+          className={cn(
+            'px-3 py-1.5 text-sm font-bold font-headline border-2 border-off-black',
+            'transition-all duration-200',
+            mode === option.id
+              ? 'bg-tetris-purple text-off-white'
+              : 'bg-off-white text-off-black hover:bg-tetris-purple/20'
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
+const CatalogSearch = () => {
+  const [query, setQuery] = useState('');
+  const [offset, setOffset] = useState(0);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const trimmed = query.trim();
+  const catalogUrl = trimmed.length >= 2 ? buildCatalogSearchUrl(trimmed, offset) : '';
+
+  useEffect(() => {
+    if (trimmed.length < 2) {
+      setData(null);
+      setError(null);
+      setLoading(false);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    const handle = setTimeout(async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams({ q: trimmed, offset: String(offset) });
+        const response = await fetch(`/api/catalog?${params}`, { signal: controller.signal });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(body.error || 'לא הצלחנו לחפש בקטלוג HIT');
+        }
+        setData(body);
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        setData(null);
+        setError(err.message || 'לא הצלחנו לחפש בקטלוג HIT');
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(handle);
+      controller.abort();
+    };
+  }, [trimmed, offset]);
+
+  const results = data?.results || [];
+  const total = data?.total || 0;
+  const pageStart = total === 0 ? 0 : offset + 1;
+  const pageEnd = offset + results.length;
+  const fallbackUrl = data?.catalogUrl || catalogUrl;
+
+  return (
+    <div>
+      <div className={cn('p-4 md:p-5 mb-6', 'bg-off-white border-3 border-off-black shadow-brutalist-sm')}>
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-mid-gray" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setOffset(0);
+            }}
+            placeholder="חיפוש בספריית HIT לפי שם, מחבר או נושא..."
+            className={cn(
+              'w-full py-2.5 pe-3 ps-9',
+              'bg-off-white border-2 border-off-black',
+              getSymbolicFontClass(query),
+              'text-sm text-right',
+              'focus:outline-none focus:shadow-brutalist-xs transition-all'
+            )}
+            dir="rtl"
+            aria-label="חיפוש בקטלוג HIT"
+          />
+        </div>
+        {fallbackUrl && (
+          <div className="mt-3 flex justify-end">
+            <a
+              href={fallbackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                'inline-flex items-center gap-1.5 px-3 py-1.5',
+                'text-xs font-bold font-headline',
+                'bg-tetris-cyan border-2 border-off-black shadow-brutalist-xs',
+                'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                'transition-all duration-200'
+              )}
+            >
+              <ExternalLink size={12} />
+              פתחו את החיפוש בקטלוג
+            </a>
+          </div>
+        )}
+      </div>
+
+      {trimmed.length < 2 ? (
+        <div className="py-14 flex flex-col items-center justify-center text-center">
+          <TetrisShape type="I" color="blue" size={30} className="opacity-60 mb-3" />
+          <p className="text-lg font-headline font-bold text-off-black mb-1">חפשו בספריית HIT</p>
+          <p className="text-sm font-ibm text-dark-gray">
+            {trimmed.length === 1 ? 'הקלידו לפחות שתי אותיות.' : 'הקלידו שם ספר, מחבר או נושא.'}
+          </p>
+        </div>
+      ) : loading ? (
+        <TetrisLoader className="min-h-[280px]" />
+      ) : error ? (
+        <div className={cn('p-6 md:p-8', 'bg-off-white border-3 border-off-black shadow-brutalist', 'text-right')}>
+          <h3 className="text-xl font-bold font-headline text-off-black mb-2">לא הצלחנו לחפש בקטלוג</h3>
+          <p className="text-sm font-ibm text-dark-gray mb-4">{error}</p>
+          {fallbackUrl && (
+            <a
+              href={fallbackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                'inline-flex items-center gap-1.5 px-4 py-2',
+                'bg-tetris-yellow text-off-black font-headline font-bold',
+                'border-2 border-off-black shadow-brutalist-xs',
+                'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                'transition-all duration-200'
+              )}
+            >
+              <ExternalLink size={14} />
+              פתחו את החיפוש בקטלוג
+            </a>
+          )}
+        </div>
+      ) : results.length === 0 ? (
+        <div className="py-14 flex flex-col items-center justify-center text-center">
+          <TetrisShape type="L" color="blue" size={30} className="opacity-60 mb-3" />
+          <p className="text-lg font-headline font-bold text-off-black mb-1">לא נמצאו פריטים בקטלוג</p>
+          <p className="text-sm font-ibm text-dark-gray">נסו מילות חיפוש אחרות.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {results.map((item) => {
+            const detail = [item.callNumber && `מיון: ${item.callNumber}`, item.publisher]
+              .filter(Boolean)
+              .join(' · ');
+            return (
+              <BookCard
+                key={item.id || item.link}
+                viewMode="list"
+                title={item.title}
+                author={item.author}
+                year={item.year}
+                why={detail}
+                tags={[item.availability, item.type].filter(Boolean)}
+                coverUrl={item.coverUrl}
+                link={item.link}
+                linkLabel="לקטלוג"
+              />
+            );
+          })}
+
+          {total > results.length && (
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                disabled={offset === 0}
+                onClick={() => setOffset((current) => Math.max(0, current - 10))}
+                className={cn(
+                  'px-3 py-1.5 text-sm font-bold font-headline',
+                  'bg-off-white border-2 border-off-black shadow-brutalist-xs',
+                  'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                  'disabled:opacity-40 disabled:pointer-events-none',
+                  'transition-all duration-200'
+                )}
+              >
+                הקודם
+              </button>
+              <p className="text-sm font-jersey text-dark-gray">{`${pageStart}-${pageEnd} מתוך ${total}`}</p>
+              <button
+                type="button"
+                disabled={pageEnd >= total}
+                onClick={() => setOffset((current) => current + 10)}
+                className={cn(
+                  'px-3 py-1.5 text-sm font-bold font-headline',
+                  'bg-off-white border-2 border-off-black shadow-brutalist-xs',
+                  'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                  'disabled:opacity-40 disabled:pointer-events-none',
+                  'transition-all duration-200'
+                )}
+              >
+                הבא
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const LibrarySection = ({ pendingNavigation }) => {
   const { data, loading, error, refetch } = useData('/api/books');
+  const [mode, setMode] = useState('picks');
+  const navigationTarget = pendingNavigation?.targetId || '';
+  const [modeLock, setModeLock] = useState(navigationTarget);
+  if (navigationTarget && navigationTarget !== modeLock) {
+    setModeLock(navigationTarget);
+    setMode('picks');
+  }
   const [viewMode, setViewMode] = useState('gallery');
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -303,41 +532,39 @@ const LibrarySection = ({ pendingNavigation }) => {
       .map((entry) => entry.book);
   }, [books, searchQuery, selectedTags, yearBounds, yearRange]);
 
-  if (loading) {
-    return <TetrisLoader className="min-h-[380px]" />;
-  }
-
-  if (error) {
-    return (
-      <div
-        dir="rtl"
-        className={cn(
-          'p-6 md:p-8',
-          'bg-off-white border-3 border-off-black shadow-brutalist',
-          'text-right'
-        )}
-      >
-        <h3 className="text-xl font-bold font-headline text-off-black mb-2">לא הצלחנו לטעון את הספרייה</h3>
-        <p className="text-sm font-ibm text-dark-gray mb-4">{error}</p>
-        <button
-          type="button"
-          onClick={refetch}
-          className={cn(
-            'px-4 py-2',
-            'bg-tetris-yellow text-off-black font-headline font-bold',
-            'border-2 border-off-black shadow-brutalist-xs',
-            'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
-            'transition-all duration-200'
-          )}
-        >
-          נסו שוב
-        </button>
-      </div>
-    );
-  }
-
   return (
     <section dir="rtl" aria-label="הספרייה">
+      <ModeToggle mode={mode} onChange={setMode} />
+      {mode === 'catalog' ? (
+        <CatalogSearch />
+      ) : loading ? (
+        <TetrisLoader className="min-h-[380px]" />
+      ) : error ? (
+        <div
+          className={cn(
+            'p-6 md:p-8',
+            'bg-off-white border-3 border-off-black shadow-brutalist',
+            'text-right'
+          )}
+        >
+          <h3 className="text-xl font-bold font-headline text-off-black mb-2">לא הצלחנו לטעון את הספרייה</h3>
+          <p className="text-sm font-ibm text-dark-gray mb-4">{error}</p>
+          <button
+            type="button"
+            onClick={refetch}
+            className={cn(
+              'px-4 py-2',
+              'bg-tetris-yellow text-off-black font-headline font-bold',
+              'border-2 border-off-black shadow-brutalist-xs',
+              'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+              'transition-all duration-200'
+            )}
+          >
+            נסו שוב
+          </button>
+        </div>
+      ) : (
+    <>
       <div
         className={cn(
           'p-4 md:p-5 mb-6',
@@ -490,6 +717,8 @@ const LibrarySection = ({ pendingNavigation }) => {
             </div>
           ))}
         </div>
+      )}
+      </>
       )}
     </section>
   );
