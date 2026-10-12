@@ -103,9 +103,10 @@ const BookCard = ({
                 )}
               </div>
               {link && (
-                <div className="flex items-center gap-2 shrink-0">
+                <div dir="ltr" className="flex flex-col items-start gap-2 shrink-0">
                   <a
                     href={link}
+                    dir="rtl"
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={linkLabel ? `${linkLabel}: ${title}` : `קישור לספר ${title}`}
@@ -131,7 +132,7 @@ const BookCard = ({
             )}
 
             {(tags.length > 0 || availabilityBadge) && (
-              <div className="flex flex-wrap gap-2 justify-end mt-3">
+              <div dir="ltr" className="flex flex-wrap gap-2 justify-start mt-3">
                 {availabilityBadge}
                 {tags.slice(0, 6).map((tag) => (
                   (() => {
