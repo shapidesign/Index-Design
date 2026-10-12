@@ -75,6 +75,7 @@ const WhatsNewModal = ({ open, onClose }) => {
           <li>הוספנו 8 כלים חדשים: 2 בטיפוגרפיה, 2 ב-UX, ועוד כלים לצילום, לצבע, לעיבוד תמונה ולקיצורי מקלדת.</li>
           <li>הוספנו ממשק לספרייה של HIT בצורה נוחה למשתמש.</li>
           <li>נוספו פונטים חדשים למילון, בהם עזר דיאלוג, אקסיומה, רקיע, שפגאט ומשפחת ריזינגר.</li>
+          <li>נוספו פונטים מבית <bdi dir="ltr">Nomad</bdi>: קלדנית, ספרא, מידל איסט, יפה נפש ודולומיט.</li>
         </ul>
 
         <div className="mt-8 pt-4 border-t-2 border-off-black/10 flex flex-col sm:flex-row items-center justify-between gap-4">
