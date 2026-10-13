@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
-import TetrisShape from '@/components/tetris/TetrisShape';
 import {
   APPS,
   BADGES,
@@ -13,6 +12,7 @@ import {
   earnedBadges,
   emptyProgress,
   keyFace,
+  keyFromCode,
   masteryByApp,
   quizChoices,
   recordQuiz,
@@ -46,7 +46,7 @@ const pickItem = (items, avoidId) => {
 };
 
 /**
- * KeyboardSection - המקלדת
+ * KeyboardSection - מקלדת
  * Shortcut browser, practice, and timed quiz for design software.
  */
 const KeyboardSection = ({ pendingNavigation }) => {
@@ -57,6 +57,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
   const [selectedId, setSelectedId] = useState(SHORTCUTS[0].id);
   const [hoverId, setHoverId] = useState(null);
   const [pressedKey, setPressedKey] = useState(null);
+  const [liveKeys, setLiveKeys] = useState(() => new Set());
   const [progress, setProgress] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -78,6 +79,33 @@ const KeyboardSection = ({ pendingNavigation }) => {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   }, [progress]);
+
+  useEffect(() => {
+    const hold = (event, down) => {
+      if (down && event.repeat) return;
+      const id = keyFromCode(event.code, platform);
+      if (!id) return;
+      setLiveKeys((prev) => {
+        const has = prev.has(id);
+        if (down ? has : !has) return prev;
+        const next = new Set(prev);
+        if (down) next.add(id);
+        else next.delete(id);
+        return next;
+      });
+    };
+    const onDown = (event) => hold(event, true);
+    const onUp = (event) => hold(event, false);
+    const clear = () => setLiveKeys(new Set());
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    window.addEventListener('blur', clear);
+    return () => {
+      window.removeEventListener('keydown', onDown);
+      window.removeEventListener('keyup', onUp);
+      window.removeEventListener('blur', clear);
+    };
+  }, [platform]);
 
   const linkedId = (pendingNavigation?.targetId || '').replace(/^search-item-keyboard-/, '');
   const linked = linkedId === pendingNavigation?.targetId ? null : SHORTCUTS.find((entry) => entry.id === linkedId);
@@ -135,6 +163,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
 
   const changePlatform = (next) => {
     setPlatform(next);
+    setLiveKeys(new Set());
     if (practiceId && !practiceFeedback) {
       const item = SHORTCUTS.find((entry) => entry.id === practiceId);
       if (item) setPracticeOptions(quizChoices(item, next, SHORTCUTS));
@@ -283,18 +312,11 @@ const KeyboardSection = ({ pendingNavigation }) => {
   const mastery = masteryByApp(progress);
 
   return (
-    <section dir="rtl" aria-labelledby="keyboard-title">
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
-        <div className="text-right">
-          <div className="flex items-center justify-end gap-3 mb-2">
-            <h2 id="keyboard-title" className="text-3xl md:text-5xl font-bold font-headline text-off-black">
-              המקלדת
-            </h2>
-            <TetrisShape type="J" color="cyan" size={12} />
-          </div>
-          <p className="font-ibm text-dark-gray max-w-2xl">
-            קיצורי המקלדת השימושיים ביותר לתוכנות עיצוב. על כל מקש מופיעה האות שבאותו מקום במקלדת עברית.
-          </p>
+    <section dir="rtl" className="animate-tetris-stack" aria-labelledby="keyboard-title">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h2 id="keyboard-title" className="text-3xl font-bold text-off-black font-headline">מקלדת</h2>
+          <span className="font-headline text-sm text-dark-gray">{SHORTCUTS.length} קיצורים</span>
         </div>
         <div role="group" aria-label="מערכת הפעלה" className="flex gap-2">
           {[
@@ -342,7 +364,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
         </div>
       )}
 
-      <div role="tablist" aria-label="מצב המקלדת" className="flex gap-2 overflow-x-auto mb-4">
+      <div role="tablist" aria-label="מצב מקלדת" className="flex gap-2 overflow-x-auto mb-4">
         {MODES.map((item) => (
           <button
             key={item.id}
@@ -433,6 +455,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
               platform={platform}
               highlighted={highlighted}
               pressedKey={mode === 'browse' ? pressedKey : null}
+              liveKeys={liveKeys}
               onKey={pressKey}
             />
             {highlightedItem && (
@@ -470,6 +493,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
             platform={platform}
             highlighted={highlighted}
             pressedKey={mode === 'browse' ? pressedKey : null}
+            liveKeys={liveKeys}
             onKey={pressKey}
           />
         </div>
@@ -601,7 +625,7 @@ const PickerChip = ({ active, onClick, label, english = false, activeClass = 'bg
   </button>
 );
 
-const KeyboardBoard = ({ platform, highlighted, pressedKey, onKey }) => (
+const KeyboardBoard = ({ platform, highlighted, pressedKey, liveKeys, onKey }) => (
   <>
     <p className="lg:hidden p-4 bg-light-gray border-3 border-off-black shadow-brutalist font-headline font-bold text-off-black text-right">
       זמין רק דרך המחשב
@@ -621,6 +645,7 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, onKey }) => (
                       platform={platform}
                       active={highlighted.has(key)}
                       pressed={pressedKey === key}
+                      live={liveKeys?.has(key)}
                       onClick={onKey}
                     />
                   )
@@ -630,7 +655,7 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, onKey }) => (
         </div>
         <div className="grid grid-cols-3 gap-1 w-[8.75rem] shrink-0 mb-1">
           <span />
-          <Keycap id="up" platform={platform} active={highlighted.has('up')} pressed={pressedKey === 'up'} onClick={onKey} fixed />
+          <Keycap id="up" platform={platform} active={highlighted.has('up')} pressed={pressedKey === 'up'} live={liveKeys?.has('up')} onClick={onKey} fixed />
           <span />
           {['left', 'down', 'right'].map((key) => (
             <Keycap
@@ -639,6 +664,7 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, onKey }) => (
               platform={platform}
               active={highlighted.has(key)}
               pressed={pressedKey === key}
+              live={liveKeys?.has(key)}
               onClick={onKey}
               fixed
             />
@@ -649,7 +675,7 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, onKey }) => (
   </>
 );
 
-const Keycap = ({ id, platform, active, pressed = false, fixed = false, onClick }) => {
+const Keycap = ({ id, platform, active, pressed = false, live = false, fixed = false, onClick }) => {
   const face = keyFace(id, platform);
   const showHe = face.he && face.he !== face.en;
   const lit = active || pressed;
@@ -658,16 +684,18 @@ const Keycap = ({ id, platform, active, pressed = false, fixed = false, onClick 
       type="button"
       title={showHe ? `${face.en} · ${face.he}` : face.en}
       aria-label={showHe ? `${face.en} ${face.he}` : face.en}
-      aria-pressed={pressed}
+      aria-pressed={pressed || live}
       onClick={() => onClick?.(id)}
       className={cn(
         'min-h-11 px-1 py-1 flex flex-col items-center justify-center text-center',
         'border-2 border-off-black cursor-pointer',
         'transition-all duration-150',
         fixed ? 'w-11' : 'min-w-11',
-        lit
-          ? 'bg-tetris-yellow shadow-none translate-x-[2px] translate-y-[2px]'
-          : 'bg-off-white shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:bg-tetris-yellow active:shadow-none active:translate-x-[2px] active:translate-y-[2px]'
+        live
+          ? 'bg-tetris-cyan shadow-none translate-x-[2px] translate-y-[2px]'
+          : lit
+            ? 'bg-tetris-yellow shadow-none translate-x-[2px] translate-y-[2px]'
+            : 'bg-off-white shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:bg-tetris-cyan active:shadow-none active:translate-x-[2px] active:translate-y-[2px]'
       )}
       style={fixed ? undefined : { flexGrow: KEY_WIDTH[id] || 1, flexBasis: 0 }}
     >
