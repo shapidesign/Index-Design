@@ -62,7 +62,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
         </button>
 
         {/* Desktop navigation centered */}
-        <div className="hidden md:flex items-center justify-center gap-2 min-w-0 overflow-x-auto">
+        <div className="hidden md:flex items-center justify-center gap-2 min-w-0 overflow-x-auto overflow-y-hidden pb-1">
           <nav className="flex items-center justify-center gap-2">
             {navSections.map((section) => (
               <button

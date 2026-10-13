@@ -461,7 +461,15 @@ const KeyboardSection = ({ pendingNavigation }) => {
                         key={item.id}
                         id={`search-item-keyboard-${item.id}`}
                         type="button"
-                        onClick={() => setSelectedId(item.id)}
+                        aria-pressed={selectedId === item.id}
+                        onClick={() => {
+                          if (selectedId === item.id) {
+                            setSelectedId(null);
+                            setHoverId(null);
+                            return;
+                          }
+                          setSelectedId(item.id);
+                        }}
                         onMouseEnter={() => setHoverId(item.id)}
                         onMouseLeave={() => setHoverId(null)}
                         onFocus={() => setHoverId(item.id)}

@@ -61,7 +61,7 @@ export const KEYS = {
   ),
   esc: { en: 'Esc', he: 'יציאה' },
   tab: { en: 'Tab', he: 'טאב' },
-  caps: { en: 'Caps', he: 'גדולות' },
+  caps: { en: 'Caps', he: 'Caps' },
   shift: { en: 'Shift', he: 'שיפט' },
   ctrl: { en: 'Ctrl', mac: '⌃', he: 'Control' },
   opt: { en: '⌥', he: 'Option' },
