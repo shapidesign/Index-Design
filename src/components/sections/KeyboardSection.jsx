@@ -435,7 +435,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
       {mode === 'browse' && (
         <div className="flex flex-col gap-4">
           <AppPicker appId={appId} onChange={setAppId} />
-          <div className="grid lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] gap-4">
+          <div className="grid lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] gap-4">
             <div className="min-w-0 order-2 lg:order-1">
             <label className="block mb-3">
               <span className="sr-only">חיפוש קיצור</span>
@@ -516,7 +516,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
       )}
 
       {(mode === 'practice' || (mode === 'quiz' && quiz && !quiz.finished)) && (
-        <div className="grid lg:grid-cols-2 gap-4">
+        <div className="grid items-start lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] gap-4">
           <QuestionCard
             mode={mode}
             platform={platform}
@@ -672,9 +672,9 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, heldKeys = [], onKey
     <p className="lg:hidden p-4 bg-light-gray border-3 border-off-black shadow-brutalist font-headline font-bold text-off-black text-right">
       זמין רק דרך המחשב
     </p>
-    <div className="hidden lg:block min-w-0 overflow-x-auto p-3 bg-light-gray border-3 border-off-black shadow-brutalist">
-      <div className="flex items-end gap-3 min-w-[860px]" dir="ltr">
-        <div className="flex-1">
+    <div className="hidden lg:block w-full min-w-0 p-3 bg-light-gray border-3 border-off-black shadow-brutalist">
+      <div className="flex items-end gap-2 w-full" dir="ltr">
+        <div className="flex-1 min-w-0">
           {KEYBOARD[platform].map((row, rowIndex) => (
             <div key={rowIndex} className="flex gap-1 mb-1">
               {row.map((key, index) => (
@@ -695,7 +695,7 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, heldKeys = [], onKey
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-3 gap-1 w-[8.75rem] shrink-0 mb-1">
+        <div className="grid grid-cols-3 gap-1 w-[7.5rem] shrink-0 mb-1">
           <span />
           <Keycap id="up" platform={platform} active={highlighted.has('up')} pressed={pressedKey === 'up'} live={heldKeys.includes('up')} onClick={onKey} fixed />
           <span />
@@ -719,7 +719,8 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, heldKeys = [], onKey
 
 const Keycap = ({ id, platform, active, pressed = false, live = false, fixed = false, onClick }) => {
   const face = keyFace(id, platform);
-  const showHe = face.he && face.he !== face.en;
+  const arrow = id === 'left' || id === 'right' || id === 'up' || id === 'down';
+  const showHe = !arrow && face.he && face.he !== face.en;
   const lit = active || pressed;
   return (
     <button
@@ -729,10 +730,10 @@ const Keycap = ({ id, platform, active, pressed = false, live = false, fixed = f
       aria-pressed={pressed || live}
       onClick={() => onClick?.(id)}
       className={cn(
-        'min-h-11 px-1 py-1 flex flex-col items-center justify-center text-center',
+        'min-h-11 px-0.5 py-1 flex flex-col items-center justify-center text-center overflow-hidden',
         'border-2 border-off-black cursor-pointer',
         'transition-all duration-150',
-        fixed ? 'w-11' : 'min-w-11',
+        fixed ? 'w-full min-w-0' : 'min-w-0',
         live
           ? 'bg-tetris-cyan shadow-none translate-x-[2px] translate-y-[2px]'
           : lit
@@ -775,17 +776,17 @@ const QuestionCard = ({
     );
   }
   return (
-    <div className="p-4 md:p-6 bg-off-white border-3 border-off-black shadow-brutalist text-right">
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <span className="font-jersey text-sm">{appById[item.app].name}</span>
+    <div className="p-3 bg-off-white border-3 border-off-black shadow-brutalist text-right">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className="font-jersey text-xs">{appById[item.app].name}</span>
         {mode === 'quiz' && (
           <span className="font-headline font-bold tabular-nums" aria-live="off">
             {remaining} שנ׳
           </span>
         )}
       </div>
-      <h3 className="font-headline text-2xl md:text-3xl font-bold mb-4">{item.label}</h3>
-      <div className="grid sm:grid-cols-2 gap-3">
+      <h3 className="font-headline text-lg font-bold mb-3 leading-tight">{item.label}</h3>
+      <div className="flex flex-col gap-2">
         {options.map((option) => {
           const correct = feedback && option.correct;
           const wrong = feedback && feedback.id === option.id && !option.correct;
@@ -796,14 +797,14 @@ const QuestionCard = ({
               disabled={Boolean(feedback)}
               onClick={() => onAnswer(option)}
               className={cn(
-                'min-h-11 p-3 border-2 border-off-black text-center',
+                'min-h-11 px-2 py-2 border-2 border-off-black text-center',
                 'transition-all duration-200 disabled:cursor-default',
                 correct && 'bg-tetris-green',
                 wrong && 'bg-tetris-pink',
                 !correct && !wrong && 'bg-light-gray shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
               )}
             >
-              <span dir="ltr" className="block font-jersey text-lg text-off-black">
+              <span dir="ltr" className="block font-jersey text-base leading-tight text-off-black">
                 {comboText(option.keys, platform)}
               </span>
               <span dir="ltr" className="block font-headline text-xs text-dark-gray mt-1">
