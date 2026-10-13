@@ -74,6 +74,7 @@ const WhatsNewModal = ({ open, onClose }) => {
           )}
         >
           <li>הוספנו 8 כלים חדשים: 2 בטיפוגרפיה, 2 ב-UX, ועוד כלים לצילום, לצבע, לעיבוד תמונה ולקיצורי מקלדת.</li>
+          <li>הוספנו את המקלדת: קיצורי מקלדת לתוכנות עיצוב, תרגול וחידון.</li>
           <li>הוספנו ממשק לספרייה של HIT בצורה נוחה למשתמש.</li>
           <li>נוספו פונטים חדשים למילון, בהם עזר דיאלוג, אקסיומה, רקיע, שפגאט ומשפחת ריזינגר.</li>
           <li>נוספו פונטים מבית <bdi dir="ltr" className="whitespace-nowrap">Nomad</bdi>: קלדנית, ספרא, מידל איסט, יפה נפש, דולומיט, <bdi dir="ltr" className="whitespace-nowrap">Kilo Text</bdi>, <bdi dir="ltr" className="whitespace-nowrap">Kilo Display</bdi>, <bdi dir="ltr" className="whitespace-nowrap">Dear AI</bdi>, <bdi dir="ltr" className="whitespace-nowrap">The Bizarre</bdi>, <bdi dir="ltr" className="whitespace-nowrap">Werd</bdi>, <bdi dir="ltr" className="whitespace-nowrap">Romanisch Spitz</bdi> ו־<bdi dir="ltr" className="whitespace-nowrap">Sugar</bdi>.</li>

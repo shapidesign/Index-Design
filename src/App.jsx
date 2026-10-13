@@ -151,7 +151,7 @@ const sectionFromHash = () => {
 };
 
 /** Bump this to show "What's New" again for returning users */
-const WHATS_NEW_VERSION = 'v5';
+const WHATS_NEW_VERSION = 'v6';
 
 const WHATS_NEW_STORAGE_KEY = `index-whats-new-seen-${WHATS_NEW_VERSION}`;
 
