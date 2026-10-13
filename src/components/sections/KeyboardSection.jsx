@@ -686,7 +686,8 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, heldKeys = [], onKey
                       id={key}
                       platform={platform}
                       active={highlighted.has(key)}
-                      pressed={pressedKey === key || heldKeys.includes(key)}
+                      pressed={pressedKey === key}
+                      live={heldKeys.includes(key)}
                       onClick={onKey}
                     />
                   )
@@ -696,7 +697,7 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, heldKeys = [], onKey
         </div>
         <div className="grid grid-cols-3 gap-1 w-[7.5rem] shrink-0 mb-1">
           <span />
-          <Keycap id="up" platform={platform} active={highlighted.has('up')} pressed={pressedKey === 'up' || heldKeys.includes('up')} onClick={onKey} fixed />
+          <Keycap id="up" platform={platform} active={highlighted.has('up')} pressed={pressedKey === 'up'} live={heldKeys.includes('up')} onClick={onKey} fixed />
           <span />
           {['left', 'down', 'right'].map((key) => (
             <Keycap
@@ -704,7 +705,8 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, heldKeys = [], onKey
               id={key}
               platform={platform}
               active={highlighted.has(key)}
-              pressed={pressedKey === key || heldKeys.includes(key)}
+              pressed={pressedKey === key}
+              live={heldKeys.includes(key)}
               onClick={onKey}
               fixed
             />
@@ -715,7 +717,7 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, heldKeys = [], onKey
   </>
 );
 
-const Keycap = ({ id, platform, active, pressed = false, fixed = false, onClick }) => {
+const Keycap = ({ id, platform, active, pressed = false, live = false, fixed = false, onClick }) => {
   const face = keyFace(id, platform);
   const arrow = id === 'left' || id === 'right' || id === 'up' || id === 'down';
   const showHe = !arrow && face.he && face.he !== face.en;
@@ -725,16 +727,18 @@ const Keycap = ({ id, platform, active, pressed = false, fixed = false, onClick 
       type="button"
       title={showHe ? `${face.en} · ${face.he}` : face.en}
       aria-label={showHe ? `${face.en} ${face.he}` : face.en}
-      aria-pressed={pressed}
+      aria-pressed={pressed || live}
       onClick={() => onClick?.(id)}
       className={cn(
         'min-h-11 px-0.5 py-1 flex flex-col items-center justify-center text-center overflow-hidden',
         'border-2 border-off-black cursor-pointer',
         'transition-all duration-150',
         fixed ? 'w-full min-w-0' : 'min-w-0',
-        lit
-          ? 'bg-tetris-yellow shadow-none translate-x-[2px] translate-y-[2px]'
-          : 'bg-off-white shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:bg-tetris-yellow active:shadow-none active:translate-x-[2px] active:translate-y-[2px]'
+        live
+          ? 'bg-tetris-cyan shadow-none translate-x-[2px] translate-y-[2px]'
+          : lit
+            ? 'bg-tetris-yellow shadow-none translate-x-[2px] translate-y-[2px]'
+            : 'bg-off-white shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:bg-tetris-cyan active:shadow-none active:translate-x-[2px] active:translate-y-[2px]'
       )}
       style={fixed ? undefined : { flexGrow: KEY_WIDTH[id] || 1, flexBasis: 0 }}
     >
