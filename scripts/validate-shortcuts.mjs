@@ -19,6 +19,9 @@ const HEBREW = /[\u0590-\u05FF]/;
 const layoutOf = (platform) =>
   new Set([...KEYBOARD[platform].flat(), ...ARROW_KEYS].filter((key) => key !== 'gap'));
 
+assert.equal(KEYS.cmd.he, 'Command');
+assert.equal(KEYS.opt.he, 'Option');
+assert.equal(KEYS.ctrl.he, 'Control');
 assert.equal(KEYS.k.he, 'ל');
 assert.equal(KEYS.a.he, 'ש');
 assert.equal(KEYS.q.he, '/');

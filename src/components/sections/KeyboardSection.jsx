@@ -673,7 +673,12 @@ const Keycap = ({ id, platform, active, pressed = false, fixed = false, onClick 
     >
       <span className="font-jersey text-sm leading-none text-off-black">{face.en}</span>
       {showHe && (
-        <span className="font-headline text-xs leading-tight text-dark-gray mt-1">{face.he}</span>
+        <span className={cn(
+          'leading-none mt-1 text-dark-gray',
+          /[\u0590-\u05FF]/.test(face.he) ? 'font-headline text-xs leading-tight' : 'font-jersey text-[10px] whitespace-nowrap'
+        )}>
+          {face.he}
+        </span>
       )}
     </button>
   );
