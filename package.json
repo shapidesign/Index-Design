@@ -9,6 +9,7 @@
     "dev:full": "node server.dev.js & vite",
     "build": "vite build",
     "scrape:fonts": "node scripts/scrape-font-previews.mjs",
+    "check:shortcuts": "node scripts/validate-shortcuts.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
