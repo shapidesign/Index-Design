@@ -290,7 +290,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
             <h2 id="keyboard-title" className="text-3xl md:text-5xl font-bold font-headline text-off-black">
               המקלדת
             </h2>
-            <TetrisShape type="I" color="blue" size={12} />
+            <TetrisShape type="J" color="cyan" size={12} />
           </div>
           <p className="font-ibm text-dark-gray max-w-2xl">
             קיצורי המקלדת השימושיים ביותר לתוכנות עיצוב. על כל מקש מופיעה האות שבאותו מקום במקלדת עברית.

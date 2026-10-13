@@ -73,10 +73,9 @@ const categories = [
   { id: 'museum', title: 'המוזיאון', desc: 'מעצבים ויצירות שחובה להכיר', color: 'orange', shape: 'L' },
   { id: 'library', title: 'הספרייה', desc: 'ספרים וחומרי לימוד מומלצים', color: 'blue', shape: 'I' },
   { id: 'dictionary', title: 'מילון', desc: 'אינדקס פונטים עבריים מסונן', color: 'yellow', shape: 'Z' },
-  { id: 'keyboard', title: 'המקלדת', desc: 'קיצורי מקלדת, תרגול וחידון', color: 'blue', shape: 'J' },
+  { id: 'keyboard', title: 'המקלדת', desc: 'קיצורי מקלדת, תרגול וחידון', color: 'cyan', shape: 'J' },
   { id: 'map', title: 'המפה', desc: 'מיקומים שימושיים לסטודנטים', color: 'green', shape: 'O' },
   { id: 'tips', title: 'טיפים', desc: 'טיפים וביקורות מסטודנטים', color: 'pink', shape: 'S' },
-  { id: 'lucky', title: 'הפתעה', desc: 'דף הפתעה עם כרטיס אקראי במיוחד בשבילך', color: 'cyan', shape: 'J', isLucky: true },
 ];
 
 /** Sections that can be selected by the fortune cookie */
@@ -941,7 +940,7 @@ const App = () => {
               <article
                 key={card.id}
                 id={`card-${card.id}`}
-                onClick={() => card.isLucky ? handleFeelingLucky() : setActiveSection(card.id)}
+                onClick={() => setActiveSection(card.id)}
                 className={cn(
                   "relative p-4 md:p-6",
                   "bg-off-white",
@@ -950,8 +949,7 @@ const App = () => {
                   "hover:shadow-brutalist-sm hover:translate-x-[3px] hover:translate-y-[3px]",
                   "transition-all duration-200",
                   "group cursor-pointer",
-                  luckyHighlight === card.id && "animate-line-clear",
-                  card.isLucky && "bg-tetris-cyan/10"
+                  luckyHighlight === card.id && "animate-line-clear"
                 )}
               >
                 {/* "N new resources" badge */}
