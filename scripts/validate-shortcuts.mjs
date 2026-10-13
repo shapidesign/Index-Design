@@ -32,13 +32,14 @@ assert.equal(APPS.length, 8);
 APPS.forEach((app) => {
   assert(HEBREW.test(app.he), `${app.id} needs a Hebrew name`);
   const items = SHORTCUTS.filter((item) => item.app === app.id);
-  assert(items.length >= 8, `${app.id} needs a useful shortcut set`);
+  const minimum = app.id === 'powerpoint' || app.id === 'word' ? 8 : 40;
+  assert(items.length >= minimum, `${app.id} needs a useful shortcut set`);
 });
 
 ['mac', 'win'].forEach((platform) => {
   const layout = layoutOf(platform);
   SHORTCUTS.forEach((item) => {
-    assert(item.label.trim(), `${item.id} needs an action name`);
+    assert(/[\u0590-\u05FF]/.test(item.label), `${item.id} needs a Hebrew action`);
     assert(item.category && item.mac.length > 0 && item.win.length > 0, item.id);
     item[platform].forEach((key) => {
       assert(KEYS[key], `${item.id} uses unknown key ${key}`);
@@ -48,11 +49,17 @@ APPS.forEach((app) => {
   const seen = new Map();
   SHORTCUTS.forEach((item) => {
     const combo = item[platform].join('+');
-    const bucket = `${item.app}:${combo}`;
-    assert(!seen.has(bucket), `duplicate ${platform} combo ${bucket}`);
+    const bucket = `${item.app}:${combo}:${item.label}`;
+    assert(!seen.has(bucket), `duplicate ${platform} shortcut ${bucket}`);
     seen.set(bucket, item.id);
   });
 });
+
+const move = SHORTCUTS.find((item) => item.app === 'photoshop' && item.mac.join('+') === 'v');
+assert(move, 'photoshop V from shrtcts');
+const mask = SHORTCUTS.find((item) => item.app === 'figma' && item.label === 'שימוש כמסכה');
+assert.equal(mask.mac.join('+'), 'ctrl+cmd+m');
+assert.equal(mask.win.join('+'), 'ctrl+alt+m');
 
 assert(
   SHORTCUTS.some((item) => item.mac.join('+') !== item.win.join('+')),
