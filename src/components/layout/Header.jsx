@@ -19,6 +19,7 @@ const navSections = [
   { id: 'museum', label: 'מוזיאון' },
   { id: 'library', label: 'ספרייה' },
   { id: 'dictionary', label: 'מילון' },
+  { id: 'keyboard', label: 'המקלדת' },
   { id: 'map', label: 'מפה' },
   { id: 'tips', label: 'טיפים' },
   { id: 'lucky', label: 'הפתעה' },
@@ -61,15 +62,15 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
         </button>
 
         {/* Desktop navigation centered */}
-        <div className="hidden md:flex items-center justify-center gap-4">
-          <nav className="flex items-center justify-center gap-4">
+        <div className="hidden md:flex items-center justify-center gap-2 min-w-0 overflow-x-auto">
+          <nav className="flex items-center justify-center gap-2">
             {navSections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => onSectionChange?.(section.id)}
                 className={cn(
-                  'px-4 py-2',
-                  'text-sm font-headline whitespace-nowrap',
+                  'px-3 lg:px-4 py-2',
+                  'text-xs lg:text-sm font-headline whitespace-nowrap',
                   'border border-dark-gray',
                   'transition-all duration-200',
                   section.id === 'lucky'
