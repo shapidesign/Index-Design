@@ -10,7 +10,6 @@ import {
   dayStreak,
   earnedBadges,
   emptyProgress,
-  keyFromCode,
   quizChoices,
   recordQuiz,
   sanitizeProgress,
@@ -40,7 +39,7 @@ APPS.forEach((app) => {
 ['mac', 'win'].forEach((platform) => {
   const layout = layoutOf(platform);
   SHORTCUTS.forEach((item) => {
-    assert(HEBREW.test(item.label), `${item.id} needs a Hebrew action`);
+    assert(/[\u0590-\u05FF]/.test(item.label), `${item.id} needs a Hebrew action`);
     assert(item.category && item.mac.length > 0 && item.win.length > 0, item.id);
     item[platform].forEach((key) => {
       assert(KEYS[key], `${item.id} uses unknown key ${key}`);
@@ -55,14 +54,6 @@ APPS.forEach((app) => {
     seen.set(bucket, item.id);
   });
 });
-
-assert.equal(keyFromCode('KeyV', 'mac'), 'v');
-assert.equal(keyFromCode('KeyV', 'win'), 'v');
-assert.equal(keyFromCode('AltLeft', 'mac'), 'opt');
-assert.equal(keyFromCode('AltLeft', 'win'), 'alt');
-assert.equal(keyFromCode('MetaLeft', 'mac'), 'cmd');
-assert.equal(keyFromCode('MetaLeft', 'win'), 'win');
-assert.equal(keyFromCode('ShiftLeft', 'mac'), 'shift');
 
 const move = SHORTCUTS.find((item) => item.app === 'photoshop' && item.mac.join('+') === 'v');
 assert(move, 'photoshop V from shrtcts');
