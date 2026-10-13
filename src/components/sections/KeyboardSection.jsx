@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
-import TetrisShape from '@/components/tetris/TetrisShape';
 import {
   APPS,
   BADGES,
@@ -46,7 +45,7 @@ const pickItem = (items, avoidId) => {
 };
 
 /**
- * KeyboardSection - המקלדת
+ * KeyboardSection - מקלדת
  * Shortcut browser, practice, and timed quiz for design software.
  */
 const KeyboardSection = ({ pendingNavigation }) => {
@@ -57,6 +56,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
   const [selectedId, setSelectedId] = useState(SHORTCUTS[0].id);
   const [hoverId, setHoverId] = useState(null);
   const [pressedKey, setPressedKey] = useState(null);
+  const [heldKeys, setHeldKeys] = useState([]);
   const [progress, setProgress] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -249,6 +249,73 @@ const KeyboardSection = ({ pendingNavigation }) => {
     setFreshBadges([]);
   };
 
+  useEffect(() => {
+    const typing = (event) => {
+      const target = event.target;
+      if (!target || typeof target.closest !== 'function') return false;
+      return Boolean(target.closest('input, textarea, [contenteditable="true"]'));
+    };
+    const idFromEvent = (event) => {
+      const code = event.code || '';
+      if (/^Key[A-Z]$/.test(code)) return code.slice(3).toLowerCase();
+      if (/^Digit[0-9]$/.test(code)) return code.slice(5);
+      if (/^F([1-9]|1[0-2])$/.test(code)) return code.toLowerCase();
+      const named = {
+        Space: 'space',
+        Enter: 'enter',
+        Tab: 'tab',
+        Escape: 'esc',
+        Backspace: 'backspace',
+        ShiftLeft: 'shift',
+        ShiftRight: 'shift',
+        ControlLeft: 'ctrl',
+        ControlRight: 'ctrl',
+        AltLeft: platform === 'mac' ? 'opt' : 'alt',
+        AltRight: platform === 'mac' ? 'opt' : 'alt',
+        MetaLeft: platform === 'mac' ? 'cmd' : 'win',
+        MetaRight: platform === 'mac' ? 'cmd' : 'win',
+        Minus: 'minus',
+        Equal: 'equal',
+        BracketLeft: 'bracketleft',
+        BracketRight: 'bracketright',
+        Backslash: 'backslash',
+        Semicolon: 'semicolon',
+        Quote: 'quote',
+        Comma: 'comma',
+        Period: 'period',
+        Slash: 'slash',
+        Backquote: 'backtick',
+        ArrowLeft: 'left',
+        ArrowDown: 'down',
+        ArrowUp: 'up',
+        ArrowRight: 'right',
+        CapsLock: 'caps',
+      };
+      return named[code] || null;
+    };
+    const down = (event) => {
+      if (typing(event) || event.repeat) return;
+      const id = idFromEvent(event);
+      if (!id) return;
+      if (event.code === 'Space') event.preventDefault();
+      setHeldKeys((keys) => (keys.includes(id) ? keys : [...keys, id]));
+    };
+    const up = (event) => {
+      const id = idFromEvent(event);
+      if (!id) return;
+      setHeldKeys((keys) => keys.filter((key) => key !== id));
+    };
+    const clear = () => setHeldKeys([]);
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    window.addEventListener('blur', clear);
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', clear);
+    };
+  }, [platform]);
+
   const pressKey = (id) => {
     if (mode !== 'browse') return;
     const next = pressedKey === id ? null : id;
@@ -283,18 +350,15 @@ const KeyboardSection = ({ pendingNavigation }) => {
   const mastery = masteryByApp(progress);
 
   return (
-    <section dir="rtl" aria-labelledby="keyboard-title">
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
-        <div className="text-right">
-          <div className="flex items-center justify-end gap-3 mb-2">
-            <h2 id="keyboard-title" className="text-3xl md:text-5xl font-bold font-headline text-off-black">
-              המקלדת
-            </h2>
-            <TetrisShape type="J" color="cyan" size={12} />
-          </div>
-          <p className="font-ibm text-dark-gray max-w-2xl">
-            קיצורי המקלדת השימושיים ביותר לתוכנות עיצוב. על כל מקש מופיעה האות שבאותו מקום במקלדת עברית.
-          </p>
+    <section dir="rtl" aria-labelledby="keyboard-title" className="animate-tetris-stack">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h2 id="keyboard-title" className="text-3xl font-bold text-off-black font-headline">
+            מקלדת
+          </h2>
+          <span className="font-headline text-sm text-dark-gray">
+            {filtered.length} קיצורים
+          </span>
         </div>
         <div role="group" aria-label="מערכת הפעלה" className="flex gap-2">
           {[
@@ -342,7 +406,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
         </div>
       )}
 
-      <div role="tablist" aria-label="מצב המקלדת" className="flex gap-2 overflow-x-auto mb-4">
+      <div role="tablist" aria-label="מצב מקלדת" className="flex gap-2 overflow-x-auto mb-4">
         {MODES.map((item) => (
           <button
             key={item.id}
@@ -432,7 +496,8 @@ const KeyboardSection = ({ pendingNavigation }) => {
             <KeyboardBoard
               platform={platform}
               highlighted={highlighted}
-              pressedKey={mode === 'browse' ? pressedKey : null}
+              pressedKey={pressedKey}
+              heldKeys={heldKeys}
               onKey={pressKey}
             />
             {highlightedItem && (
@@ -470,6 +535,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
             platform={platform}
             highlighted={highlighted}
             pressedKey={mode === 'browse' ? pressedKey : null}
+            heldKeys={heldKeys}
             onKey={pressKey}
           />
         </div>
@@ -601,7 +667,7 @@ const PickerChip = ({ active, onClick, label, english = false, activeClass = 'bg
   </button>
 );
 
-const KeyboardBoard = ({ platform, highlighted, pressedKey, onKey }) => (
+const KeyboardBoard = ({ platform, highlighted, pressedKey, heldKeys = [], onKey }) => (
   <>
     <p className="lg:hidden p-4 bg-light-gray border-3 border-off-black shadow-brutalist font-headline font-bold text-off-black text-right">
       זמין רק דרך המחשב
@@ -620,7 +686,7 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, onKey }) => (
                       id={key}
                       platform={platform}
                       active={highlighted.has(key)}
-                      pressed={pressedKey === key}
+                      pressed={pressedKey === key || heldKeys.includes(key)}
                       onClick={onKey}
                     />
                   )
@@ -630,7 +696,7 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, onKey }) => (
         </div>
         <div className="grid grid-cols-3 gap-1 w-[8.75rem] shrink-0 mb-1">
           <span />
-          <Keycap id="up" platform={platform} active={highlighted.has('up')} pressed={pressedKey === 'up'} onClick={onKey} fixed />
+          <Keycap id="up" platform={platform} active={highlighted.has('up')} pressed={pressedKey === 'up' || heldKeys.includes('up')} onClick={onKey} fixed />
           <span />
           {['left', 'down', 'right'].map((key) => (
             <Keycap
@@ -638,7 +704,7 @@ const KeyboardBoard = ({ platform, highlighted, pressedKey, onKey }) => (
               id={key}
               platform={platform}
               active={highlighted.has(key)}
-              pressed={pressedKey === key}
+              pressed={pressedKey === key || heldKeys.includes(key)}
               onClick={onKey}
               fixed
             />

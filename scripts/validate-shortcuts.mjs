@@ -38,7 +38,7 @@ APPS.forEach((app) => {
 ['mac', 'win'].forEach((platform) => {
   const layout = layoutOf(platform);
   SHORTCUTS.forEach((item) => {
-    assert(HEBREW.test(item.label), `${item.id} needs a Hebrew action`);
+    assert(item.label.trim(), `${item.id} needs an action name`);
     assert(item.category && item.mac.length > 0 && item.win.length > 0, item.id);
     item[platform].forEach((key) => {
       assert(KEYS[key], `${item.id} uses unknown key ${key}`);

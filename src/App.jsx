@@ -61,7 +61,7 @@ const navSections = [
   { id: 'museum', label: 'המוזיאון' },
   { id: 'library', label: 'הספרייה' },
   { id: 'dictionary', label: 'מילון' },
-  { id: 'keyboard', label: 'המקלדת' },
+  { id: 'keyboard', label: 'מקלדת' },
   { id: 'map', label: 'המפה' },
   { id: 'tips', label: 'טיפים' },
   { id: 'lucky', label: 'הפתעה' },
@@ -73,7 +73,7 @@ const categories = [
   { id: 'museum', title: 'המוזיאון', desc: 'מעצבים ויצירות שחובה להכיר', color: 'orange', shape: 'L' },
   { id: 'library', title: 'הספרייה', desc: 'ספרים וחומרי לימוד מומלצים', color: 'blue', shape: 'I' },
   { id: 'dictionary', title: 'מילון', desc: 'אינדקס פונטים עבריים מסונן', color: 'yellow', shape: 'Z' },
-  { id: 'keyboard', title: 'המקלדת', desc: 'קיצורי מקלדת, תרגול וחידון', color: 'cyan', shape: 'J' },
+  { id: 'keyboard', title: 'מקלדת', desc: 'קיצורי מקלדת, תרגול וחידון', color: 'cyan', shape: 'J' },
   { id: 'map', title: 'המפה', desc: 'מיקומים שימושיים לסטודנטים', color: 'green', shape: 'O' },
   { id: 'tips', title: 'טיפים', desc: 'טיפים וביקורות מסטודנטים', color: 'pink', shape: 'S' },
 ];
@@ -507,7 +507,7 @@ const App = () => {
           return {
             id: item.id,
             sectionId: 'keyboard',
-            sectionLabel: 'המקלדת',
+            sectionLabel: 'מקלדת',
             titleHe: item.label,
             titleEn: app?.name || '',
             description: [app?.he, item.category].filter(Boolean).join(' · '),
