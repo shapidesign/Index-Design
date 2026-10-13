@@ -19,6 +19,12 @@ const HEBREW = /[\u0590-\u05FF]/;
 const layoutOf = (platform) =>
   new Set([...KEYBOARD[platform].flat(), ...ARROW_KEYS].filter((key) => key !== 'gap'));
 
+assert.equal(KEYS.k.he, 'ל');
+assert.equal(KEYS.a.he, 'ש');
+assert.equal(KEYS.q.he, '/');
+assert.equal(KEYS.comma.he, 'ת');
+assert.equal(KEYS.period.he, 'ץ');
+assert.notEqual(KEYS.k.he, 'קיי');
 assert.equal(APPS.length, 8);
 APPS.forEach((app) => {
   assert(HEBREW.test(app.he), `${app.id} needs a Hebrew name`);

@@ -56,6 +56,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
   const [mode, setMode] = useState('browse');
   const [selectedId, setSelectedId] = useState(SHORTCUTS[0].id);
   const [hoverId, setHoverId] = useState(null);
+  const [pressedKey, setPressedKey] = useState(null);
   const [progress, setProgress] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -102,9 +103,13 @@ const KeyboardSection = ({ pendingNavigation }) => {
     });
   }, [appId, platform, query]);
 
+  const browseItems = useMemo(() => (
+    pressedKey ? filtered.filter((item) => item[platform].includes(pressedKey)) : filtered
+  ), [filtered, platform, pressedKey]);
+
   const groups = useMemo(() => {
     const next = [];
-    filtered.forEach((item) => {
+    browseItems.forEach((item) => {
       const last = next[next.length - 1];
       if (!last || last.category !== item.category || last.app !== item.app) {
         next.push({ key: `${item.app}-${item.category}-${next.length}`, app: item.app, category: item.category, items: [item] });
@@ -113,7 +118,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
       }
     });
     return next;
-  }, [filtered]);
+  }, [browseItems]);
 
   const noteBadges = (before, after) => {
     const known = new Set(earnedBadges(before).map((badge) => badge.id));
@@ -244,6 +249,17 @@ const KeyboardSection = ({ pendingNavigation }) => {
     setFreshBadges([]);
   };
 
+  const pressKey = (id) => {
+    if (mode !== 'browse') return;
+    const next = pressedKey === id ? null : id;
+    setPressedKey(next);
+    if (!next) return;
+    const match = SHORTCUTS.find((item) => (
+      (appId === 'all' || item.app === appId) && item[platform].includes(next)
+    ));
+    if (match) setSelectedId(match.id);
+  };
+
   const highlightedId = mode === 'browse'
     ? hoverId || selectedId
     : mode === 'practice' && practiceFeedback
@@ -277,7 +293,7 @@ const KeyboardSection = ({ pendingNavigation }) => {
             <TetrisShape type="I" color="blue" size={12} />
           </div>
           <p className="font-ibm text-dark-gray max-w-2xl">
-            קיצורי המקלדת השימושיים ביותר לתוכנות עיצוב. המקשים באנגלית, והמשמעות שלהם בעברית.
+            קיצורי המקלדת השימושיים ביותר לתוכנות עיצוב. על כל מקש מופיעה האות שבאותו מקום במקלדת עברית.
           </p>
         </div>
         <div role="group" aria-label="מערכת הפעלה" className="flex gap-2">
@@ -413,7 +429,12 @@ const KeyboardSection = ({ pendingNavigation }) => {
             </div>
           </div>
           <div className="min-w-0 order-1 lg:order-2">
-            <KeyboardBoard platform={platform} highlighted={highlighted} />
+            <KeyboardBoard
+              platform={platform}
+              highlighted={highlighted}
+              pressedKey={mode === 'browse' ? pressedKey : null}
+              onKey={pressKey}
+            />
             {highlightedItem && (
               <article className="mt-4 p-4 bg-off-white border-3 border-off-black shadow-brutalist text-right">
                 <p className="font-jersey text-sm text-dark-gray">{appById[highlightedItem.app].name}</p>
@@ -445,7 +466,12 @@ const KeyboardSection = ({ pendingNavigation }) => {
             } : continueQuiz}
             onStart={mode === 'practice' ? () => dealPractice(practiceId) : startQuiz}
           />
-          <KeyboardBoard platform={platform} highlighted={highlighted} />
+          <KeyboardBoard
+            platform={platform}
+            highlighted={highlighted}
+            pressedKey={mode === 'browse' ? pressedKey : null}
+            onKey={pressKey}
+          />
         </div>
       )}
 
@@ -575,55 +601,81 @@ const PickerChip = ({ active, onClick, label, english = false, activeClass = 'bg
   </button>
 );
 
-const KeyboardBoard = ({ platform, highlighted }) => (
-  <div className="min-w-0 overflow-x-auto p-3 bg-light-gray border-3 border-off-black shadow-brutalist">
-    <div className="min-w-[760px]" dir="ltr" aria-hidden="true">
-      {KEYBOARD[platform].map((row, rowIndex) => (
-        <div key={rowIndex} className="flex gap-1 mb-1">
-          {row.map((key, index) => (
-            key === 'gap'
-              ? <span key={`gap-${index}`} className="w-3 shrink-0" />
-              : (
-                <Keycap
-                  key={`${key}-${index}`}
-                  id={key}
-                  platform={platform}
-                  active={highlighted.has(key)}
-                />
-              )
+const KeyboardBoard = ({ platform, highlighted, pressedKey, onKey }) => (
+  <>
+    <p className="lg:hidden p-4 bg-light-gray border-3 border-off-black shadow-brutalist font-headline font-bold text-off-black text-right">
+      זמין רק דרך המחשב
+    </p>
+    <div className="hidden lg:block min-w-0 overflow-x-auto p-3 bg-light-gray border-3 border-off-black shadow-brutalist">
+      <div className="flex items-end gap-3 min-w-[860px]" dir="ltr">
+        <div className="flex-1">
+          {KEYBOARD[platform].map((row, rowIndex) => (
+            <div key={rowIndex} className="flex gap-1 mb-1">
+              {row.map((key, index) => (
+                key === 'gap'
+                  ? <span key={`gap-${index}`} className="w-3 shrink-0" />
+                  : (
+                    <Keycap
+                      key={`${key}-${index}`}
+                      id={key}
+                      platform={platform}
+                      active={highlighted.has(key)}
+                      pressed={pressedKey === key}
+                      onClick={onKey}
+                    />
+                  )
+              ))}
+            </div>
           ))}
         </div>
-      ))}
-      <div className="mt-3 grid grid-cols-3 gap-1 w-[8.5rem] ms-auto">
-        <span />
-        <Keycap id="up" platform={platform} active={highlighted.has('up')} fixed />
-        <span />
-        {['left', 'down', 'right'].map((key) => (
-          <Keycap key={key} id={key} platform={platform} active={highlighted.has(key)} fixed />
-        ))}
+        <div className="grid grid-cols-3 gap-1 w-[8.75rem] shrink-0 mb-1">
+          <span />
+          <Keycap id="up" platform={platform} active={highlighted.has('up')} pressed={pressedKey === 'up'} onClick={onKey} fixed />
+          <span />
+          {['left', 'down', 'right'].map((key) => (
+            <Keycap
+              key={key}
+              id={key}
+              platform={platform}
+              active={highlighted.has(key)}
+              pressed={pressedKey === key}
+              onClick={onKey}
+              fixed
+            />
+          ))}
+        </div>
       </div>
     </div>
-  </div>
+  </>
 );
 
-const Keycap = ({ id, platform, active, fixed = false }) => {
+const Keycap = ({ id, platform, active, pressed = false, fixed = false, onClick }) => {
   const face = keyFace(id, platform);
+  const showHe = face.he && face.he !== face.en;
+  const lit = active || pressed;
   return (
-    <div
-      title={`${face.en} · ${face.he}`}
+    <button
+      type="button"
+      title={showHe ? `${face.en} · ${face.he}` : face.en}
+      aria-label={showHe ? `${face.en} ${face.he}` : face.en}
+      aria-pressed={pressed}
+      onClick={() => onClick?.(id)}
       className={cn(
         'min-h-11 px-1 py-1 flex flex-col items-center justify-center text-center',
-        'border-2 border-off-black',
+        'border-2 border-off-black cursor-pointer',
+        'transition-all duration-150',
         fixed ? 'w-11' : 'min-w-11',
-        active
+        lit
           ? 'bg-tetris-yellow shadow-none translate-x-[2px] translate-y-[2px]'
-          : 'bg-off-white shadow-brutalist-xs'
+          : 'bg-off-white shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:bg-tetris-yellow active:shadow-none active:translate-x-[2px] active:translate-y-[2px]'
       )}
       style={fixed ? undefined : { flexGrow: KEY_WIDTH[id] || 1, flexBasis: 0 }}
     >
       <span className="font-jersey text-sm leading-none text-off-black">{face.en}</span>
-      <span className="font-headline text-xs leading-tight text-dark-gray mt-1">{face.he}</span>
-    </div>
+      {showHe && (
+        <span className="font-headline text-xs leading-tight text-dark-gray mt-1">{face.he}</span>
+      )}
+    </button>
   );
 };
 

@@ -1,6 +1,7 @@
 /**
  * Most-used desktop shortcuts for המקלדת.
- * Keys stay in English; Hebrew is the key's meaning, not a translated shortcut.
+ * The English face is the US key. The Hebrew face is the character on that
+ * same key in the standard Hebrew layout (K is ל, not קיי).
  * ponytail: curated defaults for a US layout. Versions and custom keymaps differ.
  */
 
@@ -17,47 +18,45 @@ const shortcut = (id, app, category, label, mac, win = swapModifiers(mac)) => ({
 });
 
 const LETTERS = {
-  a: ['A', 'איי'],
-  b: ['B', 'בי'],
-  c: ['C', 'סי'],
-  d: ['D', 'די'],
-  e: ['E', 'אי'],
-  f: ['F', 'אף'],
-  g: ['G', 'ג׳י'],
-  h: ['H', 'אייץ׳'],
-  i: ['I', 'איי'],
-  j: ['J', 'ג׳יי'],
-  k: ['K', 'קיי'],
-  l: ['L', 'אל'],
-  m: ['M', 'אם'],
-  n: ['N', 'אן'],
-  o: ['O', 'או'],
-  p: ['P', 'פי'],
-  q: ['Q', 'קיו'],
-  r: ['R', 'אר'],
-  s: ['S', 'אס'],
-  t: ['T', 'טי'],
-  u: ['U', 'יו'],
-  v: ['V', 'וי'],
-  w: ['W', 'דאבל יו'],
-  x: ['X', 'אקס'],
-  y: ['Y', 'וואי'],
-  z: ['Z', 'זד'],
+  a: ['A', 'ש'],
+  b: ['B', 'נ'],
+  c: ['C', 'ב'],
+  d: ['D', 'ג'],
+  e: ['E', 'ק'],
+  f: ['F', 'כ'],
+  g: ['G', 'ע'],
+  h: ['H', 'י'],
+  i: ['I', 'ן'],
+  j: ['J', 'ח'],
+  k: ['K', 'ל'],
+  l: ['L', 'ך'],
+  m: ['M', 'צ'],
+  n: ['N', 'מ'],
+  o: ['O', 'ם'],
+  p: ['P', 'פ'],
+  q: ['Q', '/'],
+  r: ['R', 'ר'],
+  s: ['S', 'ד'],
+  t: ['T', 'א'],
+  u: ['U', 'ו'],
+  v: ['V', 'ה'],
+  w: ['W', "'"],
+  x: ['X', 'ס'],
+  y: ['Y', 'ט'],
+  z: ['Z', 'ז'],
 };
-
-const DIGITS = ['אפס', 'אחת', 'שתיים', 'שלוש', 'ארבע', 'חמש', 'שש', 'שבע', 'שמונה', 'תשע'];
 
 export const KEYS = {
   ...Object.fromEntries(
     Object.entries(LETTERS).map(([id, [en, he]]) => [id, { en, he }])
   ),
   ...Object.fromEntries(
-    DIGITS.map((he, index) => [String(index), { en: String(index), he }])
+    Array.from({ length: 10 }, (_, index) => [String(index), { en: String(index), he: String(index) }])
   ),
   ...Object.fromEntries(
     Array.from({ length: 12 }, (_, index) => {
       const number = index + 1;
-      return [`f${number}`, { en: `F${number}`, he: `אף ${number}` }];
+      return [`f${number}`, { en: `F${number}`, he: `F${number}` }];
     })
   ),
   esc: { en: 'Esc', he: 'יציאה' },
@@ -72,17 +71,17 @@ export const KEYS = {
   space: { en: 'Space', he: 'רווח' },
   enter: { en: 'Enter', he: 'אנטר' },
   backspace: { en: 'Delete', win: 'Backspace', he: 'מחיקה' },
-  backtick: { en: '`', he: 'גרש הפוך' },
-  minus: { en: '-', he: 'מינוס' },
-  equal: { en: '=', he: 'שווה' },
-  bracketleft: { en: '[', he: 'פותח' },
-  bracketright: { en: ']', he: 'סוגר' },
-  backslash: { en: '\\', he: 'לוכסן' },
-  semicolon: { en: ';', he: 'נקודה־פסיק' },
-  quote: { en: "'", he: 'גרש' },
-  comma: { en: ',', he: 'פסיק' },
-  period: { en: '.', he: 'נקודה' },
-  slash: { en: '/', he: 'לוכסן' },
+  backtick: { en: '`', he: ';' },
+  minus: { en: '-', he: '-' },
+  equal: { en: '=', he: '=' },
+  bracketleft: { en: '[', he: ']' },
+  bracketright: { en: ']', he: '[' },
+  backslash: { en: '\\', he: '\\' },
+  semicolon: { en: ';', he: 'ף' },
+  quote: { en: "'", he: ',' },
+  comma: { en: ',', he: 'ת' },
+  period: { en: '.', he: 'ץ' },
+  slash: { en: '/', he: '.' },
   left: { en: '←', he: 'שמאלה' },
   down: { en: '↓', he: 'למטה' },
   up: { en: '↑', he: 'למעלה' },
