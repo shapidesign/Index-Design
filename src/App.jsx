@@ -11,6 +11,7 @@ import EyeLogo from '@/components/ui/EyeLogo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
+import { APPS as KEYBOARD_APPS, SHORTCUTS } from '@/data/shortcuts';
 
 /** Lazy-loaded section components */
 const CHUNK_RELOAD_FLAG = 'chunk-reload-attempted';
@@ -48,6 +49,7 @@ const MuseumSection = lazyWithChunkRecovery(() => import('@/components/sections/
 const LibrarySection = lazyWithChunkRecovery(() => import('@/components/sections/LibrarySection'));
 const MapSection = lazyWithChunkRecovery(() => import('@/components/sections/MapSection'));
 const TipsSection = lazyWithChunkRecovery(() => import('@/components/sections/TipsSection'));
+const KeyboardSection = lazyWithChunkRecovery(() => import('@/components/sections/KeyboardSection'));
 
 /**
  * App - Main Application Component
@@ -59,6 +61,7 @@ const navSections = [
   { id: 'museum', label: 'המוזיאון' },
   { id: 'library', label: 'הספרייה' },
   { id: 'dictionary', label: 'מילון' },
+  { id: 'keyboard', label: 'המקלדת' },
   { id: 'map', label: 'המפה' },
   { id: 'tips', label: 'טיפים' },
   { id: 'lucky', label: 'הפתעה' },
@@ -70,9 +73,9 @@ const categories = [
   { id: 'museum', title: 'המוזיאון', desc: 'מעצבים ויצירות שחובה להכיר', color: 'orange', shape: 'L' },
   { id: 'library', title: 'הספרייה', desc: 'ספרים וחומרי לימוד מומלצים', color: 'blue', shape: 'I' },
   { id: 'dictionary', title: 'מילון', desc: 'אינדקס פונטים עבריים מסונן', color: 'yellow', shape: 'Z' },
+  { id: 'keyboard', title: 'המקלדת', desc: 'קיצורי מקלדת, תרגול וחידון', color: 'cyan', shape: 'J' },
   { id: 'map', title: 'המפה', desc: 'מיקומים שימושיים לסטודנטים', color: 'green', shape: 'O' },
   { id: 'tips', title: 'טיפים', desc: 'טיפים וביקורות מסטודנטים', color: 'pink', shape: 'S' },
-  { id: 'lucky', title: 'הפתעה', desc: 'דף הפתעה עם כרטיס אקראי במיוחד בשבילך', color: 'cyan', shape: 'J', isLucky: true },
 ];
 
 /** Sections that can be selected by the fortune cookie */
@@ -499,8 +502,33 @@ const App = () => {
           }))
         ];
 
+        const keyboardItems = SHORTCUTS.map((item) => {
+          const app = KEYBOARD_APPS.find((entry) => entry.id === item.app);
+          return {
+            id: item.id,
+            sectionId: 'keyboard',
+            sectionLabel: 'המקלדת',
+            titleHe: item.label,
+            titleEn: app?.name || '',
+            description: [app?.he, item.category].filter(Boolean).join(' · '),
+            link: '',
+            tags: [item.category, app?.name].filter(Boolean),
+            keywords: [
+              item.label,
+              item.category,
+              app?.name,
+              app?.he,
+              'מקלדת',
+              'קיצור',
+              'קיצורים',
+              'shortcut'
+            ].filter(Boolean),
+            targetId: makeTargetId('keyboard', item.id)
+          };
+        });
+
         if (!cancelled) {
-          setGlobalSearchItems([...resources, ...museumItems, ...libraryItems, ...fontItems, ...tipsItems, ...mapItems]);
+          setGlobalSearchItems([...resources, ...museumItems, ...libraryItems, ...fontItems, ...tipsItems, ...mapItems, ...keyboardItems]);
         }
       } catch (error) {
         console.error('Global search index error:', error);
@@ -912,7 +940,7 @@ const App = () => {
               <article
                 key={card.id}
                 id={`card-${card.id}`}
-                onClick={() => card.isLucky ? handleFeelingLucky() : setActiveSection(card.id)}
+                onClick={() => setActiveSection(card.id)}
                 className={cn(
                   "relative p-4 md:p-6",
                   "bg-off-white",
@@ -921,8 +949,7 @@ const App = () => {
                   "hover:shadow-brutalist-sm hover:translate-x-[3px] hover:translate-y-[3px]",
                   "transition-all duration-200",
                   "group cursor-pointer",
-                  luckyHighlight === card.id && "animate-line-clear",
-                  card.isLucky && "bg-tetris-cyan/10"
+                  luckyHighlight === card.id && "animate-line-clear"
                 )}
               >
                 {/* "N new resources" badge */}
@@ -1206,6 +1233,32 @@ const App = () => {
                 )}
               </article>
             </section>
+          </div>
+        )}
+
+        {/* ===== KEYBOARD SECTION ===== */}
+        {activeSection === 'keyboard' && (
+          <div className="mt-12" id="section-keyboard">
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={() => setActiveSection(null)}
+                className={cn(
+                  "px-4 py-2",
+                  "font-headline text-sm font-bold text-off-black",
+                  "bg-light-gray",
+                  "border-2 border-off-black",
+                  "shadow-brutalist-xs",
+                  "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                  "transition-all duration-200"
+                )}
+              >
+                חזרה לכל הקטגוריות
+              </button>
+            </div>
+            <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
+              <KeyboardSection pendingNavigation={pendingNavigation} />
+            </Suspense>
           </div>
         )}
 
