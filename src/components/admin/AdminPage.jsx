@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { bumpVersion, normalizeItems } from '@/data/whatsNew';
 import { HEAT_COLS, HEAT_ROWS, binHeat } from '@/lib/analytics-event';
 
-const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || '';
+const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-43GN2SH9KR';
 const KIND_LABEL = { click: 'קליקים', hover: 'ריחופים', share: 'שיתופים', forward: 'העברות' };
 const SECTION_LABEL = {
   home: 'דף הבית',

@@ -1,7 +1,8 @@
 import { buildAnalyticsEvent, pagePercent } from '@/lib/analytics-event';
 import { supabase } from '@/lib/supabase';
 
-const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || '';
+// Live property already installed in index.html. Override with VITE_GA_MEASUREMENT_ID if it changes.
+const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-43GN2SH9KR';
 const GA_ID_OK = /^G-[A-Z0-9]+$/i.test(GA_ID);
 
 let queue = [];
@@ -95,6 +96,8 @@ export function trackShare(method) {
 }
 
 export function initTracking() {
+  // index.html already sends hash page views for this property. A second listener doubles them.
+  const pageViewsAlreadySent = typeof window.gtag === 'function';
   loadGa();
   const path = () => `${window.location.pathname}${window.location.hash}`;
 
@@ -136,13 +139,15 @@ export function initTracking() {
 
   document.addEventListener('click', onClick, true);
   document.addEventListener('mouseover', onHover, true);
-  window.addEventListener('hashchange', onHash);
-  onHash();
+  if (!pageViewsAlreadySent) {
+    window.addEventListener('hashchange', onHash);
+    onHash();
+  }
 
   return () => {
     document.removeEventListener('click', onClick, true);
     document.removeEventListener('mouseover', onHover, true);
-    window.removeEventListener('hashchange', onHash);
+    if (!pageViewsAlreadySent) window.removeEventListener('hashchange', onHash);
     flush();
   };
 }
