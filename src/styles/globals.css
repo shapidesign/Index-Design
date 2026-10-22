@@ -70,11 +70,11 @@
   --font-rubik: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   /* Shadows - צללים ברוטליסטיים */
-  --shadow-brutalist: 6px 6px 0px #1F1F1F;
-  --shadow-brutalist-sm: 3px 3px 0px #1F1F1F;
-  --shadow-brutalist-xs: 2px 2px 0px #1F1F1F;
-  --shadow-brutalist-nav: 4px 4px 0px #1F1F1F;
-  --shadow-brutalist-hamburger: 3.4px 3.4px 0px #1F1F1F;
+  --shadow-brutalist: 6px 6px 0px var(--color-off-black);
+  --shadow-brutalist-sm: 3px 3px 0px var(--color-off-black);
+  --shadow-brutalist-xs: 2px 2px 0px var(--color-off-black);
+  --shadow-brutalist-nav: 4px 4px 0px var(--color-off-black);
+  --shadow-brutalist-hamburger: 3.4px 3.4px 0px var(--color-off-black);
 
   /* Animation Timings */
   --timing-micro: 0.1s;
@@ -87,6 +87,33 @@
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --ease-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
   --ease-sharp: cubic-bezier(0.4, 0.0, 1, 1);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ===== DARK MODE - מצב כהה ===== */
+/* Only the neutrals flip: "off-black" stays the ink (text/borders/shadows), "off-white" stays the paper. */
+.dark {
+  color-scheme: dark;
+  --color-off-black: #F2F1EE;
+  --color-dark-gray: #C9C9C9;
+  --color-mid-gray: #9A9A9A;
+  --color-off-white: #161616;
+  --color-light-gray: #222222;
+  --color-btn-gray: #2C2C2C;
+}
+
+/* Solid accent surfaces keep light-theme ink so text on yellow/green/etc. stays dark and readable. */
+.dark :is(
+  [class~="bg-tetris-purple"], [class~="bg-tetris-green"], [class~="bg-tetris-orange"],
+  [class~="bg-tetris-pink"], [class~="bg-tetris-yellow"], [class~="bg-tetris-blue"], [class~="bg-tetris-cyan"]
+) {
+  --color-off-black: #1F1F1F;
+  --color-dark-gray: #404040;
+  --color-mid-gray: #636363;
+  --color-off-white: #FAFAF9;
+  --color-light-gray: #F5F5F4;
+  --color-btn-gray: #EEEEEE;
 }
 
 /* ===== BASE STYLES ===== */
@@ -107,6 +134,7 @@
     background-color: var(--color-off-white);
     color: var(--color-off-black);
     line-height: 1.6;
+    transition: background-color 0.2s, color 0.2s;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
