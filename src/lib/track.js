@@ -1,3 +1,4 @@
+import { isAdminRoute } from '@/lib/admin-route';
 import { buildAnalyticsEvent, pagePercent } from '@/lib/analytics-event';
 import { supabase } from '@/lib/supabase';
 
@@ -65,7 +66,7 @@ async function flush() {
 }
 
 function enqueue(row) {
-  if (!row || window.location.hash.startsWith('#/admin')) return;
+  if (!row || isAdminRoute()) return;
   queue.push(row);
   if (queue.length > 50) queue = queue.slice(-50);
   if (queue.length >= 10) flush();

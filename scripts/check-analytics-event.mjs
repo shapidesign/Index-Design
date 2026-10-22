@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { isAdminRoute } from '../src/lib/admin-route.js';
 import { binHeat, buildAnalyticsEvent, pagePercent } from '../src/lib/analytics-event.js';
 import { bumpVersion, normalizeItems } from '../src/data/whatsNew.js';
 
@@ -30,6 +31,12 @@ const cells = binHeat([{ x: 0, y: 0 }, { x: 100, y: 100 }, { x: 0, y: 0 }], 10, 
 assert.equal(cells[0], 2);
 assert.equal(cells[10 * 16 - 1], 1);
 assert.equal(cells.reduce((sum, n) => sum + n, 0), 3);
+
+assert.equal(isAdminRoute({ pathname: '/admin', hash: '' }), true);
+assert.equal(isAdminRoute({ pathname: '/admin/', hash: '' }), true);
+assert.equal(isAdminRoute({ pathname: '/', hash: '#/admin' }), true);
+assert.equal(isAdminRoute({ pathname: '/', hash: '#/toolbox' }), false);
+assert.equal(isAdminRoute({ pathname: '/administrator', hash: '' }), false);
 
 assert.equal(bumpVersion('v6'), 'v7');
 assert.equal(bumpVersion(''), 'v1');
