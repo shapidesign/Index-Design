@@ -34,8 +34,6 @@ const ThemeToggle = ({ className }) => {
       className={cn(
         'relative shrink-0 w-[76px] h-11 cursor-pointer',
         'bg-btn-gray border-3 border-dark-gray shadow-brutalist-nav',
-        'transition-all duration-200',
-        'hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]',
         className
       )}
     >

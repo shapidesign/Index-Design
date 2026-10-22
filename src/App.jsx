@@ -13,6 +13,9 @@ import Footer from '@/components/layout/Footer';
 import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
 import { APPS as KEYBOARD_APPS, SHORTCUTS } from '@/data/shortcuts';
 
+/** Moving eye stays in source; flip to show it again. */
+const SHOW_EYE = false;
+
 /** Lazy-loaded section components */
 const CHUNK_RELOAD_FLAG = 'chunk-reload-attempted';
 
@@ -749,9 +752,11 @@ const App = () => {
           <>
             <section className="text-center mb-8 py-4 flex flex-col items-center">
               {/* Eye Logo Animation */}
-              <div className="mb-6">
-                <EyeLogo className="w-20 h-20 md:w-28 md:h-28" />
-              </div>
+              {SHOW_EYE && (
+                <div className="mb-6">
+                  <EyeLogo className="w-20 h-20 md:w-28 md:h-28" />
+                </div>
+              )}
 
               {/* Logo "אינדקס" from Figma */}
               <div className="flex justify-center mb-1 md:mb-4">
