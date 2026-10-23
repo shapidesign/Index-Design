@@ -33,7 +33,7 @@ const ThemeToggle = ({ className }) => {
       onClick={toggle}
       className={cn(
         'relative shrink-0 w-[76px] h-11 cursor-pointer',
-        'bg-btn-gray border-3 border-dark-gray shadow-brutalist-nav',
+        'bg-btn-gray border-3 border-dark-gray shadow-none',
         className
       )}
     >
