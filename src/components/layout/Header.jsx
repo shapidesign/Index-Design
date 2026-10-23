@@ -72,9 +72,9 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
                 key={section.id}
                 onClick={() => onSectionChange?.(section.id)}
                 className={cn(
-                  'px-2.5 lg:px-4 py-2 shrink-0',
-                  'inline-flex items-center gap-1.5',
-                  'text-xs lg:text-sm font-headline whitespace-nowrap',
+                  'h-10 px-2.5 lg:px-3.5 shrink-0',
+                  'inline-flex items-center justify-center gap-1.5',
+                  'text-xs lg:text-sm font-headline leading-none whitespace-nowrap',
                   'border border-dark-gray',
                   'transition-all duration-200 cursor-pointer',
                   section.id === 'lucky'
@@ -93,15 +93,16 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
             type="button"
             onClick={() => onHelpClick?.()}
             className={cn(
-              'px-3 lg:px-4 py-2 shrink-0',
-              'text-xs lg:text-sm font-headline whitespace-nowrap',
+              'h-10 px-3 lg:px-4 shrink-0',
+              'inline-flex items-center justify-center',
+              'text-xs lg:text-sm font-headline leading-none whitespace-nowrap',
               'bg-tetris-purple text-off-white',
               'border border-dark-gray shadow-brutalist-nav',
               'transition-all duration-200 cursor-pointer',
               'hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
             )}
           >
-            לעזור
+            <span>לעזור</span>
           </button>
         </div>
 
@@ -117,8 +118,8 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
             aria-label="אזור אישי והמגירה שלי"
             title="אזור אישי · המגירה שלי"
             className={cn(
-              'relative inline-flex items-center justify-center gap-1.5 px-2.5 py-2',
-              'border border-dark-gray font-headline text-xs lg:text-sm font-bold whitespace-nowrap',
+              'relative h-10 px-2.5 inline-flex items-center justify-center gap-1.5',
+              'border border-dark-gray font-headline text-xs lg:text-sm font-bold leading-none whitespace-nowrap',
               'transition-all duration-200 cursor-pointer',
               isProfileActive
                 ? 'bg-tetris-pink text-off-black shadow-none translate-x-[3px] translate-y-[3px]'
@@ -127,7 +128,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
           >
             <User size={18} strokeWidth={2.2} className="text-off-black shrink-0" />
             {savedCount > 0 && (
-              <span className="px-1.5 py-0.2 bg-off-black text-off-white text-[11px] font-jersey leading-tight">
+              <span className="px-1.5 py-0.5 bg-off-black text-off-white text-[11px] font-jersey leading-none">
                 {savedCount}
               </span>
             )}
