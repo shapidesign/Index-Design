@@ -64,15 +64,15 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
           <img src={logoDark} alt="אינדקס האב" className="h-8 w-auto" />
         </button>
 
-        {/* Desktop navigation centered (no horizontal scrollbar bar) */}
-        <div className="hidden md:flex items-center justify-center gap-2 min-w-0 flex-wrap">
-          <nav className="flex items-center justify-center gap-2 flex-wrap">
+        {/* Desktop navigation centered — strictly single line, never wraps */}
+        <div className="hidden md:flex items-center justify-center gap-1.5 lg:gap-2 min-w-0 flex-nowrap overflow-x-auto no-scrollbar">
+          <nav className="flex items-center justify-center gap-1.5 lg:gap-2 flex-nowrap shrink-0">
             {navSections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => onSectionChange?.(section.id)}
                 className={cn(
-                  'px-3 lg:px-4 py-2',
+                  'px-2.5 lg:px-4 py-2 shrink-0',
                   'inline-flex items-center gap-1.5',
                   'text-xs lg:text-sm font-headline whitespace-nowrap',
                   'border border-dark-gray',
@@ -93,8 +93,8 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
             type="button"
             onClick={() => onHelpClick?.()}
             className={cn(
-              'px-4 py-2',
-              'text-sm font-headline whitespace-nowrap',
+              'px-3 lg:px-4 py-2 shrink-0',
+              'text-xs lg:text-sm font-headline whitespace-nowrap',
               'bg-tetris-purple text-off-white',
               'border border-dark-gray shadow-brutalist-nav',
               'transition-all duration-200 cursor-pointer',
@@ -105,9 +105,9 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
           </button>
         </div>
 
-        {/* Left corner (Top-Left of screen in RTL): Profile / Personal Drawer + VC logo + Mobile hamburger */}
-        <div className="flex items-center gap-2.5 md:justify-self-end">
-          {/* Profile / Personal Drawer Button (Top-Left on Desktop & Mobile) */}
+        {/* Left corner (Top-Left of screen in RTL): Profile icon button + VC logo + Mobile hamburger */}
+        <div className="flex items-center gap-2.5 shrink-0 md:justify-self-end">
+          {/* Profile / Personal Drawer Icon Button (Top-Left on Desktop & Mobile) */}
           <button
             type="button"
             onClick={() => {
@@ -117,7 +117,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
             aria-label="אזור אישי והמגירה שלי"
             title="אזור אישי · המגירה שלי"
             className={cn(
-              'inline-flex items-center gap-2 px-3 py-2',
+              'relative inline-flex items-center justify-center gap-1.5 px-2.5 py-2',
               'border border-dark-gray font-headline text-xs lg:text-sm font-bold whitespace-nowrap',
               'transition-all duration-200 cursor-pointer',
               isProfileActive
@@ -125,12 +125,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
                 : 'bg-tetris-pink text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]'
             )}
           >
-            <span className="w-5 h-5 rounded-none bg-off-black text-off-white flex items-center justify-center shrink-0 text-[11px] font-headline">
-              {userProfile?.name ? userProfile.name.charAt(0) : <User size={13} />}
-            </span>
-            <span className="hidden sm:inline">
-              {userProfile?.name ? userProfile.name.split(' ')[0] : 'המגירה שלי'}
-            </span>
+            <User size={18} strokeWidth={2.2} className="text-off-black shrink-0" />
             {savedCount > 0 && (
               <span className="px-1.5 py-0.2 bg-off-black text-off-white text-[11px] font-jersey leading-tight">
                 {savedCount}
