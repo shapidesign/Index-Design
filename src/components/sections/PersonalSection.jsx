@@ -2,11 +2,14 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import useSavedItems, {
   MAX_FOLDER_NAME_LENGTH,
+  TETRIS_SHAPES,
+  TETRIS_COLORS,
   encodeSharedFolder,
   decodeSharedFolder,
 } from '@/hooks/useSavedItems';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
+import { HIT_STUDY_YEARS } from '@/data/hitFaculty';
 import {
   Bookmark,
   FolderPlus,
@@ -20,10 +23,11 @@ import {
   X,
   RotateCcw,
   Sparkles,
-  Upload,
   LayoutGrid,
   List,
   Search,
+  User,
+  LogOut,
 } from 'lucide-react';
 
 const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test((text || '').trim());
@@ -48,55 +52,160 @@ const FOLDER_BG_MAP = {
   pink: 'bg-tetris-pink text-off-black',
 };
 
-const STUDY_YEARS = ['שנה א׳', 'שנה ב׳', 'שנה ג׳', 'שנה ד׳', 'בוגר/ת'];
-const COURSES = [
-  'טיפוגרפיה',
-  'מיתוג וזהות',
-  'איור',
-  'אינטראקטיב / UI',
-  'מושן ווידאו',
-  'פרויקט גמר',
-  'פרויקט אישי',
-];
-
-const SEED_STUDENT_SHOWCASE = [
-  {
-    id: 'demo-1',
-    title: 'אותיות בתנועה — כרזה טיפוגרפית אינטראקטיבית',
-    studentName: 'נועה לוי',
-    studyYear: 'שנה ב׳',
-    course: 'טיפוגרפיה',
-    description: 'מחקר צורני של אותיות עבריות גיאומטריות בהשראת באוהאוס ומשחקי ארקייד.',
-    projectUrl: 'https://www.hit.ac.il/academic/design/visual-communications/',
-    shape: 'T',
-    color: 'purple',
-  },
-  {
-    id: 'demo-2',
-    title: 'מיתוג מחדש לשוק הפשפשים',
-    studentName: 'עידו כהן',
-    studyYear: 'שנה ג׳',
-    course: 'מיתוג וזהות',
-    description: 'שפה חזותית ברוטליסטית המשלבת דפוס רשת ידני עם מערכת אייקונים מודולרית.',
-    projectUrl: 'https://www.hit.ac.il/academic/design/visual-communications/',
-    shape: 'L',
-    color: 'orange',
-  },
-  {
-    id: 'demo-3',
-    title: 'ארכיון הרחוב הישראלי — זין מאויר',
-    studentName: 'מאיה שפירא',
-    studyYear: 'שנה א׳',
-    course: 'איור',
-    description: 'תיעוד מאויר של שלטי מלאכה ישנים בתל אביב וחולון בדפוס ריזוגרף דו-צבעוני.',
-    projectUrl: 'https://www.hit.ac.il/academic/design/visual-communications/',
-    shape: 'Z',
-    color: 'green',
-  },
-];
+const COLOR_SWATCH_MAP = {
+  purple: { bg: 'bg-tetris-purple', label: 'סגול' },
+  orange: { bg: 'bg-tetris-orange', label: 'כתום' },
+  blue: { bg: 'bg-tetris-blue', label: 'כחול' },
+  yellow: { bg: 'bg-tetris-yellow', label: 'צהוב' },
+  cyan: { bg: 'bg-tetris-cyan', label: 'תכלת' },
+  green: { bg: 'bg-tetris-green', label: 'ירוק' },
+  pink: { bg: 'bg-tetris-pink', label: 'ורוד' },
+};
 
 const makeOriginalTargetId = (sectionId, itemId) =>
   `search-item-${sectionId}-${String(itemId || '').replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+
+/**
+ * Shape & Color Mix-and-Match Picker for Folder Creation / Customization
+ */
+const FolderStylePicker = ({ selectedShape, selectedColor, onSelectShape, onSelectColor }) => (
+  <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
+    {/* Shape Picker */}
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="font-headline text-xs font-bold text-off-black shrink-0">צורת טטריס:</span>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {TETRIS_SHAPES.map((shape) => {
+          const isSelected = selectedShape === shape;
+          return (
+            <button
+              key={shape}
+              type="button"
+              onClick={() => onSelectShape(shape)}
+              aria-label={`בחר צורת ${shape}`}
+              title={`צורת ${shape}`}
+              className={cn(
+                'w-9 h-9 flex items-center justify-center border-2 border-off-black transition-all cursor-pointer',
+                isSelected
+                  ? 'bg-tetris-yellow shadow-none translate-x-[1px] translate-y-[1px] ring-2 ring-off-black'
+                  : 'bg-off-white shadow-brutalist-xs hover:bg-light-gray'
+              )}
+            >
+              <TetrisShape type={shape} color={selectedColor} size={5} />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+
+    {/* Color Picker */}
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="font-headline text-xs font-bold text-off-black shrink-0">צבע תיקייה:</span>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {TETRIS_COLORS.map((color) => {
+          const isSelected = selectedColor === color;
+          const swatch = COLOR_SWATCH_MAP[color];
+          return (
+            <button
+              key={color}
+              type="button"
+              onClick={() => onSelectColor(color)}
+              aria-label={`בחר צבע ${swatch.label}`}
+              title={swatch.label}
+              className={cn(
+                'w-7 h-7 border-2 border-off-black flex items-center justify-center transition-all cursor-pointer',
+                swatch.bg,
+                isSelected
+                  ? 'ring-2 ring-off-black scale-110 shadow-none'
+                  : 'opacity-80 hover:opacity-100 shadow-brutalist-xs'
+              )}
+            >
+              {isSelected && (
+                <Check
+                  size={13}
+                  className={color === 'purple' ? 'text-off-white' : 'text-off-black'}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+);
+
+/**
+ * PersonalNoteForm - Explicit note input + Submit button with saved confirmation
+ */
+const PersonalNoteForm = ({ item, onSaveNote }) => {
+  const [draft, setDraft] = useState(item.note || '');
+  const [lastSyncedNote, setLastSyncedNote] = useState(item.note || '');
+  const [justSaved, setJustSaved] = useState(false);
+
+  if ((item.note || '') !== lastSyncedNote) {
+    setLastSyncedNote(item.note || '');
+    setDraft(item.note || '');
+  }
+
+  const isDirty = draft.trim() !== (item.note || '').trim();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSaveNote(item.sectionId, item.itemId, draft.trim());
+    setJustSaved(true);
+    window.setTimeout(() => setJustSaved(false), 2200);
+  };
+
+  return (
+    <div className="mb-3 pt-2 border-t border-off-black/15">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[11px] font-headline font-bold text-dark-gray">
+          הערה אישית:
+        </span>
+        {justSaved && (
+          <span className="text-[11px] font-headline font-bold text-off-black bg-tetris-green px-1.5 py-0.2 border border-off-black">
+            ההערה נשמרה ✓
+          </span>
+        )}
+      </div>
+
+      {item.note && !isDirty && (
+        <p className="text-xs font-ibm text-off-black bg-tetris-yellow/35 border border-off-black px-2.5 py-1.5 mb-2">
+          {item.note}
+        </p>
+      )}
+
+      <form onSubmit={handleSubmit} className="flex items-center gap-1.5">
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="הוסף הערה אישית (למשל: להשתמש להגשה ביום ג׳)..."
+          dir="rtl"
+          className={cn(
+            'flex-1 min-w-0 px-2.5 py-1.5',
+            'bg-off-white focus:bg-tetris-yellow/20',
+            'border-2 border-off-black',
+            'text-xs font-ibm text-off-black placeholder:text-mid-gray outline-none'
+          )}
+        />
+        <button
+          type="submit"
+          className={cn(
+            'px-3 py-1.5 shrink-0',
+            'font-headline text-xs font-bold border-2 border-off-black transition-all cursor-pointer',
+            justSaved
+              ? 'bg-tetris-green text-off-black'
+              : isDirty
+                ? 'bg-tetris-purple text-off-white shadow-brutalist-xs hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px]'
+                : 'bg-tetris-yellow text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px]'
+          )}
+        >
+          {justSaved ? 'נשמר ✓' : 'שמור הערה'}
+        </button>
+      </form>
+    </div>
+  );
+};
 
 const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
   const {
@@ -104,6 +213,7 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
     savedItemsList,
     savedCount,
     submissions,
+    userProfile,
     undoState,
     handleUndo,
     dismissUndo,
@@ -112,13 +222,13 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
     updateItemNote,
     createFolder,
     renameFolder,
-    cycleFolderStyle,
+    updateFolderStyle,
     deleteFolder,
     importSharedFolder,
-    addLocalSubmission,
+    signInWithGoogle,
+    signOutProfile,
   } = useSavedItems();
 
-  const [activeTab, setActiveTab] = useState('crate'); // 'crate' | 'showcase'
   const [selectedFolderId, setSelectedFolderId] = useState('all'); // 'all' | 'unfiled' | folder.id
   const [viewMode, setViewMode] = useState('gallery');
   const [searchQuery, setSearchQuery] = useState('');
@@ -126,26 +236,24 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
   // Folder creation & editing state
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [newFolderShape, setNewFolderShape] = useState('T');
+  const [newFolderColor, setNewFolderColor] = useState('purple');
   const [folderError, setFolderError] = useState('');
+
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+  const [isCustomizingStyle, setIsCustomizingStyle] = useState(false);
   const [shareFeedback, setShareFeedback] = useState('');
   const [importBanner, setImportBanner] = useState('');
 
-  // Phase 2 Showcase state
-  const [courseFilter, setCourseFilter] = useState('הכל');
-  const [isSubmitWorkOpen, setIsSubmitWorkOpen] = useState(false);
-  const [workForm, setWorkForm] = useState({
-    title: '',
-    studentName: '',
-    studyYear: 'שנה א׳',
-    course: 'טיפוגרפיה',
-    projectUrl: '',
-    imageUrl: '',
-    description: '',
+  // Google Profile Modal / Inline Form state
+  const [isGoogleSignInOpen, setIsGoogleSignInOpen] = useState(false);
+  const [googleForm, setGoogleForm] = useState({
+    name: '',
+    email: '',
+    studyYear: 'שנה ב׳',
   });
-  const [workFormError, setWorkFormError] = useState('');
-  const [workFormSuccess, setWorkFormSuccess] = useState('');
+  const [googleError, setGoogleError] = useState('');
 
   // Check if URL contains a shared folder payload (?import=...)
   useEffect(() => {
@@ -224,7 +332,10 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
 
   const handleCreateFolderSubmit = (e) => {
     e.preventDefault();
-    const res = createFolder(newFolderName);
+    const res = createFolder(newFolderName, {
+      shape: newFolderShape,
+      color: newFolderColor,
+    });
     if (!res.ok) {
       setFolderError(res.error || 'שגיאה ביצירת תיקייה');
       return;
@@ -249,6 +360,15 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
     setFolderError('');
   };
 
+  const handleDeleteActiveFolder = () => {
+    if (!activeFolder) return;
+    const folderIdToDelete = activeFolder.id;
+    setSelectedFolderId('all');
+    setIsRenaming(false);
+    setIsCustomizingStyle(false);
+    deleteFolder(folderIdToDelete);
+  };
+
   const handleShareFolder = async () => {
     const folderToShare = activeFolder || {
       name: 'המומלצים שלי באינדקס',
@@ -268,43 +388,20 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
     window.setTimeout(() => setShareFeedback(''), 3500);
   };
 
-  const handleWorkSubmit = (e) => {
+  const handleGoogleSignInSubmit = (e) => {
     e.preventDefault();
-    if (!workForm.title.trim()) {
-      setWorkFormError('יש להזין כותרת לעבודה');
+    if (!googleForm.name.trim()) {
+      setGoogleError('יש להזין שם מלא');
       return;
     }
-    if (!workForm.studentName.trim()) {
-      setWorkFormError('יש להזין שם סטודנט/ית');
+    if (!googleForm.email.trim() || !googleForm.email.includes('@')) {
+      setGoogleError('יש להזין כתובת אימייל של Google');
       return;
     }
-    addLocalSubmission(workForm);
-    setWorkForm({
-      title: '',
-      studentName: '',
-      studyYear: 'שנה א׳',
-      course: 'טיפוגרפיה',
-      projectUrl: '',
-      imageUrl: '',
-      description: '',
-    });
-    setWorkFormError('');
-    setWorkFormSuccess('העבודה נשמרה במגירה שלך ומוצגת בתערוכה!');
-    setIsSubmitWorkOpen(false);
-    window.setTimeout(() => setWorkFormSuccess(''), 4000);
+    signInWithGoogle(googleForm);
+    setIsGoogleSignInOpen(false);
+    setGoogleError('');
   };
-
-  const allShowcaseWorks = useMemo(() => {
-    const userFormatted = submissions.map((s, i) => ({
-      ...s,
-      shape: ['T', 'L', 'I', 'Z', 'J', 'O', 'S'][i % 7],
-      color: ['pink', 'cyan', 'yellow', 'purple', 'green', 'orange', 'blue'][i % 7],
-      isPersonal: true,
-    }));
-    const combined = [...userFormatted, ...SEED_STUDENT_SHOWCASE];
-    if (courseFilter === 'הכל') return combined;
-    return combined.filter((w) => w.course === courseFilter);
-  }, [submissions, courseFilter]);
 
   return (
     <section dir="rtl" className="animate-tetris-stack">
@@ -359,869 +456,743 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
         </div>
       )}
 
-      {/* ===== HEADER & MODE SWITCHER ===== */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-tetris-yellow border-2 border-off-black shadow-brutalist-xs mb-3">
-            <Bookmark size={14} className="fill-off-black" />
-            <span className="font-headline text-xs font-bold text-off-black">
-              אזור אישי · נשמר אוטומטית בדפדפן
-            </span>
+      {/* ===== PROFILE CARD & HEADER ===== */}
+      <div className="mb-8 p-5 md:p-6 bg-off-white border-3 border-off-black shadow-brutalist flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-start gap-4">
+          <div className="w-14 h-14 bg-tetris-pink border-3 border-off-black shadow-brutalist-xs flex items-center justify-center shrink-0 text-2xl font-bold font-headline text-off-black">
+            {userProfile?.name ? userProfile.name.charAt(0) : <User size={26} />}
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold text-off-black font-headline leading-tight">
-            המגירה שלי
-          </h2>
-          <p className="text-sm md:text-base text-dark-gray font-ibm mt-1 max-w-2xl">
-            כל הכלים, הפונטים, הספרים וההשראות ששמרתם מהאתר — מסודרים בתיקיות אישיות לפי קורס או פרויקט.
-          </p>
+          <div>
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-tetris-yellow border-2 border-off-black text-xs font-headline font-bold mb-1.5">
+              <Bookmark size={12} className="fill-off-black" />
+              <span>אזור אישי · המגירה שלי</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-off-black font-headline leading-tight">
+              {userProfile ? `המגירה של ${userProfile.name}` : 'המגירה שלי'}
+            </h2>
+            <p className="text-sm text-dark-gray font-ibm mt-1">
+              {userProfile
+                ? `${userProfile.email} · ${userProfile.studyYear} · מחובר/ת עם Google`
+                : 'שמרו כלים, פונטים, ספרים והשראות בתיקיות אישיות. התחברו עם Google כדי להעלות עבודות למוזיאון הסטודנטים.'}
+            </p>
+          </div>
         </div>
 
-        {/* Mode Switcher: Saved Crate vs Student Works Showcase */}
-        <div className="flex border-3 border-off-black bg-off-white shadow-brutalist-sm self-start md:self-auto">
-          <button
-            type="button"
-            onClick={() => setActiveTab('crate')}
-            className={cn(
-              'px-4 py-2.5 font-headline text-sm font-bold flex items-center gap-2 transition-colors cursor-pointer',
-              activeTab === 'crate'
-                ? 'bg-tetris-purple text-off-white'
-                : 'bg-off-white text-off-black hover:bg-light-gray'
-            )}
-          >
-            <Bookmark size={15} className={activeTab === 'crate' ? 'fill-off-white' : ''} />
-            <span>שמורים ותיקיות ({savedCount})</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('showcase')}
-            className={cn(
-              'px-4 py-2.5 font-headline text-sm font-bold border-r-3 border-off-black flex items-center gap-2 transition-colors cursor-pointer',
-              activeTab === 'showcase'
-                ? 'bg-tetris-orange text-off-black'
-                : 'bg-off-white text-off-black hover:bg-light-gray'
-            )}
-          >
-            <Sparkles size={15} />
-            <span>תערוכת סטודנטים</span>
-            <span className="px-1.5 py-0.5 text-[10px] bg-tetris-yellow border border-off-black text-off-black">
-              בקרוב / בטא
-            </span>
-          </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {userProfile ? (
+            <>
+              <button
+                type="button"
+                onClick={() => onBrowseSection?.('museum')}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-tetris-orange text-off-black font-headline text-xs md:text-sm font-bold border-2 border-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
+              >
+                <Sparkles size={15} />
+                <span>העלאת עבודה למוזיאון ({submissions.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={signOutProfile}
+                className="inline-flex items-center gap-1.5 px-3 py-2.5 bg-light-gray text-off-black font-headline text-xs border-2 border-off-black hover:bg-tetris-pink transition-colors cursor-pointer"
+              >
+                <LogOut size={14} />
+                <span>התנתק</span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsGoogleSignInOpen((p) => !p)}
+              className="inline-flex items-center gap-2.5 px-4 py-2.5 bg-off-white text-off-black font-headline text-xs md:text-sm font-bold border-3 border-off-black shadow-brutalist-sm hover:bg-tetris-yellow hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="#4285F4"
+                  d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
+                />
+              </svg>
+              <span>התחברות סטודנט עם Google</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* =================================================================== */}
-      {/* TAB 1: PERSONAL CRATE & FOLDERS                                     */}
-      {/* =================================================================== */}
-      {activeTab === 'crate' && (
-        <>
-          {/* ===== FOLDER TABS STRIP ===== */}
-          <div className="mb-6 p-4 bg-off-white border-3 border-off-black shadow-brutalist-sm">
-            <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
-              <span className="font-headline text-sm font-bold text-off-black">
-                תיקיות במגירה ({folders.length})
-              </span>
-              <div className="flex items-center gap-2 flex-wrap">
-                {visibleItems.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleShareFolder}
-                    className={cn(
-                      'inline-flex items-center gap-1.5 px-3 py-1.5',
-                      'bg-tetris-cyan text-off-black font-headline text-xs font-bold',
-                      'border-2 border-off-black shadow-brutalist-xs',
-                      'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
-                      'transition-all duration-150 cursor-pointer'
-                    )}
-                  >
-                    <Share2 size={13} />
-                    <span>{activeFolder ? `שתף תיקיית "${activeFolder.name}"` : 'שתף שמורים כקישור'}</span>
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsCreatingFolder((prev) => !prev);
-                    setFolderError('');
-                  }}
-                  className={cn(
-                    'inline-flex items-center gap-1.5 px-3 py-1.5',
-                    'bg-tetris-green text-off-black font-headline text-xs font-bold',
-                    'border-2 border-off-black shadow-brutalist-xs',
-                    'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
-                    'transition-all duration-150 cursor-pointer'
-                  )}
-                >
-                  <FolderPlus size={14} />
-                  <span>+ תיקייה חדשה</span>
-                </button>
-              </div>
+      {/* Google Sign-In Form Drawer */}
+      {isGoogleSignInOpen && !userProfile && (
+        <form
+          onSubmit={handleGoogleSignInSubmit}
+          className="mb-8 p-5 bg-off-white border-3 border-off-black shadow-brutalist"
+        >
+          <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-off-black">
+            <h3 className="font-headline text-lg font-bold text-off-black">
+              חיבור פרופיל Google לסטודנטים ב-HIT
+            </h3>
+            <button
+              type="button"
+              onClick={() => setIsGoogleSignInOpen(false)}
+              className="p-1 text-dark-gray hover:text-off-black cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="block font-headline text-xs font-bold text-off-black mb-1">
+                שם מלא *
+              </label>
+              <input
+                type="text"
+                value={googleForm.name}
+                onChange={(e) => setGoogleForm((p) => ({ ...p, name: e.target.value }))}
+                placeholder="למשל: נועה לוי"
+                dir="rtl"
+                className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none focus:bg-off-white"
+              />
             </div>
-
-            {shareFeedback && (
-              <div className="mb-3 px-3 py-2 bg-tetris-yellow border-2 border-off-black text-xs font-headline font-bold text-off-black">
-                {shareFeedback}
-              </div>
-            )}
-
-            {/* Inline New Folder Form */}
-            {isCreatingFolder && (
-              <form
-                onSubmit={handleCreateFolderSubmit}
-                className="mb-4 p-3 bg-light-gray border-2 border-off-black flex flex-wrap items-center gap-2"
+            <div>
+              <label className="block font-headline text-xs font-bold text-off-black mb-1">
+                כתובת Gmail / אימייל מכללה *
+              </label>
+              <input
+                type="email"
+                value={googleForm.email}
+                onChange={(e) => setGoogleForm((p) => ({ ...p, email: e.target.value }))}
+                placeholder="student@gmail.com"
+                dir="ltr"
+                className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
+              />
+            </div>
+            <div>
+              <label className="block font-headline text-xs font-bold text-off-black mb-1">
+                שנת לימודים
+              </label>
+              <select
+                value={googleForm.studyYear}
+                onChange={(e) => setGoogleForm((p) => ({ ...p, studyYear: e.target.value }))}
+                className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
               >
-                <input
-                  type="text"
-                  value={newFolderName}
-                  maxLength={MAX_FOLDER_NAME_LENGTH}
-                  onChange={(e) => {
-                    setNewFolderName(e.target.value);
-                    if (folderError) setFolderError('');
-                  }}
-                  placeholder="שם התיקייה (למשל: פרויקט גמר, פונטים לכרזה)..."
-                  dir="rtl"
-                  autoFocus
-                  className="flex-1 min-w-[200px] px-3 py-1.5 bg-off-white border-2 border-off-black font-headline text-sm text-off-black outline-none"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-tetris-purple text-off-white font-headline text-xs font-bold border-2 border-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer"
-                >
-                  צור תיקייה
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsCreatingFolder(false);
-                    setFolderError('');
-                  }}
-                  className="px-3 py-1.5 bg-off-white text-off-black font-headline text-xs border-2 border-off-black cursor-pointer"
-                >
-                  ביטול
-                </button>
-                {folderError && (
-                  <p className="w-full text-xs font-ibm text-red-700 mt-1">{folderError}</p>
-                )}
-              </form>
-            )}
+                {HIT_STUDY_YEARS.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {googleError && <p className="text-xs font-ibm text-red-700 mb-3">{googleError}</p>}
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setIsGoogleSignInOpen(false)}
+              className="px-4 py-2 bg-light-gray border-2 border-off-black font-headline text-xs font-bold cursor-pointer"
+            >
+              ביטול
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold cursor-pointer"
+            >
+              התחבר ושמור פרופיל
+            </button>
+          </div>
+        </form>
+      )}
 
-            {/* Folder Tabs Row */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 md:flex-wrap">
-              {/* All Saved Tab */}
+      {/* ===== FOLDER TABS STRIP ===== */}
+      <div className="mb-6 p-4 bg-off-white border-3 border-off-black shadow-brutalist-sm">
+        <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+          <span className="font-headline text-sm font-bold text-off-black">
+            תיקיות במגירה ({folders.length})
+          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            {visibleItems.length > 0 && (
+              <button
+                type="button"
+                onClick={handleShareFolder}
+                className={cn(
+                  'inline-flex items-center gap-1.5 px-3 py-1.5',
+                  'bg-tetris-cyan text-off-black font-headline text-xs font-bold',
+                  'border-2 border-off-black shadow-brutalist-xs',
+                  'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                  'transition-all duration-150 cursor-pointer'
+                )}
+              >
+                <Share2 size={13} />
+                <span>{activeFolder ? `שתף תיקיית "${activeFolder.name}"` : 'שתף שמורים כקישור'}</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setIsCreatingFolder((prev) => !prev);
+                setFolderError('');
+              }}
+              className={cn(
+                'inline-flex items-center gap-1.5 px-3 py-1.5',
+                'bg-tetris-green text-off-black font-headline text-xs font-bold',
+                'border-2 border-off-black shadow-brutalist-xs',
+                'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                'transition-all duration-150 cursor-pointer'
+              )}
+            >
+              <FolderPlus size={14} />
+              <span>+ תיקייה חדשה</span>
+            </button>
+          </div>
+        </div>
+
+        {shareFeedback && (
+          <div className="mb-3 px-3 py-2 bg-tetris-yellow border-2 border-off-black text-xs font-headline font-bold text-off-black">
+            {shareFeedback}
+          </div>
+        )}
+
+        {/* Inline New Folder Form with Mix-and-Match Tetris Shape + Color Picker */}
+        {isCreatingFolder && (
+          <form
+            onSubmit={handleCreateFolderSubmit}
+            className="mb-4 p-4 bg-light-gray border-2 border-off-black flex flex-col gap-3"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="w-10 h-10 bg-off-white border-2 border-off-black flex items-center justify-center shrink-0">
+                <TetrisShape type={newFolderShape} color={newFolderColor} size={6} />
+              </div>
+              <input
+                type="text"
+                value={newFolderName}
+                maxLength={MAX_FOLDER_NAME_LENGTH}
+                onChange={(e) => {
+                  setNewFolderName(e.target.value);
+                  if (folderError) setFolderError('');
+                }}
+                placeholder="שם התיקייה (למשל: פרויקט גמר, פונטים לכרזה)..."
+                dir="rtl"
+                autoFocus
+                className="flex-1 min-w-[200px] px-3 py-2 bg-off-white border-2 border-off-black font-headline text-sm text-off-black outline-none"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-tetris-purple text-off-white font-headline text-xs font-bold border-2 border-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer"
+              >
+                צור תיקייה
+              </button>
               <button
                 type="button"
                 onClick={() => {
-                  setSelectedFolderId('all');
+                  setIsCreatingFolder(false);
+                  setFolderError('');
+                }}
+                className="px-3 py-2 bg-off-white text-off-black font-headline text-xs border-2 border-off-black cursor-pointer"
+              >
+                ביטול
+              </button>
+            </div>
+
+            <FolderStylePicker
+              selectedShape={newFolderShape}
+              selectedColor={newFolderColor}
+              onSelectShape={setNewFolderShape}
+              onSelectColor={setNewFolderColor}
+            />
+
+            {folderError && (
+              <p className="w-full text-xs font-ibm text-red-700 mt-1">{folderError}</p>
+            )}
+          </form>
+        )}
+
+        {/* Folder Tabs Row */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* All Saved Tab */}
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedFolderId('all');
+              setIsRenaming(false);
+              setIsCustomizingStyle(false);
+            }}
+            className={cn(
+              'inline-flex items-center gap-2 px-3.5 py-2 shrink-0',
+              'border-2 border-off-black font-headline text-xs md:text-sm font-bold',
+              'transition-all duration-150 cursor-pointer',
+              effectiveFolderId === 'all'
+                ? 'bg-off-black text-off-white shadow-none translate-x-[2px] translate-y-[2px]'
+                : 'bg-light-gray text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+            )}
+          >
+            <span>כל השמורים</span>
+            <span className="px-1.5 py-0.2 text-xs font-jersey border border-current">
+              {folderCounts.all}
+            </span>
+          </button>
+
+          {/* Custom Folders */}
+          {folders.map((folder) => {
+            const isSelected = effectiveFolderId === folder.id;
+            const activeColorClasses = FOLDER_BG_MAP[folder.color] || 'bg-tetris-purple text-off-white';
+            return (
+              <button
+                key={folder.id}
+                type="button"
+                onClick={() => {
+                  setSelectedFolderId(folder.id);
                   setIsRenaming(false);
+                  setFolderError('');
                 }}
                 className={cn(
                   'inline-flex items-center gap-2 px-3.5 py-2 shrink-0',
                   'border-2 border-off-black font-headline text-xs md:text-sm font-bold',
                   'transition-all duration-150 cursor-pointer',
-                  effectiveFolderId === 'all'
-                    ? 'bg-off-black text-off-white shadow-none translate-x-[2px] translate-y-[2px]'
-                    : 'bg-light-gray text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                  isSelected
+                    ? `${activeColorClasses} shadow-none translate-x-[2px] translate-y-[2px]`
+                    : 'bg-off-white text-off-black shadow-brutalist-xs hover:bg-light-gray hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
                 )}
               >
-                <span>כל השמורים</span>
-                <span className="px-1.5 py-0.2 text-xs font-jersey border border-current">
-                  {folderCounts.all}
-                </span>
-              </button>
-
-              {/* Custom Folders */}
-              {folders.map((folder) => {
-                const isSelected = effectiveFolderId === folder.id;
-                const activeColorClasses = FOLDER_BG_MAP[folder.color] || 'bg-tetris-purple text-off-white';
-                return (
-                  <button
-                    key={folder.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedFolderId(folder.id);
-                      setIsRenaming(false);
-                      setFolderError('');
-                    }}
-                    className={cn(
-                      'inline-flex items-center gap-2 px-3.5 py-2 shrink-0',
-                      'border-2 border-off-black font-headline text-xs md:text-sm font-bold',
-                      'transition-all duration-150 cursor-pointer',
-                      isSelected
-                        ? `${activeColorClasses} shadow-none translate-x-[2px] translate-y-[2px]`
-                        : 'bg-off-white text-off-black shadow-brutalist-xs hover:bg-light-gray hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
-                    )}
-                  >
-                    <TetrisShape type={folder.shape} color={folder.color} size={7} />
-                    <span>{folder.name}</span>
-                    <span
-                      className={cn(
-                        'px-1.5 py-0.2 text-xs font-jersey border',
-                        isSelected ? 'border-current' : 'border-off-black bg-light-gray'
-                      )}
-                    >
-                      {folderCounts[folder.id] || 0}
-                    </span>
-                  </button>
-                );
-              })}
-
-              {/* Unfiled Tab (if any unfiled items exist) */}
-              {folderCounts.unfiled > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedFolderId('unfiled');
-                    setIsRenaming(false);
-                  }}
+                <TetrisShape type={folder.shape} color={folder.color} size={7} />
+                <span>{folder.name}</span>
+                <span
                   className={cn(
-                    'inline-flex items-center gap-2 px-3 py-2 shrink-0',
-                    'border-2 border-off-black font-headline text-xs md:text-sm',
-                    'transition-all duration-150 cursor-pointer',
-                    effectiveFolderId === 'unfiled'
-                      ? 'bg-tetris-yellow text-off-black font-bold shadow-none translate-x-[2px] translate-y-[2px]'
-                      : 'bg-light-gray/70 text-dark-gray shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                    'px-1.5 py-0.2 text-xs font-jersey border',
+                    isSelected ? 'border-current' : 'border-off-black bg-light-gray'
                   )}
                 >
-                  <span>ללא תיקייה</span>
-                  <span className="px-1.5 text-xs font-jersey border border-off-black">
-                    {folderCounts.unfiled}
-                  </span>
-                </button>
+                  {folderCounts[folder.id] || 0}
+                </span>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (effectiveFolderId === folder.id) {
+                      setSelectedFolderId('all');
+                      setIsRenaming(false);
+                      setIsCustomizingStyle(false);
+                    }
+                    deleteFolder(folder.id);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.stopPropagation();
+                      if (effectiveFolderId === folder.id) {
+                        setSelectedFolderId('all');
+                      }
+                      deleteFolder(folder.id);
+                    }
+                  }}
+                  aria-label={`מחק תיקיית ${folder.name}`}
+                  title={`מחק תיקיית "${folder.name}"`}
+                  className="p-0.5 hover:bg-tetris-pink hover:text-off-black transition-colors"
+                >
+                  <X size={13} />
+                </span>
+              </button>
+            );
+          })}
+
+          {/* Unfiled Tab (if any unfiled items exist) */}
+          {folderCounts.unfiled > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedFolderId('unfiled');
+                setIsRenaming(false);
+                setIsCustomizingStyle(false);
+              }}
+              className={cn(
+                'inline-flex items-center gap-2 px-3 py-2 shrink-0',
+                'border-2 border-off-black font-headline text-xs md:text-sm',
+                'transition-all duration-150 cursor-pointer',
+                effectiveFolderId === 'unfiled'
+                  ? 'bg-tetris-yellow text-off-black font-bold shadow-none translate-x-[2px] translate-y-[2px]'
+                  : 'bg-light-gray/70 text-dark-gray shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
               )}
-            </div>
+            >
+              <span>ללא תיקייה</span>
+              <span className="px-1.5 text-xs font-jersey border border-off-black">
+                {folderCounts.unfiled}
+              </span>
+            </button>
+          )}
+        </div>
 
-            {/* Active Custom Folder Toolbar (Rename / Cycle Block Style / Delete) */}
-            {activeFolder && (
-              <div className="mt-4 pt-3 border-t-2 border-off-black/15 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <TetrisShape type={activeFolder.shape} color={activeFolder.color} size={10} />
-                  {!isRenaming ? (
-                    <span className="font-headline text-base font-bold text-off-black">
-                      תיקייה: {activeFolder.name}
-                    </span>
-                  ) : (
-                    <form onSubmit={handleRenameSubmit} className="flex items-center gap-1.5">
-                      <input
-                        type="text"
-                        value={renameValue}
-                        maxLength={MAX_FOLDER_NAME_LENGTH}
-                        onChange={(e) => setRenameValue(e.target.value)}
-                        dir="rtl"
-                        autoFocus
-                        className="px-2 py-1 bg-off-white border-2 border-off-black font-headline text-xs text-off-black outline-none"
-                      />
-                      <button
-                        type="submit"
-                        aria-label="שמור שם תיקייה"
-                        className="p-1.5 bg-tetris-green border-2 border-off-black cursor-pointer"
-                      >
-                        <Check size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setIsRenaming(false)}
-                        aria-label="בטל שינוי שם"
-                        className="p-1.5 bg-light-gray border-2 border-off-black cursor-pointer"
-                      >
-                        <X size={13} />
-                      </button>
-                    </form>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={() => cycleFolderStyle(activeFolder.id)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-light-gray border-2 border-off-black font-headline text-xs text-off-black hover:bg-tetris-yellow transition-colors cursor-pointer"
-                  >
-                    <Palette size={13} />
-                    <span>החלף צבע/צורה</span>
-                  </button>
-                  {!isRenaming && (
+        {/* Active Custom Folder Toolbar (Rename / Mix & Match Shape & Color / Delete) */}
+        {activeFolder && (
+          <div className="mt-4 pt-3 border-t-2 border-off-black/15">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <TetrisShape type={activeFolder.shape} color={activeFolder.color} size={10} />
+                {!isRenaming ? (
+                  <span className="font-headline text-base font-bold text-off-black">
+                    תיקייה: {activeFolder.name}
+                  </span>
+                ) : (
+                  <form onSubmit={handleRenameSubmit} className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={renameValue}
+                      maxLength={MAX_FOLDER_NAME_LENGTH}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      dir="rtl"
+                      autoFocus
+                      className="px-2 py-1 bg-off-white border-2 border-off-black font-headline text-xs text-off-black outline-none"
+                    />
+                    <button
+                      type="submit"
+                      aria-label="שמור שם תיקייה"
+                      className="p-1.5 bg-tetris-green border-2 border-off-black cursor-pointer"
+                    >
+                      <Check size={13} />
+                    </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setRenameValue(activeFolder.name);
-                        setIsRenaming(true);
-                      }}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-light-gray border-2 border-off-black font-headline text-xs text-off-black hover:bg-tetris-cyan transition-colors cursor-pointer"
+                      onClick={() => setIsRenaming(false)}
+                      aria-label="בטל שינוי שם"
+                      className="p-1.5 bg-light-gray border-2 border-off-black cursor-pointer"
                     >
-                      <Edit3 size={13} />
-                      <span>שנה שם</span>
+                      <X size={13} />
                     </button>
+                  </form>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setIsCustomizingStyle((prev) => !prev)}
+                  className={cn(
+                    'inline-flex items-center gap-1 px-2.5 py-1 border-2 border-off-black font-headline text-xs text-off-black transition-colors cursor-pointer',
+                    isCustomizingStyle ? 'bg-tetris-yellow font-bold' : 'bg-light-gray hover:bg-tetris-yellow'
                   )}
+                >
+                  <Palette size={13} />
+                  <span>בחירת צורה וצבע</span>
+                </button>
+                {!isRenaming && (
                   <button
                     type="button"
-                    onClick={() => deleteFolder(activeFolder.id)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-tetris-pink/70 border-2 border-off-black font-headline text-xs font-bold text-off-black hover:bg-tetris-pink transition-colors cursor-pointer"
+                    onClick={() => {
+                      setRenameValue(activeFolder.name);
+                      setIsRenaming(true);
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-light-gray border-2 border-off-black font-headline text-xs text-off-black hover:bg-tetris-cyan transition-colors cursor-pointer"
                   >
-                    <Trash2 size={13} />
-                    <span>מחק תיקייה</span>
+                    <Edit3 size={13} />
+                    <span>שנה שם</span>
                   </button>
-                </div>
+                )}
+                <button
+                  type="button"
+                  onClick={handleDeleteActiveFolder}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-tetris-pink/70 border-2 border-off-black font-headline text-xs font-bold text-off-black hover:bg-tetris-pink transition-colors cursor-pointer"
+                >
+                  <Trash2 size={13} />
+                  <span>מחק תיקייה</span>
+                </button>
+              </div>
+            </div>
+
+            {isCustomizingStyle && (
+              <div className="mt-3 p-3 bg-light-gray border-2 border-off-black">
+                <FolderStylePicker
+                  selectedShape={activeFolder.shape}
+                  selectedColor={activeFolder.color}
+                  onSelectShape={(shape) =>
+                    updateFolderStyle(activeFolder.id, { shape, color: activeFolder.color })
+                  }
+                  onSelectColor={(color) =>
+                    updateFolderStyle(activeFolder.id, { shape: activeFolder.shape, color })
+                  }
+                />
               </div>
             )}
           </div>
+        )}
+      </div>
 
-          {/* ===== SEARCH & VIEW CONTROLS FOR SAVED ITEMS ===== */}
-          {savedCount > 0 && (
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-              <div className="relative flex-1 min-w-[240px] max-w-md">
-                <Search
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-mid-gray pointer-events-none"
-                />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="חיפוש בתוך השמורים והערות אישיות..."
-                  dir="rtl"
-                  className="w-full px-3 py-2 ps-3 pe-9 bg-off-white border-2 border-off-black font-headline text-sm text-off-black outline-none focus:shadow-brutalist-xs"
-                />
-              </div>
+      {/* ===== SEARCH & VIEW CONTROLS FOR SAVED ITEMS ===== */}
+      {savedCount > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div className="relative flex-1 min-w-[240px] max-w-md">
+            <Search
+              size={15}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-mid-gray pointer-events-none"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="חיפוש בתוך השמורים והערות אישיות..."
+              dir="rtl"
+              className="w-full px-3 py-2 ps-3 pe-9 bg-off-white border-2 border-off-black font-headline text-sm text-off-black outline-none focus:shadow-brutalist-xs"
+            />
+          </div>
 
-              <div className="flex border-2 border-off-black">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('gallery')}
-                  className={cn(
-                    'p-2 transition-colors cursor-pointer',
-                    viewMode === 'gallery'
-                      ? 'bg-tetris-purple text-off-white'
-                      : 'bg-off-white text-off-black hover:bg-light-gray'
-                  )}
-                  aria-label="תצוגת גלריה"
-                >
-                  <LayoutGrid size={16} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('list')}
-                  className={cn(
-                    'p-2 border-r-2 border-off-black transition-colors cursor-pointer',
-                    viewMode === 'list'
-                      ? 'bg-tetris-purple text-off-white'
-                      : 'bg-off-white text-off-black hover:bg-light-gray'
-                  )}
-                  aria-label="תצוגת רשימה"
-                >
-                  <List size={16} />
-                </button>
-              </div>
-            </div>
+          <div className="flex border-2 border-off-black">
+            <button
+              type="button"
+              onClick={() => setViewMode('gallery')}
+              className={cn(
+                'p-2 transition-colors cursor-pointer',
+                viewMode === 'gallery'
+                  ? 'bg-tetris-purple text-off-white'
+                  : 'bg-off-white text-off-black hover:bg-light-gray'
+              )}
+              aria-label="תצוגת גלריה"
+            >
+              <LayoutGrid size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={cn(
+                'p-2 border-r-2 border-off-black transition-colors cursor-pointer',
+                viewMode === 'list'
+                  ? 'bg-tetris-purple text-off-white'
+                  : 'bg-off-white text-off-black hover:bg-light-gray'
+              )}
+              aria-label="תצוגת רשימה"
+            >
+              <List size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ===== SAVED ITEMS GRID OR EMPTY STATE ===== */}
+      {visibleItems.length === 0 ? (
+        <div className="p-10 md:p-16 bg-off-white border-3 border-off-black shadow-brutalist text-center flex flex-col items-center">
+          <TetrisShape
+            type={activeFolder?.shape || 'T'}
+            color={activeFolder?.color || 'yellow'}
+            size={24}
+            className="mb-5"
+          />
+          <h3 className="text-2xl font-bold font-headline text-off-black mb-2">
+            {savedCount === 0
+              ? 'המגירה שלך עדיין ריקה'
+              : activeFolder
+                ? `אין עדיין פריטים בתיקייה "${activeFolder.name}"`
+                : 'לא נמצאו פריטים תואמים לחיפוש'}
+          </h3>
+          <p className="text-sm md:text-base font-ibm text-dark-gray max-w-md mb-6 leading-relaxed">
+            {savedCount === 0
+              ? 'לחצו על אייקון הסימנייה בכרטיסים בארגז הכלים, במילון הפונטים, בספרייה, במוזיאון או בטיפים כדי לאסוף אותם לכאן ולמיין לתיקיות.'
+              : 'אפשר לשייך כל פריט שמור לתיקייה זו בלחיצה על תגית התיקייה שעל הכרטיס.'}
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {[
+              { id: 'toolbox', label: 'לארגז הכלים', bg: 'bg-tetris-purple text-off-white' },
+              { id: 'dictionary', label: 'למילון הפונטים', bg: 'bg-tetris-yellow text-off-black' },
+              { id: 'library', label: 'לספרייה', bg: 'bg-tetris-blue text-off-black' },
+              { id: 'museum', label: 'למוזיאון עבודות סטודנטים', bg: 'bg-tetris-orange text-off-black' },
+            ].map((btn) => (
+              <button
+                key={btn.id}
+                type="button"
+                onClick={() => onBrowseSection?.(btn.id)}
+                className={cn(
+                  'px-4 py-2 font-headline text-xs md:text-sm font-bold',
+                  btn.bg,
+                  'border-2 border-off-black shadow-brutalist-xs',
+                  'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                  'transition-all duration-150 cursor-pointer'
+                )}
+              >
+                {btn.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div
+          className={cn(
+            viewMode === 'gallery'
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+              : 'flex flex-col gap-3'
           )}
+        >
+          {visibleItems.map((item) => {
+            const secMeta = SECTION_META[item.sectionId] || {
+              label: item.sectionId,
+              bg: 'bg-light-gray',
+              text: 'text-off-black',
+            };
+            const title = item.snapshot?.titleHe || item.snapshot?.titleEn || 'פריט שמור';
+            const subtitle =
+              item.snapshot?.titleEn && item.snapshot?.titleEn !== title
+                ? item.snapshot.titleEn
+                : '';
+            const href = item.snapshot?.link
+              ? item.snapshot.link.startsWith('http')
+                ? item.snapshot.link
+                : `https://${item.snapshot.link}`
+              : '';
 
-          {/* ===== SAVED ITEMS GRID OR EMPTY STATE ===== */}
-          {visibleItems.length === 0 ? (
-            <div className="p-10 md:p-16 bg-off-white border-3 border-off-black shadow-brutalist text-center flex flex-col items-center">
-              <TetrisShape
-                type={activeFolder?.shape || 'T'}
-                color={activeFolder?.color || 'yellow'}
-                size={24}
-                className="mb-5"
-              />
-              <h3 className="text-2xl font-bold font-headline text-off-black mb-2">
-                {savedCount === 0
-                  ? 'המגירה שלך עדיין ריקה'
-                  : activeFolder
-                    ? `אין עדיין פריטים בתיקייה "${activeFolder.name}"`
-                    : 'לא נמצאו פריטים תואמים לחיפוש'}
-              </h3>
-              <p className="text-sm md:text-base font-ibm text-dark-gray max-w-md mb-6 leading-relaxed">
-                {savedCount === 0
-                  ? 'לחצו על אייקון הסימנייה בכרטיסים בארגז הכלים, במילון הפונטים, בספרייה, במוזיאון או בטיפים כדי לאסוף אותם לכאן ולמיין לתיקיות.'
-                  : 'אפשר לשייך כל פריט שמור לתיקייה זו בלחיצה על תגית התיקייה שעל הכרטיס.'}
-              </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {[
-                  { id: 'toolbox', label: 'לארגז הכלים', bg: 'bg-tetris-purple text-off-white' },
-                  { id: 'dictionary', label: 'למילון הפונטים', bg: 'bg-tetris-yellow text-off-black' },
-                  { id: 'library', label: 'לספרייה', bg: 'bg-tetris-blue text-off-black' },
-                  { id: 'museum', label: 'למוזיאון', bg: 'bg-tetris-orange text-off-black' },
-                ].map((btn) => (
-                  <button
-                    key={btn.id}
-                    type="button"
-                    onClick={() => onBrowseSection?.(btn.id)}
+            return (
+              <article
+                key={item.key}
+                className={cn(
+                  'bg-off-white border-3 border-off-black',
+                  viewMode === 'gallery'
+                    ? 'shadow-brutalist flex flex-col justify-between p-5'
+                    : 'shadow-brutalist-xs flex flex-col md:flex-row md:items-center justify-between gap-4 p-4'
+                )}
+              >
+                <div className="flex-1 min-w-0">
+                  {/* Top row: section badge + remove button */}
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span
+                      className={cn(
+                        'px-2.5 py-0.5 text-xs font-headline font-bold border border-off-black shadow-brutalist-xs',
+                        secMeta.bg,
+                        secMeta.text
+                      )}
+                    >
+                      {secMeta.label}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.sectionId, item.itemId)}
+                      aria-label={`הסר את ${title} מהמגירה`}
+                      title="הסר מהמגירה"
+                      className="p-1.5 bg-light-gray border border-off-black text-dark-gray hover:bg-tetris-pink hover:text-off-black transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+
+                  {/* Title & Subtitle */}
+                  <h3
                     className={cn(
-                      'px-4 py-2 font-headline text-xs md:text-sm font-bold',
-                      btn.bg,
+                      'text-xl font-bold text-off-black text-right leading-tight mb-1',
+                      isEnglish(title) ? 'font-jersey' : 'font-headline'
+                    )}
+                  >
+                    {title}
+                  </h3>
+                  {subtitle && (
+                    <p className="text-xs font-jersey text-mid-gray mb-2">{subtitle}</p>
+                  )}
+
+                  {item.snapshot?.description && (
+                    <p className="text-sm font-ibm text-dark-gray leading-relaxed line-clamp-2 mb-3">
+                      {item.snapshot.description}
+                    </p>
+                  )}
+
+                  {/* Original tags */}
+                  {item.snapshot?.tags?.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {item.snapshot.tags.slice(0, 4).map((tag) => {
+                        const bg = getTagColor(tag);
+                        return (
+                          <span
+                            key={`${item.key}-${tag}`}
+                            className={cn(
+                              'px-2 py-0.5 text-xs border border-off-black',
+                              isEnglish(tag) ? 'font-jersey' : 'font-headline',
+                              bg,
+                              getTagTextClass(bg)
+                            )}
+                          >
+                            {tag}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Folder assignment pills */}
+                  {folders.length > 0 && (
+                    <div className="mb-3 pt-2 border-t border-off-black/15">
+                      <span className="block text-[11px] font-headline text-mid-gray mb-1.5">
+                        שיוך לתיקיות:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {folders.map((f) => {
+                          const active = item.folderIds?.includes(f.id);
+                          return (
+                            <button
+                              key={`${item.key}-f-${f.id}`}
+                              type="button"
+                              onClick={() =>
+                                toggleItemFolder(item.sectionId, item.itemId, f.id, item.snapshot)
+                              }
+                              className={cn(
+                                'inline-flex items-center gap-1 px-2 py-0.5 text-xs font-headline border border-off-black transition-all cursor-pointer',
+                                active
+                                  ? 'bg-tetris-yellow font-bold text-off-black'
+                                  : 'bg-light-gray/70 text-dark-gray hover:bg-off-white'
+                              )}
+                            >
+                              <TetrisShape type={f.shape} color={f.color} size={4} />
+                              <span>{f.name}</span>
+                              {active && <Check size={10} />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Personal Sticky Note Form with Explicit Submit Button */}
+                  <PersonalNoteForm item={item} onSaveNote={updateItemNote} />
+                </div>
+
+                {/* Footer actions: External link + Jump to card in section */}
+                <div className="pt-3 border-t-2 border-off-black/10 flex flex-wrap items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onNavigateToItem?.({
+                        sectionId: item.sectionId,
+                        targetId: makeOriginalTargetId(item.sectionId, item.itemId),
+                      })
+                    }
+                    className={cn(
+                      'inline-flex items-center gap-1 px-3 py-1.5',
+                      'bg-light-gray text-off-black font-headline text-xs font-bold',
                       'border-2 border-off-black shadow-brutalist-xs',
                       'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
                       'transition-all duration-150 cursor-pointer'
                     )}
                   >
-                    {btn.label}
+                    <span>במדור המקורי</span>
+                    <ArrowUpLeft size={13} />
                   </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div
-              className={cn(
-                viewMode === 'gallery'
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
-                  : 'flex flex-col gap-3'
-              )}
-            >
-              {visibleItems.map((item) => {
-                const secMeta = SECTION_META[item.sectionId] || {
-                  label: item.sectionId,
-                  bg: 'bg-light-gray',
-                  text: 'text-off-black',
-                };
-                const title = item.snapshot?.titleHe || item.snapshot?.titleEn || 'פריט שמור';
-                const subtitle =
-                  item.snapshot?.titleEn && item.snapshot?.titleEn !== title
-                    ? item.snapshot.titleEn
-                    : '';
-                const href = item.snapshot?.link
-                  ? item.snapshot.link.startsWith('http')
-                    ? item.snapshot.link
-                    : `https://${item.snapshot.link}`
-                  : '';
 
-                return (
-                  <article
-                    key={item.key}
-                    className={cn(
-                      'bg-off-white border-3 border-off-black',
-                      viewMode === 'gallery'
-                        ? 'shadow-brutalist flex flex-col justify-between p-5'
-                        : 'shadow-brutalist-xs flex flex-col md:flex-row md:items-center justify-between gap-4 p-4'
-                    )}
-                  >
-                    <div className="flex-1 min-w-0">
-                      {/* Top row: section badge + remove button */}
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <span
-                          className={cn(
-                            'px-2.5 py-0.5 text-xs font-headline font-bold border border-off-black shadow-brutalist-xs',
-                            secMeta.bg,
-                            secMeta.text
-                          )}
-                        >
-                          {secMeta.label}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeItem(item.sectionId, item.itemId)}
-                          aria-label={`הסר את ${title} מהמגירה`}
-                          title="הסר מהמגירה"
-                          className="p-1.5 bg-light-gray border border-off-black text-dark-gray hover:bg-tetris-pink hover:text-off-black transition-colors cursor-pointer"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-
-                      {/* Title & Subtitle */}
-                      <h3
-                        className={cn(
-                          'text-xl font-bold text-off-black text-right leading-tight mb-1',
-                          isEnglish(title) ? 'font-jersey' : 'font-headline'
-                        )}
-                      >
-                        {title}
-                      </h3>
-                      {subtitle && (
-                        <p className="text-xs font-jersey text-mid-gray mb-2">{subtitle}</p>
+                  {href && (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        'inline-flex items-center gap-1.5 px-3 py-1.5',
+                        'bg-tetris-cyan text-off-black font-headline text-xs font-bold',
+                        'border-2 border-off-black shadow-brutalist-xs',
+                        'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                        'transition-all duration-150'
                       )}
-
-                      {item.snapshot?.description && (
-                        <p className="text-sm font-ibm text-dark-gray leading-relaxed line-clamp-2 mb-3">
-                          {item.snapshot.description}
-                        </p>
-                      )}
-
-                      {/* Original tags */}
-                      {item.snapshot?.tags?.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {item.snapshot.tags.slice(0, 4).map((tag) => {
-                            const bg = getTagColor(tag);
-                            return (
-                              <span
-                                key={`${item.key}-${tag}`}
-                                className={cn(
-                                  'px-2 py-0.5 text-xs border border-off-black',
-                                  isEnglish(tag) ? 'font-jersey' : 'font-headline',
-                                  bg,
-                                  getTagTextClass(bg)
-                                )}
-                              >
-                                {tag}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {/* Folder assignment pills */}
-                      {folders.length > 0 && (
-                        <div className="mb-3 pt-2 border-t border-off-black/15">
-                          <span className="block text-[11px] font-headline text-mid-gray mb-1.5">
-                            שיוך לתיקיות:
-                          </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {folders.map((f) => {
-                              const active = item.folderIds?.includes(f.id);
-                              return (
-                                <button
-                                  key={`${item.key}-f-${f.id}`}
-                                  type="button"
-                                  onClick={() =>
-                                    toggleItemFolder(item.sectionId, item.itemId, f.id, item.snapshot)
-                                  }
-                                  className={cn(
-                                    'inline-flex items-center gap-1 px-2 py-0.5 text-xs font-headline border border-off-black transition-all cursor-pointer',
-                                    active
-                                      ? 'bg-tetris-yellow font-bold text-off-black'
-                                      : 'bg-light-gray/70 text-dark-gray hover:bg-off-white'
-                                  )}
-                                >
-                                  <TetrisShape type={f.shape} color={f.color} size={4} />
-                                  <span>{f.name}</span>
-                                  {active && <Check size={10} />}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Personal Sticky Note Input */}
-                      <div className="mb-3">
-                        <input
-                          type="text"
-                          value={item.note || ''}
-                          onChange={(e) =>
-                            updateItemNote(item.sectionId, item.itemId, e.target.value)
-                          }
-                          placeholder="הוסף הערה אישית (למשל: להשתמש להגשה ביום ג׳)..."
-                          dir="rtl"
-                          className={cn(
-                            'w-full px-2.5 py-1.5',
-                            'bg-tetris-yellow/20 focus:bg-tetris-yellow/40',
-                            'border border-off-black/40 focus:border-off-black',
-                            'text-xs font-ibm text-off-black placeholder:text-mid-gray outline-none'
-                          )}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Footer actions: External link + Jump to card in section */}
-                    <div className="pt-3 border-t-2 border-off-black/10 flex flex-wrap items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onNavigateToItem?.({
-                            sectionId: item.sectionId,
-                            targetId: makeOriginalTargetId(item.sectionId, item.itemId),
-                          })
-                        }
-                        className={cn(
-                          'inline-flex items-center gap-1 px-3 py-1.5',
-                          'bg-light-gray text-off-black font-headline text-xs font-bold',
-                          'border-2 border-off-black shadow-brutalist-xs',
-                          'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
-                          'transition-all duration-150 cursor-pointer'
-                        )}
-                      >
-                        <span>במדור המקורי</span>
-                        <ArrowUpLeft size={13} />
-                      </button>
-
-                      {href && (
-                        <a
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={cn(
-                            'inline-flex items-center gap-1.5 px-3 py-1.5',
-                            'bg-tetris-cyan text-off-black font-headline text-xs font-bold',
-                            'border-2 border-off-black shadow-brutalist-xs',
-                            'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
-                            'transition-all duration-150'
-                          )}
-                        >
-                          <span>לאתר</span>
-                          <ExternalLink size={13} />
-                        </a>
-                      )}
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* =================================================================== */}
-      {/* TAB 2: PHASE 2 STUDENT WORKS SHOWCASE ("תערוכת סטודנטים")            */}
-      {/* =================================================================== */}
-      {activeTab === 'showcase' && (
-        <div className="animate-tetris-stack">
-          {/* Banner explaining Phase 2 + Upload CTA */}
-          <div className="mb-8 p-6 bg-tetris-orange/25 border-3 border-off-black shadow-brutalist flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-tetris-yellow border-2 border-off-black text-xs font-headline font-bold mb-2">
-                <span>קיר הסטודנטים · תצוגה מקדימה</span>
-              </div>
-              <h3 className="text-2xl font-bold font-headline text-off-black mb-1">
-                תערוכת עבודות סטודנטים ופרויקטים אישיים
-              </h3>
-              <p className="text-sm font-ibm text-dark-gray max-w-2xl leading-relaxed">
-                מקום להציג פרויקטים מקורסי המחלקה (טיפוגרפיה, מיתוג, איור, אינטראקטיב) או עבודות אישיות. הגישו עבודה כדי לשמור אותה במגירה שלכם ולהציג אותה בקיר הסטודנטים.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsSubmitWorkOpen((prev) => !prev)}
-              className={cn(
-                'inline-flex items-center gap-2 px-5 py-3 shrink-0',
-                'bg-tetris-purple text-off-white font-headline text-sm font-bold',
-                'border-3 border-off-black shadow-brutalist-sm',
-                'hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]',
-                'transition-all duration-150 cursor-pointer'
-              )}
-            >
-              <Upload size={16} />
-              <span>העלאת עבודה חדשה</span>
-            </button>
-          </div>
-
-          {workFormSuccess && (
-            <div className="mb-6 p-3 px-4 bg-tetris-green border-3 border-off-black shadow-brutalist-sm font-headline text-sm font-bold text-off-black">
-              {workFormSuccess}
-            </div>
-          )}
-
-          {/* Student Work Submission Form */}
-          {isSubmitWorkOpen && (
-            <form
-              onSubmit={handleWorkSubmit}
-              className="mb-8 p-6 bg-off-white border-3 border-off-black shadow-brutalist"
-            >
-              <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-off-black">
-                <h4 className="text-xl font-bold font-headline text-off-black">
-                  הגשת עבודת סטודנט/ית לתערוכה
-                </h4>
-                <button
-                  type="button"
-                  onClick={() => setIsSubmitWorkOpen(false)}
-                  className="p-1 text-dark-gray hover:text-off-black cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    שם הפרויקט / העבודה *
-                  </label>
-                  <input
-                    type="text"
-                    value={workForm.title}
-                    onChange={(e) => setWorkForm((p) => ({ ...p, title: e.target.value }))}
-                    placeholder="למשל: עיצוב פונט רשת תלת-ממדי"
-                    dir="rtl"
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none focus:bg-off-white"
-                  />
-                </div>
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    שם הסטודנט/ית *
-                  </label>
-                  <input
-                    type="text"
-                    value={workForm.studentName}
-                    onChange={(e) => setWorkForm((p) => ({ ...p, studentName: e.target.value }))}
-                    placeholder="שם מלא"
-                    dir="rtl"
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none focus:bg-off-white"
-                  />
-                </div>
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    קורס / תחום
-                  </label>
-                  <select
-                    value={workForm.course}
-                    onChange={(e) => setWorkForm((p) => ({ ...p, course: e.target.value }))}
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
-                  >
-                    {COURSES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    שנת לימודים
-                  </label>
-                  <select
-                    value={workForm.studyYear}
-                    onChange={(e) => setWorkForm((p) => ({ ...p, studyYear: e.target.value }))}
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
-                  >
-                    {STUDY_YEARS.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    קישור לפרויקט (Behance / Figma / Instagram)
-                  </label>
-                  <input
-                    type="url"
-                    value={workForm.projectUrl}
-                    onChange={(e) => setWorkForm((p) => ({ ...p, projectUrl: e.target.value }))}
-                    placeholder="https://..."
-                    dir="ltr"
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
-                  />
-                </div>
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    קישור לתמונה מציגה (אופציונלי)
-                  </label>
-                  <input
-                    type="url"
-                    value={workForm.imageUrl}
-                    onChange={(e) => setWorkForm((p) => ({ ...p, imageUrl: e.target.value }))}
-                    placeholder="https://..."
-                    dir="ltr"
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
-                  />
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                  תיאור קצר על העבודה והתהליך
-                </label>
-                <textarea
-                  rows={3}
-                  value={workForm.description}
-                  onChange={(e) => setWorkForm((p) => ({ ...p, description: e.target.value }))}
-                  placeholder="ספרו בקצרה על הבריף, הכלים או הפונטים שבהם השתמשתם..."
-                  dir="rtl"
-                  className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-ibm text-sm outline-none focus:bg-off-white"
-                />
-              </div>
-
-              {workFormError && (
-                <p className="text-xs font-ibm text-red-700 mb-3">{workFormError}</p>
-              )}
-
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsSubmitWorkOpen(false)}
-                  className="px-4 py-2 bg-light-gray border-2 border-off-black font-headline text-xs font-bold cursor-pointer"
-                >
-                  ביטול
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold cursor-pointer"
-                >
-                  שמור והצג בתערוכה
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Course Filter Pills */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {['הכל', ...COURSES].map((course) => (
-              <button
-                key={course}
-                type="button"
-                onClick={() => setCourseFilter(course)}
-                className={cn(
-                  'px-3 py-1.5 font-headline text-xs font-bold border-2 border-off-black transition-all cursor-pointer',
-                  courseFilter === course
-                    ? 'bg-tetris-purple text-off-white shadow-none translate-x-[2px] translate-y-[2px]'
-                    : 'bg-off-white text-off-black shadow-brutalist-xs hover:bg-light-gray'
-                )}
-              >
-                {course}
-              </button>
-            ))}
-          </div>
-
-          {/* Showcase Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allShowcaseWorks.map((work) => (
-              <article
-                key={work.id}
-                className="bg-off-white border-3 border-off-black shadow-brutalist flex flex-col overflow-hidden"
-              >
-                <div className="h-44 border-b-3 border-off-black bg-light-gray relative flex items-center justify-center overflow-hidden">
-                  {work.imageUrl ? (
-                    <img
-                      src={work.imageUrl}
-                      alt={work.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <TetrisShape type={work.shape || 'T'} color={work.color || 'purple'} size={28} />
-                  )}
-                  <div className="absolute top-2 right-2 flex gap-1.5">
-                    <span className="px-2 py-0.5 bg-tetris-yellow border-2 border-off-black font-headline text-xs font-bold text-off-black">
-                      {work.course}
-                    </span>
-                    <span className="px-2 py-0.5 bg-off-white border-2 border-off-black font-headline text-xs text-off-black">
-                      {work.studyYear}
-                    </span>
-                  </div>
-                  {work.isPersonal && (
-                    <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-tetris-green border border-off-black font-headline text-[11px] font-bold text-off-black">
-                      העבודה שלי
-                    </span>
-                  )}
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col">
-                  <h4 className="text-xl font-bold font-headline text-off-black mb-1">
-                    {work.title}
-                  </h4>
-                  <p className="text-xs font-headline text-tetris-purple font-bold mb-3">
-                    מאת: {work.studentName}
-                  </p>
-                  {work.description && (
-                    <p className="text-sm font-ibm text-dark-gray leading-relaxed mb-4 flex-1">
-                      {work.description}
-                    </p>
-                  )}
-
-                  {work.projectUrl && (
-                    <div className="pt-3 border-t-2 border-off-black/10 flex justify-end">
-                      <a
-                        href={work.projectUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-tetris-cyan border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold text-off-black hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                      >
-                        <span>לצפייה בפרויקט</span>
-                        <ExternalLink size={13} />
-                      </a>
-                    </div>
+                    >
+                      <span>לאתר</span>
+                      <ExternalLink size={13} />
+                    </a>
                   )}
                 </div>
               </article>
-            ))}
-          </div>
+            );
+          })}
         </div>
       )}
     </section>

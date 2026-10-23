@@ -17,6 +17,7 @@ const emptyCrate = () => ({
   folders: defaultFolders,
   items: {},
   submissions: [],
+  userProfile: null,
 });
 
 export const makeSavedKey = (sectionId, itemId) =>
@@ -69,11 +70,24 @@ export const sanitizeCrate = (raw) => {
     ? raw.submissions.filter((s) => s && typeof s === 'object' && s.title)
     : [];
 
+  const userProfile =
+    raw.userProfile && typeof raw.userProfile === 'object' && raw.userProfile.name
+      ? {
+          name: String(raw.userProfile.name).trim(),
+          email: String(raw.userProfile.email || '').trim(),
+          avatar: String(raw.userProfile.avatar || '').trim(),
+          studyYear: String(raw.userProfile.studyYear || 'שנה ב׳').trim(),
+          provider: 'google',
+          signedInAt: Number(raw.userProfile.signedInAt) || Date.now(),
+        }
+      : null;
+
   return {
     version: 1,
     folders,
     items,
     submissions,
+    userProfile,
   };
 };
 
@@ -246,20 +260,21 @@ export const SavedItemsProvider = ({ children }) => {
   const removeItem = useCallback(
     (sectionId, itemId) => {
       const key = makeSavedKey(sectionId, itemId);
+      const target = crate.items[key];
+      if (!target) return;
+      const title = target.snapshot?.titleHe || target.snapshot?.titleEn || 'הפריט';
+      triggerUndoToast(`"${title}" הוסר מהמגירה`, crate);
       setCrate((prev) => {
-        const target = prev.items[key];
-        if (!target) return prev;
+        if (!prev.items[key]) return prev;
         const nextItems = { ...prev.items };
         delete nextItems[key];
-        const title = target.snapshot?.titleHe || target.snapshot?.titleEn || 'הפריט';
-        triggerUndoToast(`"${title}" הוסר מהמגירה`, prev);
         return {
           ...prev,
           items: nextItems,
         };
       });
     },
-    [triggerUndoToast]
+    [crate, triggerUndoToast]
   );
 
   const toggleSaveItem = useCallback(
@@ -331,20 +346,19 @@ export const SavedItemsProvider = ({ children }) => {
     });
   }, []);
 
-  const createFolder = useCallback((rawName, options = {}) => {
-    const clean = String(rawName || '').trim().slice(0, MAX_FOLDER_NAME_LENGTH);
-    if (!clean) return { ok: false, error: 'יש להזין שם לתיקייה' };
+  const createFolder = useCallback(
+    (rawName, options = {}) => {
+      const clean = String(rawName || '').trim().slice(0, MAX_FOLDER_NAME_LENGTH);
+      if (!clean) return { ok: false, error: 'יש להזין שם לתיקייה' };
 
-    let result = { ok: false, folder: null, error: null };
-    setCrate((prev) => {
-      const exists = prev.folders.some(
+      const exists = crate.folders.some(
         (f) => f.name.toLowerCase() === clean.toLowerCase()
       );
       if (exists) {
-        result = { ok: false, error: 'כבר קיימת תיקייה בשם זה' };
-        return prev;
+        return { ok: false, error: 'כבר קיימת תיקייה בשם זה' };
       }
-      const idx = prev.folders.length;
+
+      const idx = crate.folders.length;
       const newFolder = {
         id: `f-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
         name: clean,
@@ -356,34 +370,49 @@ export const SavedItemsProvider = ({ children }) => {
           : TETRIS_SHAPES[idx % TETRIS_SHAPES.length],
         createdAt: Date.now(),
       };
-      result = { ok: true, folder: newFolder };
-      return {
+
+      setCrate((prev) => ({
         ...prev,
         folders: [...prev.folders, newFolder],
-      };
-    });
-    return result;
-  }, []);
+      }));
+      return { ok: true, folder: newFolder };
+    },
+    [crate.folders]
+  );
 
-  const renameFolder = useCallback((folderId, rawName) => {
-    const clean = String(rawName || '').trim().slice(0, MAX_FOLDER_NAME_LENGTH);
-    if (!clean) return { ok: false, error: 'שם התיקייה לא יכול להיות ריק' };
+  const renameFolder = useCallback(
+    (folderId, rawName) => {
+      const clean = String(rawName || '').trim().slice(0, MAX_FOLDER_NAME_LENGTH);
+      if (!clean) return { ok: false, error: 'שם התיקייה לא יכול להיות ריק' };
 
-    let result = { ok: true };
-    setCrate((prev) => {
-      const duplicate = prev.folders.some(
+      const duplicate = crate.folders.some(
         (f) => f.id !== folderId && f.name.toLowerCase() === clean.toLowerCase()
       );
       if (duplicate) {
-        result = { ok: false, error: 'כבר קיימת תיקייה בשם זה' };
-        return prev;
+        return { ok: false, error: 'כבר קיימת תיקייה בשם זה' };
       }
-      return {
+
+      setCrate((prev) => ({
         ...prev,
         folders: prev.folders.map((f) => (f.id === folderId ? { ...f, name: clean } : f)),
-      };
-    });
-    return result;
+      }));
+      return { ok: true };
+    },
+    [crate.folders]
+  );
+
+  const updateFolderStyle = useCallback((folderId, { color, shape }) => {
+    setCrate((prev) => ({
+      ...prev,
+      folders: prev.folders.map((f) => {
+        if (f.id !== folderId) return f;
+        return {
+          ...f,
+          color: TETRIS_COLORS.includes(color) ? color : f.color,
+          shape: TETRIS_SHAPES.includes(shape) ? shape : f.shape,
+        };
+      }),
+    }));
   }, []);
 
   const cycleFolderStyle = useCallback((folderId) => {
@@ -404,11 +433,13 @@ export const SavedItemsProvider = ({ children }) => {
 
   const deleteFolder = useCallback(
     (folderId) => {
+      const target = crate.folders.find((f) => f.id === folderId);
+      if (!target) return;
+      triggerUndoToast(
+        `התיקייה "${target.name}" נמחקה (הפריטים נשמרו ב"כל השמורים")`,
+        crate
+      );
       setCrate((prev) => {
-        const target = prev.folders.find((f) => f.id === folderId);
-        if (!target) return prev;
-        triggerUndoToast(`התיקייה "${target.name}" נמחקה (הפריטים נשמרו ב"כל השמורים")`, prev);
-
         const nextItems = {};
         for (const [k, item] of Object.entries(prev.items)) {
           nextItems[k] = {
@@ -423,12 +454,12 @@ export const SavedItemsProvider = ({ children }) => {
         };
       });
     },
-    [triggerUndoToast]
+    [crate, triggerUndoToast]
   );
 
   const importSharedFolder = useCallback((decoded) => {
     if (!decoded || !decoded.name || !Array.isArray(decoded.items)) return null;
-    let importedFolderId = null;
+    const newFolderId = `f-${Date.now().toString(36)}-imp`;
     setCrate((prev) => {
       let targetFolder = prev.folders.find(
         (f) => f.name.toLowerCase() === decoded.name.toLowerCase()
@@ -436,7 +467,7 @@ export const SavedItemsProvider = ({ children }) => {
       const nextFolders = [...prev.folders];
       if (!targetFolder) {
         targetFolder = {
-          id: `f-${Date.now().toString(36)}-imp`,
+          id: newFolderId,
           name: decoded.name.slice(0, MAX_FOLDER_NAME_LENGTH),
           color: decoded.color || 'purple',
           shape: decoded.shape || 'T',
@@ -444,7 +475,6 @@ export const SavedItemsProvider = ({ children }) => {
         };
         nextFolders.push(targetFolder);
       }
-      importedFolderId = targetFolder.id;
 
       const nextItems = { ...prev.items };
       for (const item of decoded.items) {
@@ -479,28 +509,66 @@ export const SavedItemsProvider = ({ children }) => {
         items: nextItems,
       };
     });
-    return importedFolderId;
+    const existingMatch = crate.folders.find(
+      (f) => f.name.toLowerCase() === decoded.name.toLowerCase()
+    );
+    return existingMatch ? existingMatch.id : newFolderId;
+  }, [crate.folders]);
+
+  const signInWithGoogle = useCallback((profileData) => {
+    if (!profileData?.name) return;
+    setCrate((prev) => ({
+      ...prev,
+      userProfile: {
+        name: String(profileData.name).trim(),
+        email: String(profileData.email || '').trim(),
+        avatar: String(profileData.avatar || '').trim(),
+        studyYear: String(profileData.studyYear || 'שנה ב׳').trim(),
+        provider: 'google',
+        signedInAt: Date.now(),
+      },
+    }));
+  }, []);
+
+  const signOutProfile = useCallback(() => {
+    setCrate((prev) => ({
+      ...prev,
+      userProfile: null,
+    }));
   }, []);
 
   const addLocalSubmission = useCallback((submission) => {
-    if (!submission?.title) return;
+    if (!submission?.title) return null;
+    const newWork = {
+      id: `sub-${Date.now()}`,
+      title: String(submission.title).trim(),
+      studentName: String(submission.studentName || '').trim(),
+      studentEmail: String(submission.studentEmail || '').trim(),
+      studentAvatar: String(submission.studentAvatar || '').trim(),
+      year: String(submission.year || submission.studyYear || 'שנה ב׳'),
+      course: String(submission.course || 'טיפוגרפיה א׳'),
+      teacher: String(submission.teacher || '').trim(),
+      tags: Array.isArray(submission.tags)
+        ? submission.tags.filter(Boolean).map((t) => String(t).trim())
+        : [],
+      link: String(submission.link || submission.projectUrl || '').trim(),
+      imageUrl: String(submission.imageUrl || '').trim(),
+      description: String(submission.description || '').trim(),
+      shape: TETRIS_SHAPES.includes(submission.shape) ? submission.shape : 'T',
+      color: TETRIS_COLORS.includes(submission.color) ? submission.color : 'purple',
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
     setCrate((prev) => ({
       ...prev,
-      submissions: [
-        {
-          id: `sub-${Date.now()}`,
-          title: String(submission.title).trim(),
-          studentName: String(submission.studentName || '').trim(),
-          studyYear: String(submission.studyYear || 'שנה א׳'),
-          course: String(submission.course || 'פרויקט אישי'),
-          projectUrl: String(submission.projectUrl || '').trim(),
-          imageUrl: String(submission.imageUrl || '').trim(),
-          description: String(submission.description || '').trim(),
-          status: 'ממתין לאישור במערכת',
-          createdAt: Date.now(),
-        },
-        ...(prev.submissions || []),
-      ],
+      submissions: [newWork, ...(prev.submissions || [])],
+    }));
+    return newWork;
+  }, []);
+
+  const deleteLocalSubmission = useCallback((workId) => {
+    setCrate((prev) => ({
+      ...prev,
+      submissions: (prev.submissions || []).filter((s) => s.id !== workId),
     }));
   }, []);
 
@@ -516,6 +584,7 @@ export const SavedItemsProvider = ({ children }) => {
       savedItemsList,
       savedCount: savedItemsList.length,
       submissions: crate.submissions || [],
+      userProfile: crate.userProfile || null,
       undoState,
       handleUndo,
       dismissUndo,
@@ -528,15 +597,20 @@ export const SavedItemsProvider = ({ children }) => {
       updateItemNote,
       createFolder,
       renameFolder,
+      updateFolderStyle,
       cycleFolderStyle,
       deleteFolder,
       importSharedFolder,
+      signInWithGoogle,
+      signOutProfile,
       addLocalSubmission,
+      deleteLocalSubmission,
     }),
     [
       crate.folders,
       crate.items,
       crate.submissions,
+      crate.userProfile,
       savedItemsList,
       undoState,
       handleUndo,
@@ -550,10 +624,14 @@ export const SavedItemsProvider = ({ children }) => {
       updateItemNote,
       createFolder,
       renameFolder,
+      updateFolderStyle,
       cycleFolderStyle,
       deleteFolder,
       importSharedFolder,
+      signInWithGoogle,
+      signOutProfile,
       addLocalSubmission,
+      deleteLocalSubmission,
     ]
   );
 

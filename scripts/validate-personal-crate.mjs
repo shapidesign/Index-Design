@@ -1,4 +1,4 @@
-/** Personal Crate state, sanitization, and URL share/import self-check. Run: node scripts/validate-personal-crate.mjs */
+/** Personal Crate state, sanitization, HIT faculty data, and URL share/import self-check. Run: node scripts/validate-personal-crate.mjs */
 import assert from 'node:assert';
 import {
   MAX_FOLDER_NAME_LENGTH,
@@ -9,6 +9,12 @@ import {
   encodeSharedFolder,
   decodeSharedFolder,
 } from '../src/hooks/useSavedItems.js';
+import {
+  HIT_DESIGN_PROFESSORS,
+  HIT_COURSES,
+  HIT_STUDY_YEARS,
+  SEED_STUDENT_WORKS,
+} from '../src/data/hitFaculty.js';
 
 // 1. Key formatting
 assert.equal(makeSavedKey('toolbox', 'abc-123'), 'toolbox:abc-123');
@@ -33,6 +39,11 @@ const dirty = sanitizeCrate({
     },
     brokenItem: { sectionId: '', itemId: null },
   },
+  userProfile: {
+    name: '  נועה לוי  ',
+    email: 'noa@gmail.com',
+    studyYear: 'שנה ב׳',
+  },
 });
 
 assert.equal(dirty.folders.length, 1);
@@ -41,6 +52,11 @@ assert(TETRIS_COLORS.includes(dirty.folders[0].color), 'invalid folder color mus
 assert(TETRIS_SHAPES.includes(dirty.folders[0].shape), 'invalid folder shape must fall back to valid Tetris shape');
 assert.deepEqual(dirty.items['toolbox:item1'].folderIds, ['f-1'], 'dangling folder references must be stripped');
 assert.equal(dirty.items.brokenItem, undefined, 'broken items must be stripped');
+assert.equal(dirty.userProfile.name, 'נועה לוי');
+
+// Verify empty folders array stays empty (so deleting all folders persists)
+const emptyDeleted = sanitizeCrate({ folders: [], items: {} });
+assert.equal(emptyDeleted.folders.length, 0, 'empty folders array must remain empty after deletion');
 
 // 3. Round-trip Hebrew + English folder URL encoding & decoding
 const sampleFolder = { id: 'f-typo', name: 'טיפוגרפיה א׳', color: 'purple', shape: 'T' };
@@ -78,4 +94,12 @@ assert.equal(decoded.items[0].snapshot.titleHe, 'פרנק ריהל');
 
 assert.equal(decodeSharedFolder('not-valid-base64-$$$'), null);
 
-console.log('personal-crate self-check: all assertions passed');
+// 4. HIT Design Faculty & Museum Data
+assert(HIT_DESIGN_PROFESSORS.length >= 25, 'should include HIT design professors from phonebook');
+assert(HIT_DESIGN_PROFESSORS.some((p) => p.includes('ארז בכר')), 'should include head of Visual Communication Ereznf Bachar');
+assert(HIT_DESIGN_PROFESSORS.some((p) => p.includes('עודד עזר')), 'should include Prof. Oded Ezer');
+assert(HIT_COURSES.length >= 10, 'should include HIT Visual Communication courses');
+assert.equal(HIT_STUDY_YEARS.length, 5);
+assert(SEED_STUDENT_WORKS.length >= 5, 'should include seeded student works');
+
+console.log('personal-crate & HIT museum self-check: all assertions passed');
