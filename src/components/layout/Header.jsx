@@ -5,6 +5,9 @@ import logoDark from '@/assets/svg/logo-dark.svg';
 import vcLogo from '@/assets/svg/vc-logo-small.svg';
 import useSavedItems from '@/hooks/useSavedItems';
 
+/** HIT / VC mark stays in source; flip to show it again. */
+const SHOW_HIT_LOGO = false;
+
 /**
  * Header - כותרת עליונה
  * Sticky navigation header with dark bg for differentiation:
@@ -52,7 +55,12 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
         'border-b-3 border-off-black'
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between md:grid md:grid-cols-[auto_1fr_auto] md:gap-4">
+      <div
+        className={cn(
+          'max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between md:grid md:gap-4',
+          SHOW_HIT_LOGO ? 'md:grid-cols-[auto_1fr_auto]' : 'md:grid-cols-[auto_1fr]'
+        )}
+      >
 
         {/* Logo - right corner in RTL (white version for dark bg) */}
         <button
@@ -104,11 +112,8 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
           >
             <span>לעזור</span>
           </button>
-        </div>
 
-        {/* Left corner (Top-Left of screen in RTL): Profile icon button + VC logo + Mobile hamburger */}
-        <div className="flex items-center gap-2.5 shrink-0 md:justify-self-end">
-          {/* Profile / Personal Drawer Icon Button (Top-Left on Desktop & Mobile) */}
+          {/* Profile / Personal Drawer Icon Button (Desktop — in the same row as nav buttons for exact alignment) */}
           <button
             type="button"
             onClick={() => {
@@ -118,12 +123,46 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
             aria-label="אזור אישי והמגירה שלי"
             title="אזור אישי · המגירה שלי"
             className={cn(
-              'relative h-10 px-2.5 inline-flex items-center justify-center gap-1.5',
+              'relative h-10 px-2.5 shrink-0 inline-flex items-center justify-center gap-1.5',
               'border border-dark-gray font-headline text-xs lg:text-sm font-bold leading-none whitespace-nowrap',
               'transition-all duration-200 cursor-pointer',
               isProfileActive
-                ? 'bg-tetris-pink text-off-black shadow-none translate-x-[3px] translate-y-[3px]'
-                : 'bg-tetris-pink text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]'
+                ? 'bg-tetris-pink text-off-black shadow-none translate-x-[4px] translate-y-[4px]'
+                : 'bg-tetris-pink text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+            )}
+          >
+            <User size={18} strokeWidth={2.2} className="text-off-black shrink-0" />
+            {savedCount > 0 && (
+              <span className="px-1.5 py-0.5 bg-off-black text-off-white text-[11px] font-jersey leading-none">
+                {savedCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Left corner (Top-Left of screen in RTL): Mobile Profile icon + optional VC logo + Mobile hamburger */}
+        <div
+          className={cn(
+            'flex items-center gap-2.5 shrink-0 md:justify-self-end',
+            !SHOW_HIT_LOGO && 'md:hidden'
+          )}
+        >
+          {/* Profile / Personal Drawer Icon Button (Mobile) */}
+          <button
+            type="button"
+            onClick={() => {
+              onSectionChange?.('saved');
+              setMobileMenuOpen(false);
+            }}
+            aria-label="אזור אישי והמגירה שלי"
+            title="אזור אישי · המגירה שלי"
+            className={cn(
+              'md:hidden relative h-11 px-3 inline-flex items-center justify-center gap-1.5',
+              'border border-dark-gray font-headline text-xs font-bold leading-none whitespace-nowrap',
+              'transition-all duration-200 cursor-pointer',
+              isProfileActive
+                ? 'bg-tetris-pink text-off-black shadow-none translate-x-[4px] translate-y-[4px]'
+                : 'bg-tetris-pink text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
             )}
           >
             <User size={18} strokeWidth={2.2} className="text-off-black shrink-0" />
@@ -134,18 +173,20 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
             )}
           </button>
 
-          <a
-            href="https://www.hit.ac.il/academic/design/visual-communications/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden lg:flex items-center"
-          >
-            <img
-              src={vcLogo}
-              alt="המחלקה לתקשורת חזותית"
-              className="h-9 w-auto brightness-0 invert"
-            />
-          </a>
+          {SHOW_HIT_LOGO && (
+            <a
+              href="https://www.hit.ac.il/academic/design/visual-communications/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:flex items-center"
+            >
+              <img
+                src={vcLogo}
+                alt="המחלקה לתקשורת חזותית"
+                className="h-9 w-auto brightness-0 invert"
+              />
+            </a>
+          )}
 
           {/* Mobile: hamburger */}
           <button

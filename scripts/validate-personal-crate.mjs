@@ -1,5 +1,6 @@
 /** Personal Crate state, sanitization, HIT faculty data, and URL share/import self-check. Run: node scripts/validate-personal-crate.mjs */
 import assert from 'node:assert';
+import fs from 'node:fs';
 import {
   MAX_FOLDER_NAME_LENGTH,
   TETRIS_COLORS,
@@ -101,5 +102,13 @@ assert(HIT_DESIGN_PROFESSORS.some((p) => p.includes('עודד עזר')), 'should
 assert(HIT_COURSES.length >= 10, 'should include HIT Visual Communication courses');
 assert.equal(HIT_STUDY_YEARS.length, 5);
 assert(SEED_STUDENT_WORKS.length >= 5, 'should include seeded student works');
+
+// 5. Guard: HIT Viscom logo and moving Eye remain hidden until explicitly requested
+const headerSrc = fs.readFileSync(new URL('../src/components/layout/Header.jsx', import.meta.url), 'utf8');
+const footerSrc = fs.readFileSync(new URL('../src/components/layout/Footer.jsx', import.meta.url), 'utf8');
+const appSrc = fs.readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8');
+assert(headerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Header must keep SHOW_HIT_LOGO = false');
+assert(footerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Footer must keep SHOW_HIT_LOGO = false');
+assert(appSrc.includes('const SHOW_EYE = false;'), 'App must keep SHOW_EYE = false');
 
 console.log('personal-crate & HIT museum self-check: all assertions passed');
