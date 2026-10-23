@@ -5,6 +5,7 @@ import { getTagColor, getTagTextClass } from "@/lib/tagColors";
 import { FOUNDRIES, STYLES, USES, TAGS, VIBES, ERAS, FONTS, fontSlug } from "@/data/fonts";
 import previewSlugs from "@/data/font-previews.json";
 import FilterToggle from "@/components/ui/FilterToggle";
+import SaveItemButton from "@/components/ui/SaveItemButton";
 
 const PREVIEW_SLUGS = new Set(previewSlugs);
 
@@ -447,7 +448,23 @@ export default function DictionarySection() {
                     >
                       {fo.name}
                     </span>
-                    <span className="text-xs text-mid-gray font-jersey tabular-nums">{x.y ?? "—"}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-mid-gray font-jersey tabular-nums">{x.y ?? "—"}</span>
+                      <SaveItemButton
+                        sectionId="dictionary"
+                        itemId={x.lat || x.n}
+                        size="sm"
+                        snapshot={{
+                          titleHe: x.n || "",
+                          titleEn: x.lat || "",
+                          description: [fo?.name, x.d].filter(Boolean).join(" · "),
+                          link: x.url || "",
+                          image: hasPreview ? `/font-previews/${slug}.webp` : "",
+                          tags: cardTags.slice(0, 5),
+                          badge: fo?.name || "פונט",
+                        }}
+                      />
+                    </div>
                   </div>
 
                   <h3 className={cn("text-xl font-bold text-off-black text-right leading-tight", isEnglish(x.n) ? "font-jersey" : "font-headline")}>
