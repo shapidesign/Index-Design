@@ -62,12 +62,12 @@ const SearchableDropdown = ({ label, options, selected, onToggle, onClear }) => 
         type="button"
         onClick={() => setOpen(!open)}
         className={cn(
-          'flex items-center gap-2 w-full',
-          'px-3 py-2',
+          'flex items-center gap-2 w-full h-11',
+          'px-3',
           'bg-off-white',
           'border-2 border-off-black',
           'shadow-brutalist-xs',
-          'font-headline text-sm text-right',
+          'font-headline text-sm text-right leading-normal',
           'transition-all duration-200 cursor-pointer',
           'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
           open && 'shadow-none translate-x-[2px] translate-y-[2px]',
@@ -692,10 +692,10 @@ const MuseumSection = ({ pendingNavigation }) => {
               <div className="p-3 bg-tetris-yellow/30 border-2 border-off-black text-xs font-ibm text-off-black">
                 כדי להעלות עבודות למוזיאון הסטודנטים ולתייג אותן תחת שמכם, חברו תחילה את פרופיל ה-Google שלכם:
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    שם מלא של הסטודנט/ית *
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div className="flex flex-col">
+                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                    <span>שם מלא של הסטודנט/ית *</span>
                   </label>
                   <input
                     type="text"
@@ -705,12 +705,12 @@ const MuseumSection = ({ pendingNavigation }) => {
                     }
                     placeholder="למשל: נועה לוי"
                     dir="rtl"
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none focus:bg-off-white"
+                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none focus:bg-off-white"
                   />
                 </div>
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    כתובת Google / Gmail *
+                <div className="flex flex-col">
+                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                    <span>כתובת Google / Gmail *</span>
                   </label>
                   <input
                     type="email"
@@ -720,19 +720,19 @@ const MuseumSection = ({ pendingNavigation }) => {
                     }
                     placeholder="student@gmail.com"
                     dir="ltr"
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
+                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
                   />
                 </div>
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    שנת לימודים
+                <div className="flex flex-col">
+                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                    <span>שנת לימודים</span>
                   </label>
                   <select
                     value={googleAuthForm.studyYear}
                     onChange={(e) =>
                       setGoogleAuthForm((p) => ({ ...p, studyYear: e.target.value }))
                     }
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
+                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
                   >
                     {HIT_STUDY_YEARS.map((y) => (
                       <option key={y} value={y}>
@@ -748,7 +748,7 @@ const MuseumSection = ({ pendingNavigation }) => {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold text-off-black cursor-pointer"
+                  className="form-control-uniform inline-flex items-center justify-center gap-2 px-5 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold text-off-black cursor-pointer"
                 >
                   <span>המשך להעלאת עבודה עם Google</span>
                 </button>
@@ -756,10 +756,10 @@ const MuseumSection = ({ pendingNavigation }) => {
             </form>
           ) : (
             <form onSubmit={handleUploadSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    שם העבודה / הפרויקט *
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                <div className="flex flex-col">
+                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                    <span>שם העבודה / הפרויקט *</span>
                   </label>
                   <input
                     type="text"
@@ -769,20 +769,20 @@ const MuseumSection = ({ pendingNavigation }) => {
                     }
                     placeholder="למשל: עיצוב גופן רשת מודולרי"
                     dir="rtl"
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none focus:bg-off-white"
+                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none focus:bg-off-white"
                   />
                 </div>
 
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    קורס *
+                <div className="flex flex-col">
+                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                    <span>קורס *</span>
                   </label>
                   <select
                     value={uploadForm.course}
                     onChange={(e) =>
                       setUploadForm((p) => ({ ...p, course: e.target.value }))
                     }
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
+                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
                   >
                     {HIT_COURSES.map((c) => (
                       <option key={c} value={c}>
@@ -792,16 +792,16 @@ const MuseumSection = ({ pendingNavigation }) => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    שנת לימודים *
+                <div className="flex flex-col">
+                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                    <span>שנת לימודים *</span>
                   </label>
                   <select
                     value={uploadForm.year}
                     onChange={(e) =>
                       setUploadForm((p) => ({ ...p, year: e.target.value }))
                     }
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
+                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
                   >
                     {HIT_STUDY_YEARS.map((y) => (
                       <option key={y} value={y}>
@@ -811,16 +811,16 @@ const MuseumSection = ({ pendingNavigation }) => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    מרצה מנחה ב-HIT *
+                <div className="flex flex-col">
+                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                    <span>מרצה מנחה ב-HIT *</span>
                   </label>
                   <select
                     value={uploadForm.teacher}
                     onChange={(e) =>
                       setUploadForm((p) => ({ ...p, teacher: e.target.value }))
                     }
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
+                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
                   >
                     {HIT_DESIGN_PROFESSORS.map((prof) => (
                       <option key={prof} value={prof}>
@@ -838,14 +838,14 @@ const MuseumSection = ({ pendingNavigation }) => {
                       }
                       placeholder="הזינו שם מרצה..."
                       dir="rtl"
-                      className="w-full mt-2 px-3 py-1.5 bg-off-white border-2 border-off-black font-headline text-xs"
+                      className="form-control-uniform w-full mt-2 px-3 bg-off-white border-2 border-off-black font-headline text-xs"
                     />
                   )}
                 </div>
 
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    קישור לפרויקט (Behance / Figma / אתר)
+                <div className="flex flex-col">
+                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                    <span>קישור לפרויקט (Behance / Figma / אתר)</span>
                   </label>
                   <input
                     type="url"
@@ -855,15 +855,15 @@ const MuseumSection = ({ pendingNavigation }) => {
                     }
                     placeholder="https://..."
                     dir="ltr"
-                    className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
+                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
                   />
                 </div>
 
-                <div>
-                  <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                    העלאת תמונה מהמחשב או קישור לתמונה
+                <div className="flex flex-col">
+                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                    <span>העלאת תמונה מהמחשב או קישור לתמונה</span>
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex items-stretch gap-2">
                     <input
                       type="url"
                       value={uploadForm.imageUrl.startsWith('data:') ? '' : uploadForm.imageUrl}
@@ -872,9 +872,9 @@ const MuseumSection = ({ pendingNavigation }) => {
                       }
                       placeholder="https://... או בחרו קובץ"
                       dir="ltr"
-                      className="flex-1 min-w-0 px-3 py-2 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
+                      className="form-control-uniform flex-1 min-w-0 px-3 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
                     />
-                    <label className="px-3 py-2 bg-tetris-yellow border-2 border-off-black font-headline text-xs font-bold cursor-pointer shrink-0 flex items-center">
+                    <label className="form-control-uniform px-3 bg-tetris-yellow border-2 border-off-black font-headline text-xs font-bold cursor-pointer shrink-0 inline-flex items-center justify-center">
                       <span>קובץ תמונה</span>
                       <input
                         type="file"
@@ -912,7 +912,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                     );
                   })}
                 </div>
-                <div className="flex items-center gap-2 max-w-sm">
+                <div className="flex items-stretch gap-2 max-w-sm">
                   <input
                     type="text"
                     value={uploadForm.customTagInput}
@@ -927,12 +927,12 @@ const MuseumSection = ({ pendingNavigation }) => {
                     }}
                     placeholder="תגית נוספת..."
                     dir="rtl"
-                    className="flex-1 px-2.5 py-1 bg-light-gray border-2 border-off-black font-headline text-xs outline-none"
+                    className="form-control-uniform flex-1 px-3 bg-light-gray border-2 border-off-black font-headline text-xs outline-none"
                   />
                   <button
                     type="button"
                     onClick={handleAddCustomTag}
-                    className="px-3 py-1 bg-off-black text-off-white font-headline text-xs font-bold border-2 border-off-black cursor-pointer inline-flex items-center gap-1"
+                    className="form-control-uniform px-3 bg-off-black text-off-white font-headline text-xs font-bold border-2 border-off-black cursor-pointer inline-flex items-center justify-center gap-1 shrink-0"
                   >
                     <Plus size={12} />
                     <span>הוסף תגית</span>
@@ -941,8 +941,8 @@ const MuseumSection = ({ pendingNavigation }) => {
               </div>
 
               <div>
-                <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                  תיאור קצר של הפרויקט והתהליך
+                <label className="flex items-center h-6 font-headline text-xs font-bold text-off-black mb-1.5 leading-none">
+                  <span>תיאור קצר של הפרויקט והתהליך</span>
                 </label>
                 <textarea
                   rows={3}
@@ -964,13 +964,13 @@ const MuseumSection = ({ pendingNavigation }) => {
                 <button
                   type="button"
                   onClick={() => setIsUploadOpen(false)}
-                  className="px-4 py-2 bg-light-gray border-2 border-off-black font-headline text-xs font-bold cursor-pointer"
+                  className="h-11 px-4 bg-light-gray border-2 border-off-black font-headline text-xs font-bold cursor-pointer inline-flex items-center justify-center"
                 >
                   ביטול
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold text-off-black cursor-pointer"
+                  className="h-11 px-6 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold text-off-black cursor-pointer inline-flex items-center justify-center"
                 >
                   פרסם עבודה במוזיאון
                 </button>
@@ -984,14 +984,14 @@ const MuseumSection = ({ pendingNavigation }) => {
       <div className="p-4 mb-8 bg-off-white border-3 border-off-black shadow-brutalist-sm">
         {/* Search Input */}
         <div className="relative mb-4">
-          <div className="flex items-center gap-2 px-3 py-2 bg-light-gray border-2 border-off-black">
+          <div className="flex items-center gap-2 h-11 px-3 bg-light-gray border-2 border-off-black">
             <Search size={14} className="text-tetris-purple shrink-0" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="חיפוש לפי שם פרויקט, סטודנט/ית, קורס, מרצה מנחה או תגית..."
-              className="w-full bg-transparent text-sm font-headline outline-none text-right"
+              className="w-full h-full bg-transparent text-sm font-headline outline-none text-right"
               dir="rtl"
             />
             {searchQuery && (

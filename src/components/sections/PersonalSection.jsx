@@ -182,7 +182,7 @@ const PersonalNoteForm = ({ item, onSaveNote }) => {
           placeholder="הוסף הערה אישית (למשל: להשתמש להגשה ביום ג׳)..."
           dir="rtl"
           className={cn(
-            'flex-1 min-w-0 px-2.5 py-1.5',
+            'flex-1 min-w-0 h-9 px-2.5',
             'bg-off-white focus:bg-tetris-yellow/20',
             'border-2 border-off-black',
             'text-xs font-ibm text-off-black placeholder:text-mid-gray outline-none'
@@ -191,7 +191,7 @@ const PersonalNoteForm = ({ item, onSaveNote }) => {
         <button
           type="submit"
           className={cn(
-            'px-3 py-1.5 shrink-0',
+            'h-9 px-3 shrink-0 inline-flex items-center justify-center',
             'font-headline text-xs font-bold border-2 border-off-black transition-all cursor-pointer',
             justSaved
               ? 'bg-tetris-green text-off-black'
@@ -546,10 +546,10 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
               <X size={18} />
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div>
-              <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                שם מלא *
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
+            <div className="flex flex-col">
+              <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                <span>שם מלא *</span>
               </label>
               <input
                 type="text"
@@ -557,12 +557,12 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
                 onChange={(e) => setGoogleForm((p) => ({ ...p, name: e.target.value }))}
                 placeholder="למשל: נועה לוי"
                 dir="rtl"
-                className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none focus:bg-off-white"
+                className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none focus:bg-off-white"
               />
             </div>
-            <div>
-              <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                כתובת Gmail / אימייל מכללה *
+            <div className="flex flex-col">
+              <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                <span>כתובת Gmail / אימייל מכללה *</span>
               </label>
               <input
                 type="email"
@@ -570,17 +570,17 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
                 onChange={(e) => setGoogleForm((p) => ({ ...p, email: e.target.value }))}
                 placeholder="student@gmail.com"
                 dir="ltr"
-                className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
+                className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
               />
             </div>
-            <div>
-              <label className="block font-headline text-xs font-bold text-off-black mb-1">
-                שנת לימודים
+            <div className="flex flex-col">
+              <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
+                <span>שנת לימודים</span>
               </label>
               <select
                 value={googleForm.studyYear}
                 onChange={(e) => setGoogleForm((p) => ({ ...p, studyYear: e.target.value }))}
-                className="w-full px-3 py-2 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
+                className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
               >
                 {HIT_STUDY_YEARS.map((y) => (
                   <option key={y} value={y}>
@@ -595,13 +595,13 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
             <button
               type="button"
               onClick={() => setIsGoogleSignInOpen(false)}
-              className="px-4 py-2 bg-light-gray border-2 border-off-black font-headline text-xs font-bold cursor-pointer"
+              className="form-control-uniform px-4 bg-light-gray border-2 border-off-black font-headline text-xs font-bold cursor-pointer inline-flex items-center justify-center"
             >
               ביטול
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold cursor-pointer"
+              className="form-control-uniform px-5 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold cursor-pointer inline-flex items-center justify-center"
             >
               התחבר ושמור פרופיל
             </button>
@@ -665,7 +665,7 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
             className="mb-4 p-4 bg-light-gray border-2 border-off-black flex flex-col gap-3"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <div className="w-10 h-10 bg-off-white border-2 border-off-black flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 bg-off-white border-2 border-off-black flex items-center justify-center shrink-0">
                 <TetrisShape type={newFolderShape} color={newFolderColor} size={6} />
               </div>
               <input
@@ -679,11 +679,11 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
                 placeholder="שם התיקייה (למשל: פרויקט גמר, פונטים לכרזה)..."
                 dir="rtl"
                 autoFocus
-                className="flex-1 min-w-[200px] px-3 py-2 bg-off-white border-2 border-off-black font-headline text-sm text-off-black outline-none"
+                className="flex-1 min-w-[200px] h-11 px-3 bg-off-white border-2 border-off-black font-headline text-sm text-off-black outline-none"
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-tetris-purple text-off-white font-headline text-xs font-bold border-2 border-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer"
+                className="h-11 px-4 bg-tetris-purple text-off-white font-headline text-xs font-bold border-2 border-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer inline-flex items-center justify-center"
               >
                 צור תיקייה
               </button>
@@ -693,7 +693,7 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
                   setIsCreatingFolder(false);
                   setFolderError('');
                 }}
-                className="px-3 py-2 bg-off-white text-off-black font-headline text-xs border-2 border-off-black cursor-pointer"
+                className="h-11 px-3 bg-off-white text-off-black font-headline text-xs border-2 border-off-black cursor-pointer inline-flex items-center justify-center"
               >
                 ביטול
               </button>
@@ -845,22 +845,22 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
                       onChange={(e) => setRenameValue(e.target.value)}
                       dir="rtl"
                       autoFocus
-                      className="px-2 py-1 bg-off-white border-2 border-off-black font-headline text-xs text-off-black outline-none"
+                      className="h-9 px-2.5 bg-off-white border-2 border-off-black font-headline text-xs text-off-black outline-none"
                     />
                     <button
                       type="submit"
                       aria-label="שמור שם תיקייה"
-                      className="p-1.5 bg-tetris-green border-2 border-off-black cursor-pointer"
+                      className="h-9 w-9 inline-flex items-center justify-center bg-tetris-green border-2 border-off-black cursor-pointer"
                     >
-                      <Check size={13} />
+                      <Check size={14} />
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsRenaming(false)}
                       aria-label="בטל שינוי שם"
-                      className="p-1.5 bg-light-gray border-2 border-off-black cursor-pointer"
+                      className="h-9 w-9 inline-flex items-center justify-center bg-light-gray border-2 border-off-black cursor-pointer"
                     >
-                      <X size={13} />
+                      <X size={14} />
                     </button>
                   </form>
                 )}
@@ -934,16 +934,16 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="חיפוש בתוך השמורים והערות אישיות..."
               dir="rtl"
-              className="w-full px-3 py-2 ps-3 pe-9 bg-off-white border-2 border-off-black font-headline text-sm text-off-black outline-none focus:shadow-brutalist-xs"
+              className="w-full h-11 px-3 ps-3 pe-9 bg-off-white border-2 border-off-black font-headline text-sm text-off-black outline-none focus:shadow-brutalist-xs"
             />
           </div>
 
-          <div className="flex border-2 border-off-black">
+          <div className="flex border-2 border-off-black h-11">
             <button
               type="button"
               onClick={() => setViewMode('gallery')}
               className={cn(
-                'p-2 transition-colors cursor-pointer',
+                'px-3 h-full inline-flex items-center justify-center transition-colors cursor-pointer',
                 viewMode === 'gallery'
                   ? 'bg-tetris-purple text-off-white'
                   : 'bg-off-white text-off-black hover:bg-light-gray'
@@ -956,7 +956,7 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
               type="button"
               onClick={() => setViewMode('list')}
               className={cn(
-                'p-2 border-r-2 border-off-black transition-colors cursor-pointer',
+                'px-3 h-full inline-flex items-center justify-center border-r-2 border-off-black transition-colors cursor-pointer',
                 viewMode === 'list'
                   ? 'bg-tetris-purple text-off-white'
                   : 'bg-off-white text-off-black hover:bg-light-gray'

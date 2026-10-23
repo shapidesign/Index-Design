@@ -270,7 +270,7 @@ const SaveItemButton = ({
                   placeholder="תיקייה חדשה..."
                   dir="rtl"
                   className={cn(
-                    'flex-1 min-w-0 px-2 py-1',
+                    'flex-1 min-w-0 h-8 px-2',
                     'bg-off-white border-2 border-off-black',
                     'text-xs font-headline text-off-black text-right',
                     'outline-none focus:bg-tetris-yellow/20'
@@ -280,7 +280,7 @@ const SaveItemButton = ({
                   type="submit"
                   aria-label="צור תיקייה"
                   className={cn(
-                    'px-2 py-1 shrink-0',
+                    'h-8 w-8 inline-flex items-center justify-center shrink-0',
                     'bg-tetris-purple text-off-white',
                     'border-2 border-off-black',
                     'font-headline text-xs font-bold',

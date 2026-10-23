@@ -206,9 +206,9 @@ export default function DictionarySection() {
       <div className="flex flex-wrap gap-3 items-center mb-6">
         <input
           className={cn(
-            "flex-1 min-w-[260px]",
+            "form-control-uniform flex-1 min-w-[260px]",
             "border-3 border-off-black bg-off-white",
-            "px-4 py-2.5 font-headline text-base text-off-black",
+            "px-4 font-headline text-base text-off-black",
             "outline-none focus:shadow-brutalist transition-shadow"
           )}
           placeholder="חיפוש פונט, שם לועזי או מעצב/ת…"
@@ -217,8 +217,8 @@ export default function DictionarySection() {
         />
         <select
           className={cn(
-            "border-3 border-off-black bg-off-white",
-            "px-3 py-2.5 font-headline text-sm text-off-black",
+            "form-control-uniform border-3 border-off-black bg-off-white",
+            "px-3 font-headline text-sm text-off-black",
             "cursor-pointer outline-none focus:shadow-brutalist transition-shadow"
           )}
           value={designer}
@@ -231,8 +231,8 @@ export default function DictionarySection() {
         </select>
         <select
           className={cn(
-            "border-3 border-off-black bg-off-white",
-            "px-3 py-2.5 font-headline text-sm text-off-black",
+            "form-control-uniform border-3 border-off-black bg-off-white",
+            "px-3 font-headline text-sm text-off-black",
             "cursor-pointer outline-none focus:shadow-brutalist transition-shadow"
           )}
           value={sort}
@@ -247,7 +247,7 @@ export default function DictionarySection() {
           isOpen={showFilters}
           onToggle={() => setShowFilters((prev) => !prev)}
           activeCount={foundries.length + styles.length + uses.length + tags.length + vibes.length + eras.length}
-          className="py-2.5"
+          className="form-control-uniform inline-flex items-center"
         />
       </div>
 
