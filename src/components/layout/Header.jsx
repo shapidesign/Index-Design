@@ -3,6 +3,10 @@ import { cn } from '@/lib/utils';
 import { Menu, X } from 'lucide-react';
 import logoDark from '@/assets/svg/logo-dark.svg';
 import vcLogo from '@/assets/svg/vc-logo-small.svg';
+import ThemeToggle from '@/components/ui/ThemeToggle';
+
+/** HIT / VC mark stays in source; flip to show it again. */
+const SHOW_HIT_LOGO = false;
 
 /**
  * Header - כותרת עליונה
@@ -47,6 +51,8 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
         'sticky top-0 z-50',
         'bg-off-black',
         'border-b-3 border-off-black',
+        // ponytail: one-off hex keeps the header dark in both themes instead of adding a header token.
+        'dark:bg-[#0E0E0E] dark:border-dark-gray',
       )}
     >
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between md:grid md:grid-cols-[auto_1fr_auto] md:gap-6">
@@ -103,25 +109,29 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
 
         {/* Left side: VC logo (desktop full, mobile icon) + mobile hamburger */}
         <div className="flex items-center gap-2 md:justify-self-start">
-          <a
-            href="https://www.hit.ac.il/academic/design/visual-communications/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center"
-          >
-            {/* Desktop: Full Logo */}
-            <img
-              src={vcLogo}
-              alt="המחלקה לתקשורת חזותית"
-              className="hidden md:block h-10 w-auto brightness-0 invert"
-            />
-            {/* Mobile: Full VC logo */}
-            <img
-              src={vcLogo}
-              alt="המחלקה לתקשורת חזותית"
-              className="md:hidden h-8 w-auto brightness-0 invert"
-            />
-          </a>
+          {SHOW_HIT_LOGO && (
+            <a
+              href="https://www.hit.ac.il/academic/design/visual-communications/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center"
+            >
+              {/* Desktop: Full Logo */}
+              <img
+                src={vcLogo}
+                alt="המחלקה לתקשורת חזותית"
+                className="hidden md:block h-10 w-auto brightness-0 invert"
+              />
+              {/* Mobile: Full VC logo */}
+              <img
+                src={vcLogo}
+                alt="המחלקה לתקשורת חזותית"
+                className="md:hidden h-8 w-auto brightness-0 invert"
+              />
+            </a>
+          )}
+
+          <ThemeToggle />
 
           {/* Mobile: hamburger */}
           <button
@@ -150,7 +160,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
       {/* Mobile Menu Overlay */}
       <div
         className={cn(
-          'md:hidden fixed inset-0 top-[79px] bg-off-black z-40 p-6 overflow-y-auto',
+          'md:hidden fixed inset-0 top-[79px] bg-off-black dark:bg-[#0E0E0E] z-40 p-6 overflow-y-auto',
           'transition-transform duration-300',
           mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         )}
