@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Bookmark } from 'lucide-react';
 import logoDark from '@/assets/svg/logo-dark.svg';
 import vcLogo from '@/assets/svg/vc-logo-small.svg';
+import useSavedItems from '@/hooks/useSavedItems';
 
 /**
  * Header - כותרת עליונה
@@ -22,11 +23,13 @@ const navSections = [
   { id: 'keyboard', label: 'מקלדת' },
   { id: 'map', label: 'מפה' },
   { id: 'tips', label: 'טיפים' },
+  { id: 'saved', label: 'המגירה' },
   { id: 'lucky', label: 'הפתעה' },
 ];
 
 const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { savedCount } = useSavedItems();
   
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -70,17 +73,28 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
                 onClick={() => onSectionChange?.(section.id)}
                 className={cn(
                   'px-3 lg:px-4 py-2',
+                  'inline-flex items-center gap-1.5',
                   'text-xs lg:text-sm font-headline whitespace-nowrap',
                   'border border-dark-gray',
                   'transition-all duration-200',
                   section.id === 'lucky'
                     ? 'bg-tetris-yellow text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
-                    : activeSection === section.id
-                      ? 'bg-tetris-purple text-off-white shadow-none translate-x-[4px] translate-y-[4px]'
-                      : 'bg-btn-gray text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+                    : section.id === 'saved'
+                      ? activeSection === 'saved'
+                        ? 'bg-tetris-pink text-off-black shadow-none translate-x-[4px] translate-y-[4px]'
+                        : 'bg-tetris-pink/90 text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+                      : activeSection === section.id
+                        ? 'bg-tetris-purple text-off-white shadow-none translate-x-[4px] translate-y-[4px]'
+                        : 'bg-btn-gray text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
                 )}
               >
-                {section.label}
+                {section.id === 'saved' && <Bookmark size={13} className="fill-off-black shrink-0" />}
+                <span>{section.label}</span>
+                {section.id === 'saved' && savedCount > 0 && (
+                  <span className="px-1.5 py-0.2 bg-off-black text-off-white text-[11px] font-jersey leading-tight">
+                    {savedCount}
+                  </span>
+                )}
               </button>
             ))}
           </nav>
@@ -164,19 +178,29 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
                 setMobileMenuOpen(false);
               }}
               className={cn(
-                'px-6 py-4 text-right',
+                'px-6 py-4 text-right flex items-center justify-between',
                 'font-headline text-lg',
                 'border border-dark-gray',
                 'shadow-brutalist-nav',
                 'transition-all duration-200',
                 section.id === 'lucky'
                   ? 'bg-tetris-yellow text-off-black'
-                  : activeSection === section.id
-                    ? 'bg-tetris-purple text-off-white shadow-none'
-                    : 'bg-btn-gray text-off-black'
+                  : section.id === 'saved'
+                    ? 'bg-tetris-pink text-off-black'
+                    : activeSection === section.id
+                      ? 'bg-tetris-purple text-off-white shadow-none'
+                      : 'bg-btn-gray text-off-black'
               )}
             >
-              {section.label}
+              <span className="flex items-center gap-2">
+                {section.id === 'saved' && <Bookmark size={16} className="fill-off-black" />}
+                <span>{section.label}</span>
+              </span>
+              {section.id === 'saved' && savedCount > 0 && (
+                <span className="px-2 py-0.5 bg-off-black text-off-white text-sm font-jersey">
+                  {savedCount}
+                </span>
+              )}
             </button>
           ))}
           <button

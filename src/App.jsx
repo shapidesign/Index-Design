@@ -10,6 +10,7 @@ import WhatsNewModal from '@/components/ui/WhatsNewModal';
 import EyeLogo from '@/components/ui/EyeLogo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { SavedItemsProvider } from '@/hooks/useSavedItems';
 import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
 import { APPS as KEYBOARD_APPS, SHORTCUTS } from '@/data/shortcuts';
 
@@ -50,6 +51,7 @@ const LibrarySection = lazyWithChunkRecovery(() => import('@/components/sections
 const MapSection = lazyWithChunkRecovery(() => import('@/components/sections/MapSection'));
 const TipsSection = lazyWithChunkRecovery(() => import('@/components/sections/TipsSection'));
 const KeyboardSection = lazyWithChunkRecovery(() => import('@/components/sections/KeyboardSection'));
+const PersonalSection = lazyWithChunkRecovery(() => import('@/components/sections/PersonalSection'));
 
 /**
  * App - Main Application Component
@@ -64,6 +66,7 @@ const navSections = [
   { id: 'keyboard', label: 'מקלדת' },
   { id: 'map', label: 'המפה' },
   { id: 'tips', label: 'טיפים' },
+  { id: 'saved', label: 'המגירה שלי' },
   { id: 'lucky', label: 'הפתעה' },
 ];
 
@@ -76,6 +79,7 @@ const categories = [
   { id: 'keyboard', title: 'מקלדת', desc: 'קיצורי מקלדת, תרגול וחידון', color: 'cyan', shape: 'J' },
   { id: 'map', title: 'המפה', desc: 'מיקומים שימושיים לסטודנטים', color: 'green', shape: 'O' },
   { id: 'tips', title: 'טיפים', desc: 'טיפים וביקורות מסטודנטים', color: 'pink', shape: 'S' },
+  { id: 'saved', title: 'המגירה שלי', desc: 'מועדפים, תיקיות אישיות ותערוכה', color: 'yellow', shape: 'T' },
 ];
 
 /** Sections that can be selected by the fortune cookie */
@@ -187,6 +191,10 @@ const App = () => {
 
   useEffect(() => {
     if (sectionFromHash() !== activeSection) {
+      // Preserve query params on #/saved?import=... when first landing on saved
+      if (activeSection === 'saved' && window.location.hash.startsWith('#/saved?')) {
+        return;
+      }
       window.location.hash = activeSection ? `#/${activeSection}` : '';
     }
   }, [activeSection]);
@@ -732,6 +740,7 @@ const App = () => {
   }
 
   return (
+    <SavedItemsProvider>
     <div dir="rtl" className="min-h-screen bg-off-white text-off-black font-headline animate-app-fade-in">
 
       {/* ===== NAVBAR - Dark for differentiation ===== */}
@@ -1287,6 +1296,39 @@ const App = () => {
             </Suspense>
           </div>
         )}
+
+        {/* ===== PERSONAL SAVED CRATE & SHOWCASE SECTION ===== */}
+        {activeSection === 'saved' && (
+          <div className="mt-12" id="section-saved">
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={() => setActiveSection(null)}
+                className={cn(
+                  "px-4 py-2",
+                  "font-headline text-sm font-bold text-off-black",
+                  "bg-light-gray",
+                  "border-2 border-off-black",
+                  "shadow-brutalist-xs",
+                  "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                  "transition-all duration-200"
+                )}
+              >
+                חזרה לכל הקטגוריות
+              </button>
+            </div>
+            <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
+              <PersonalSection
+                onNavigateToItem={(target) => {
+                  if (!target?.sectionId) return;
+                  setActiveSection(target.sectionId);
+                  setPendingNavigation(target);
+                }}
+                onBrowseSection={(secId) => setActiveSection(secId)}
+              />
+            </Suspense>
+          </div>
+        )}
       </main>
 
       {/* ===== FOOTER ===== */}
@@ -1354,6 +1396,7 @@ const App = () => {
         onClose={handleWhatsNewClose}
       />
     </div>
+    </SavedItemsProvider>
   );
 };
 
