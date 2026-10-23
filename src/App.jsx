@@ -73,13 +73,13 @@ const navSections = [
 /** Category cards with matching tetris shape icons */
 const categories = [
   { id: 'toolbox', title: 'ארגז הכלים', desc: 'כלים חינמיים ומומלצים לעיצוב', color: 'purple', shape: 'T' },
-  { id: 'museum', title: 'המוזיאון', desc: 'מעצבים ויצירות שחובה להכיר', color: 'orange', shape: 'L' },
+  { id: 'museum', title: 'המוזיאון', desc: 'עבודות ופרויקטים של סטודנטים ב-HIT', color: 'orange', shape: 'L' },
   { id: 'library', title: 'הספרייה', desc: 'ספרים וחומרי לימוד מומלצים', color: 'blue', shape: 'I' },
   { id: 'dictionary', title: 'מילון', desc: 'אינדקס פונטים עבריים מסונן', color: 'yellow', shape: 'Z' },
   { id: 'keyboard', title: 'מקלדת', desc: 'קיצורי מקלדת, תרגול וחידון', color: 'cyan', shape: 'J' },
   { id: 'map', title: 'המפה', desc: 'מיקומים שימושיים לסטודנטים', color: 'green', shape: 'O' },
   { id: 'tips', title: 'טיפים', desc: 'טיפים וביקורות מסטודנטים', color: 'pink', shape: 'S' },
-  { id: 'saved', title: 'המגירה שלי', desc: 'מועדפים, תיקיות אישיות ותערוכה', color: 'yellow', shape: 'T' },
+  { id: 'saved', title: 'המגירה שלי', desc: 'מועדפים, תיקיות אישיות ופרופיל', color: 'yellow', shape: 'T' },
 ];
 
 /** Sections that can be selected by the fortune cookie */
