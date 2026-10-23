@@ -4,7 +4,8 @@ import { cn } from '@/lib/utils';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import SaveItemButton from '@/components/ui/SaveItemButton';
 import FilterToggle from '@/components/ui/FilterToggle';
-import useSavedItems, { TETRIS_SHAPES, TETRIS_COLORS } from '@/hooks/useSavedItems';
+import GoogleEmailAuthPanel from '@/components/ui/GoogleEmailAuthPanel';
+import useSavedItems from '@/hooks/useSavedItems';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 import {
   HIT_DESIGN_PROFESSORS,
@@ -334,7 +335,6 @@ const MuseumSection = ({ pendingNavigation }) => {
   const {
     submissions,
     userProfile,
-    signInWithGoogle,
     addLocalSubmission,
     deleteLocalSubmission,
   } = useSavedItems();
@@ -350,12 +350,6 @@ const MuseumSection = ({ pendingNavigation }) => {
 
   // Upload & Google Auth Modals
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [googleAuthForm, setGoogleAuthForm] = useState({
-    name: '',
-    email: '',
-    studyYear: 'שנה ב׳',
-  });
-  const [googleAuthError, setGoogleAuthError] = useState('');
 
   const [uploadForm, setUploadForm] = useState({
     title: '',
@@ -373,6 +367,7 @@ const MuseumSection = ({ pendingNavigation }) => {
   });
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState('');
+  const [uploadingWork, setUploadingWork] = useState(false);
 
   // Combine user-uploaded works + seeded HIT student works
   const allWorks = useMemo(() => {
@@ -483,21 +478,6 @@ const MuseumSection = ({ pendingNavigation }) => {
     selectedTags,
   ]);
 
-  const handleGoogleSignIn = (e) => {
-    e.preventDefault();
-    if (!googleAuthForm.name.trim()) {
-      setGoogleAuthError('יש להזין שם מלא');
-      return;
-    }
-    if (!googleAuthForm.email.trim() || !googleAuthForm.email.includes('@')) {
-      setGoogleAuthError('יש להזין כתובת אימייל של Google');
-      return;
-    }
-    signInWithGoogle(googleAuthForm);
-    setUploadForm((prev) => ({ ...prev, year: googleAuthForm.studyYear }));
-    setGoogleAuthError('');
-  };
-
   const handleToggleUploadTag = (tag) => {
     setUploadForm((prev) => {
       const exists = prev.tags.includes(tag);
@@ -530,10 +510,10 @@ const MuseumSection = ({ pendingNavigation }) => {
     reader.readAsDataURL(file);
   };
 
-  const handleUploadSubmit = (e) => {
+  const handleUploadSubmit = async (e) => {
     e.preventDefault();
     if (!userProfile) {
-      setUploadError('יש להתחבר עם פרופיל Google לפני העלאת עבודה');
+      setUploadError('יש להתחבר ולאמת חשבון לפני העלאת עבודה');
       return;
     }
     if (!uploadForm.title.trim()) {
@@ -545,40 +525,49 @@ const MuseumSection = ({ pendingNavigation }) => {
         ? uploadForm.customTeacher.trim() || 'מרצה בפקולטה לעיצוב'
         : uploadForm.teacher;
 
-    addLocalSubmission({
-      title: uploadForm.title,
-      studentName: userProfile.name,
-      studentEmail: userProfile.email,
-      Course: uploadForm.course,
-      course: uploadForm.course,
-      year: uploadForm.year,
-      teacher: finalTeacher,
-      tags: uploadForm.tags,
-      link: uploadForm.link,
-      imageUrl: uploadForm.imageUrl,
-      description: uploadForm.description,
-      shape: uploadForm.shape,
-      color: uploadForm.color,
-    });
-
-    setUploadForm({
-      title: '',
-      course: HIT_COURSES[0],
-      year: userProfile.studyYear || 'שנה ב׳',
-      teacher: HIT_DESIGN_PROFESSORS[0],
-      customTeacher: '',
-      description: '',
-      link: '',
-      imageUrl: '',
-      tags: ['טיפוגרפיה'],
-      customTagInput: '',
-      shape: 'T',
-      color: 'purple',
-    });
+    setUploadingWork(true);
     setUploadError('');
-    setIsUploadOpen(false);
-    setUploadSuccess('העבודה הועלתה בהצלחה למוזיאון הסטודנטים!');
-    window.setTimeout(() => setUploadSuccess(''), 4000);
+    try {
+      const created = await addLocalSubmission({
+        title: uploadForm.title,
+        studentName: userProfile.name,
+        studentEmail: userProfile.email,
+        course: uploadForm.course,
+        year: uploadForm.year,
+        teacher: finalTeacher,
+        tags: uploadForm.tags,
+        link: uploadForm.link,
+        imageUrl: uploadForm.imageUrl,
+        description: uploadForm.description,
+        shape: uploadForm.shape,
+        color: uploadForm.color,
+      });
+
+      if (!created) {
+        setUploadError('שמירת העבודה בענן נכשלה. נסו שוב.');
+        return;
+      }
+
+      setUploadForm({
+        title: '',
+        course: HIT_COURSES[0],
+        year: userProfile.studyYear || 'שנה ב׳',
+        teacher: HIT_DESIGN_PROFESSORS[0],
+        customTeacher: '',
+        description: '',
+        link: '',
+        imageUrl: '',
+        tags: ['טיפוגרפיה'],
+        customTagInput: '',
+        shape: 'T',
+        color: 'purple',
+      });
+      setIsUploadOpen(false);
+      setUploadSuccess('העבודה נשמרה בענן והועלתה בהצלחה למוזיאון הסטודנטים!');
+      window.setTimeout(() => setUploadSuccess(''), 4000);
+    } finally {
+      setUploadingWork(false);
+    }
   };
 
   return (
@@ -670,13 +659,20 @@ const MuseumSection = ({ pendingNavigation }) => {
       )}
 
       {/* ===== UPLOAD WORK / GOOGLE PROFILE PANEL ===== */}
-      {isUploadOpen && (
+      {isUploadOpen && !userProfile && (
+        <div className="mb-8">
+          <GoogleEmailAuthPanel
+            title="התחברות עם Google / אימות אימייל להעלאת עבודה למוזיאון"
+            onClose={() => setIsUploadOpen(false)}
+          />
+        </div>
+      )}
+
+      {isUploadOpen && userProfile && (
         <div className="mb-8 p-6 bg-off-white border-3 border-off-black shadow-brutalist">
           <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-off-black">
             <h3 className="text-xl font-bold font-headline text-off-black">
-              {userProfile
-                ? `העלאת עבודה למוזיאון (${userProfile.name})`
-                : 'התחברות עם Google להעלאת עבודה למוזיאון'}
+              {`העלאת עבודה למוזיאון (${userProfile.name} · ${userProfile.email})`}
             </h3>
             <button
               type="button"
@@ -687,75 +683,7 @@ const MuseumSection = ({ pendingNavigation }) => {
             </button>
           </div>
 
-          {!userProfile ? (
-            <form onSubmit={handleGoogleSignIn} className="space-y-4">
-              <div className="p-3 bg-tetris-yellow/30 border-2 border-off-black text-xs font-ibm text-off-black">
-                כדי להעלות עבודות למוזיאון הסטודנטים ולתייג אותן תחת שמכם, חברו תחילה את פרופיל ה-Google שלכם:
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div className="flex flex-col">
-                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
-                    <span>שם מלא של הסטודנט/ית *</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={googleAuthForm.name}
-                    onChange={(e) =>
-                      setGoogleAuthForm((p) => ({ ...p, name: e.target.value }))
-                    }
-                    placeholder="למשל: נועה לוי"
-                    dir="rtl"
-                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none focus:bg-off-white"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
-                    <span>כתובת Google / Gmail *</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={googleAuthForm.email}
-                    onChange={(e) =>
-                      setGoogleAuthForm((p) => ({ ...p, email: e.target.value }))
-                    }
-                    placeholder="student@gmail.com"
-                    dir="ltr"
-                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
-                    <span>שנת לימודים</span>
-                  </label>
-                  <select
-                    value={googleAuthForm.studyYear}
-                    onChange={(e) =>
-                      setGoogleAuthForm((p) => ({ ...p, studyYear: e.target.value }))
-                    }
-                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
-                  >
-                    {HIT_STUDY_YEARS.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              {googleAuthError && (
-                <p className="text-xs font-ibm text-red-700">{googleAuthError}</p>
-              )}
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="form-control-uniform inline-flex items-center justify-center gap-2 px-5 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold text-off-black cursor-pointer"
-                >
-                  <span>המשך להעלאת עבודה עם Google</span>
-                </button>
-              </div>
-            </form>
-          ) : (
-            <form onSubmit={handleUploadSubmit} className="space-y-4">
+          <form onSubmit={handleUploadSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                 <div className="flex flex-col">
                   <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
@@ -970,13 +898,13 @@ const MuseumSection = ({ pendingNavigation }) => {
                 </button>
                 <button
                   type="submit"
-                  className="h-11 px-6 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold text-off-black cursor-pointer inline-flex items-center justify-center"
+                  disabled={uploadingWork}
+                  className="h-11 px-6 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold text-off-black cursor-pointer inline-flex items-center justify-center disabled:opacity-60"
                 >
-                  פרסם עבודה במוזיאון
+                  {uploadingWork ? 'שומר בענן...' : 'פרסם עבודה במוזיאון'}
                 </button>
               </div>
             </form>
-          )}
         </div>
       )}
 
@@ -1157,7 +1085,7 @@ const MuseumSection = ({ pendingNavigation }) => {
                       snapshot={saveSnapshot}
                       size="sm"
                     />
-                    {work.isUserSubmission && (
+                    {work.isUserSubmission && userProfile?.id && work.userId === userProfile.id && (
                       <button
                         type="button"
                         onClick={(e) => {

@@ -1,12 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { supabase } from '../lib/supabase.js';
 
-const STORAGE_KEY = 'index-personal-crate-v1';
+const GUEST_STORAGE_KEY = 'index-personal-crate-v1';
+const userStorageKey = (userId) => (userId ? `index-personal-crate-user-${userId}` : GUEST_STORAGE_KEY);
 
 export const TETRIS_SHAPES = ['T', 'L', 'I', 'Z', 'J', 'O', 'S'];
 export const TETRIS_COLORS = ['purple', 'orange', 'blue', 'yellow', 'cyan', 'green', 'pink'];
 export const MAX_FOLDER_NAME_LENGTH = 24;
 
-// ponytail: localStorage stores lightweight snapshots + folder IDs so saved cards render instantly without waiting for all 4 Notion APIs
+// ponytail: local cache + Supabase public.user_crates sync so each verified user's folders, saved items, and notes persist across devices
 const defaultFolders = [
   { id: 'f-typo', name: 'טיפוגרפיה', color: 'purple', shape: 'T', createdAt: 1760000000000 },
   { id: 'f-inspo', name: 'השראה להגשה', color: 'orange', shape: 'L', createdAt: 1760000001000 },
@@ -73,10 +75,12 @@ export const sanitizeCrate = (raw) => {
   const userProfile =
     raw.userProfile && typeof raw.userProfile === 'object' && raw.userProfile.name
       ? {
+          id: String(raw.userProfile.id || ''),
           name: String(raw.userProfile.name).trim(),
           email: String(raw.userProfile.email || '').trim(),
           avatar: String(raw.userProfile.avatar || '').trim(),
           studyYear: String(raw.userProfile.studyYear || 'שנה ב׳').trim(),
+          verified: Boolean(raw.userProfile.verified),
           provider: 'google',
           signedInAt: Number(raw.userProfile.signedInAt) || Date.now(),
         }
@@ -167,27 +171,242 @@ export const decodeSharedFolder = (encoded) => {
   }
 };
 
+const buildUserProfileFromAuthUser = (user, dbRow = null) => {
+  if (!user) return null;
+  const meta = user.user_metadata || {};
+  const email = user.email || dbRow?.email || '';
+  const fallbackName = email ? email.split('@')[0] : 'סטודנט/ית';
+  return {
+    id: user.id,
+    name: String(dbRow?.display_name || meta.full_name || meta.name || fallbackName).trim(),
+    email,
+    avatar: String(meta.avatar_url || meta.picture || '').trim(),
+    studyYear: String(dbRow?.study_year || meta.study_year || 'שנה ב׳').trim(),
+    verified: Boolean(user.email_confirmed_at || user.confirmed_at || user.app_metadata?.provider === 'google'),
+    provider: user.app_metadata?.provider || 'email',
+    signedInAt: Date.now(),
+  };
+};
+
+const mapDbWorkToClient = (row) => ({
+  id: row.id,
+  userId: row.user_id,
+  title: row.title,
+  studentName: row.student_name,
+  studentEmail: row.student_email || '',
+  year: row.study_year || 'שנה ב׳',
+  course: row.course || 'פרויקט אישי',
+  teacher: row.teacher || '',
+  description: row.description || '',
+  tags: Array.isArray(row.tags) ? row.tags : [],
+  link: row.link || '',
+  imageUrl: row.image_url || '',
+  shape: TETRIS_SHAPES.includes(row.shape) ? row.shape : 'T',
+  color: TETRIS_COLORS.includes(row.color) ? row.color : 'purple',
+  createdAt: row.created_at ? String(row.created_at).slice(0, 10) : '',
+  isUserSubmission: true,
+});
+
 const SavedItemsContext = createContext(null);
 
 export const SavedItemsProvider = ({ children }) => {
+  const [authUser, setAuthUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [cloudSyncing, setCloudSyncing] = useState(false);
+  const [cloudWorks, setCloudWorks] = useState([]);
+
   const [crate, setCrate] = useState(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? sanitizeCrate(JSON.parse(saved)) : emptyCrate();
+      const saved = localStorage.getItem(GUEST_STORAGE_KEY);
+      if (!saved) return emptyCrate();
+      const parsed = sanitizeCrate(JSON.parse(saved));
+      // Do not trust unverified localStorage userProfile without a real Supabase Auth session
+      return { ...parsed, userProfile: null };
     } catch {
       return emptyCrate();
     }
   });
 
   const [undoState, setUndoState] = useState(null);
+  const skipNextCloudPushRef = useRef(false);
+
+  // 1. Subscribe to real Supabase Auth session changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setAuthUser(data?.session?.user || null);
+      setAuthReady(true);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (!mounted) return;
+      const nextUser = nextSession?.user || null;
+      setAuthUser(nextUser);
+      setAuthReady(true);
+
+      if (!nextUser) {
+        // Signed out: switch back to guest crate without any userProfile
+        try {
+          const guestRaw = localStorage.getItem(GUEST_STORAGE_KEY);
+          const guestParsed = guestRaw ? sanitizeCrate(JSON.parse(guestRaw)) : emptyCrate();
+          skipNextCloudPushRef.current = true;
+          setCrate({ ...guestParsed, userProfile: null });
+        } catch {
+          skipNextCloudPushRef.current = true;
+          setCrate(emptyCrate());
+        }
+      }
+    });
+
+    return () => {
+      mounted = false;
+      sub?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  // 2. Fetch public student works from Supabase public.student_works
+  const refreshCloudWorks = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const { data, error } = await supabase
+        .from('student_works')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (!error && Array.isArray(data)) {
+        setCloudWorks(data.map(mapDbWorkToClient));
+      }
+    } catch {
+      /* Fallback to local/seeded works if offline */
+    }
+  }, []);
 
   useEffect(() => {
+    refreshCloudWorks();
+  }, [refreshCloudWorks]);
+
+  // 3. When an authenticated user signs in, load their personal crate from Supabase public.user_crates
+  useEffect(() => {
+    if (!authUser?.id) return undefined;
+    let cancelled = false;
+
+    const loadUserCrateFromSupabase = async () => {
+      setCloudSyncing(true);
+      try {
+        // First check per-user local cache for instant UI
+        const perUserKey = userStorageKey(authUser.id);
+        let cachedUserCrate = null;
+        try {
+          const localStr = localStorage.getItem(perUserKey);
+          if (localStr) cachedUserCrate = sanitizeCrate(JSON.parse(localStr));
+        } catch {
+          /* ignore */
+        }
+
+        const { data: row, error } = await supabase
+          .from('user_crates')
+          .select('user_id, email, display_name, study_year, folders, items, updated_at')
+          .eq('user_id', authUser.id)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        if (!error && row) {
+          const sanitized = sanitizeCrate({
+            folders: row.folders,
+            items: row.items,
+          });
+          const profile = buildUserProfileFromAuthUser(authUser, row);
+          const nextCrate = {
+            ...sanitized,
+            userProfile: profile,
+          };
+          skipNextCloudPushRef.current = true;
+          setCrate(nextCrate);
+          try {
+            localStorage.setItem(perUserKey, JSON.stringify(nextCrate));
+          } catch {
+            /* ignore */
+          }
+        } else {
+          // First time this verified user signed in: initialize their personal row in Supabase
+          const seedSource = cachedUserCrate || crate;
+          const profile = buildUserProfileFromAuthUser(authUser, null);
+          const initialCrate = sanitizeCrate({
+            folders: seedSource.folders,
+            items: seedSource.items,
+          });
+          const nextCrate = {
+            ...initialCrate,
+            userProfile: profile,
+          };
+          skipNextCloudPushRef.current = true;
+          setCrate(nextCrate);
+
+          await supabase.from('user_crates').upsert(
+            {
+              user_id: authUser.id,
+              email: profile.email,
+              display_name: profile.name,
+              study_year: profile.studyYear,
+              folders: nextCrate.folders,
+              items: nextCrate.items,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id' }
+          );
+        }
+      } finally {
+        if (!cancelled) setCloudSyncing(false);
+      }
+    };
+
+    loadUserCrateFromSupabase();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authUser?.id]);
+
+  // 4. Persist crate changes to per-user localStorage AND sync to Supabase public.user_crates when authenticated
+  useEffect(() => {
+    const activeKey = userStorageKey(authUser?.id);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(crate));
+      localStorage.setItem(activeKey, JSON.stringify(crate));
     } catch {
       /* localStorage unavailable or quota exceeded */
     }
-  }, [crate]);
+
+    if (!authUser?.id) return undefined;
+    if (skipNextCloudPushRef.current) {
+      skipNextCloudPushRef.current = false;
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      const profile = crate.userProfile || buildUserProfileFromAuthUser(authUser);
+      supabase
+        .from('user_crates')
+        .upsert(
+          {
+            user_id: authUser.id,
+            email: profile?.email || authUser.email || '',
+            display_name: profile?.name || '',
+            study_year: profile?.studyYear || 'שנה ב׳',
+            folders: crate.folders,
+            items: crate.items,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id' }
+        )
+        .then(() => {});
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [crate, authUser]);
 
   useEffect(() => {
     if (!undoState) return undefined;
@@ -515,67 +734,72 @@ export const SavedItemsProvider = ({ children }) => {
     return existingMatch ? existingMatch.id : newFolderId;
   }, [crate.folders]);
 
-  const signInWithGoogle = useCallback((profileData) => {
-    if (!profileData?.name) return;
-    setCrate((prev) => ({
-      ...prev,
-      userProfile: {
-        name: String(profileData.name).trim(),
-        email: String(profileData.email || '').trim(),
-        avatar: String(profileData.avatar || '').trim(),
-        studyYear: String(profileData.studyYear || 'שנה ב׳').trim(),
-        provider: 'google',
-        signedInAt: Date.now(),
-      },
-    }));
+  const signOutProfile = useCallback(async () => {
+    await supabase.auth.signOut();
+    setAuthUser(null);
   }, []);
 
-  const signOutProfile = useCallback(() => {
-    setCrate((prev) => ({
-      ...prev,
-      userProfile: null,
-    }));
-  }, []);
+  const addLocalSubmission = useCallback(
+    async (submission) => {
+      if (!submission?.title || !authUser?.id) return null;
+      const profile = crate.userProfile || buildUserProfileFromAuthUser(authUser);
 
-  const addLocalSubmission = useCallback((submission) => {
-    if (!submission?.title) return null;
-    const newWork = {
-      id: `sub-${Date.now()}`,
-      title: String(submission.title).trim(),
-      studentName: String(submission.studentName || '').trim(),
-      studentEmail: String(submission.studentEmail || '').trim(),
-      studentAvatar: String(submission.studentAvatar || '').trim(),
-      year: String(submission.year || submission.studyYear || 'שנה ב׳'),
-      course: String(submission.course || 'טיפוגרפיה א׳'),
-      teacher: String(submission.teacher || '').trim(),
-      tags: Array.isArray(submission.tags)
-        ? submission.tags.filter(Boolean).map((t) => String(t).trim())
-        : [],
-      link: String(submission.link || submission.projectUrl || '').trim(),
-      imageUrl: String(submission.imageUrl || '').trim(),
-      description: String(submission.description || '').trim(),
-      shape: TETRIS_SHAPES.includes(submission.shape) ? submission.shape : 'T',
-      color: TETRIS_COLORS.includes(submission.color) ? submission.color : 'purple',
-      createdAt: new Date().toISOString().slice(0, 10),
-    };
-    setCrate((prev) => ({
-      ...prev,
-      submissions: [newWork, ...(prev.submissions || [])],
-    }));
-    return newWork;
-  }, []);
+      const dbPayload = {
+        user_id: authUser.id,
+        student_name: String(submission.studentName || profile?.name || 'סטודנט/ית').trim(),
+        student_email: String(submission.studentEmail || profile?.email || authUser.email || '').trim(),
+        title: String(submission.title).trim(),
+        course: String(submission.course || 'טיפוגרפיה א׳'),
+        study_year: String(submission.year || submission.studyYear || profile?.studyYear || 'שנה ב׳'),
+        teacher: String(submission.teacher || '').trim(),
+        description: String(submission.description || '').trim(),
+        tags: Array.isArray(submission.tags)
+          ? submission.tags.filter(Boolean).map((t) => String(t).trim())
+          : [],
+        link: String(submission.link || submission.projectUrl || '').trim(),
+        image_url: String(submission.imageUrl || '').trim(),
+        shape: TETRIS_SHAPES.includes(submission.shape) ? submission.shape : 'T',
+        color: TETRIS_COLORS.includes(submission.color) ? submission.color : 'purple',
+      };
 
-  const deleteLocalSubmission = useCallback((workId) => {
-    setCrate((prev) => ({
-      ...prev,
-      submissions: (prev.submissions || []).filter((s) => s.id !== workId),
-    }));
-  }, []);
+      const { data: inserted, error } = await supabase
+        .from('student_works')
+        .insert(dbPayload)
+        .select('*')
+        .single();
+
+      if (!error && inserted) {
+        const mapped = mapDbWorkToClient(inserted);
+        setCloudWorks((prev) => [mapped, ...prev.filter((w) => w.id !== mapped.id)]);
+        return mapped;
+      }
+      return null;
+    },
+    [authUser, crate.userProfile]
+  );
+
+  const deleteLocalSubmission = useCallback(
+    async (workId) => {
+      if (!authUser?.id) return;
+      await supabase
+        .from('student_works')
+        .delete()
+        .eq('id', workId)
+        .eq('user_id', authUser.id);
+      setCloudWorks((prev) => prev.filter((w) => w.id !== workId));
+    },
+    [authUser?.id]
+  );
 
   const savedItemsList = useMemo(
     () => Object.values(crate.items).sort((a, b) => b.savedAt - a.savedAt),
     [crate.items]
   );
+
+  const effectiveUserProfile = useMemo(() => {
+    if (!authUser) return null;
+    return crate.userProfile || buildUserProfileFromAuthUser(authUser);
+  }, [authUser, crate.userProfile]);
 
   const value = useMemo(
     () => ({
@@ -583,8 +807,11 @@ export const SavedItemsProvider = ({ children }) => {
       itemsMap: crate.items,
       savedItemsList,
       savedCount: savedItemsList.length,
-      submissions: crate.submissions || [],
-      userProfile: crate.userProfile || null,
+      submissions: cloudWorks,
+      userProfile: effectiveUserProfile,
+      authUser,
+      authReady,
+      cloudSyncing,
       undoState,
       handleUndo,
       dismissUndo,
@@ -601,17 +828,20 @@ export const SavedItemsProvider = ({ children }) => {
       cycleFolderStyle,
       deleteFolder,
       importSharedFolder,
-      signInWithGoogle,
       signOutProfile,
       addLocalSubmission,
       deleteLocalSubmission,
+      refreshCloudWorks,
     }),
     [
       crate.folders,
       crate.items,
-      crate.submissions,
-      crate.userProfile,
       savedItemsList,
+      cloudWorks,
+      effectiveUserProfile,
+      authUser,
+      authReady,
+      cloudSyncing,
       undoState,
       handleUndo,
       dismissUndo,
@@ -628,10 +858,10 @@ export const SavedItemsProvider = ({ children }) => {
       cycleFolderStyle,
       deleteFolder,
       importSharedFolder,
-      signInWithGoogle,
       signOutProfile,
       addLocalSubmission,
       deleteLocalSubmission,
+      refreshCloudWorks,
     ]
   );
 

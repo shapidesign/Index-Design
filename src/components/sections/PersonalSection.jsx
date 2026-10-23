@@ -8,8 +8,8 @@ import useSavedItems, {
   decodeSharedFolder,
 } from '@/hooks/useSavedItems';
 import TetrisShape from '@/components/tetris/TetrisShape';
+import GoogleEmailAuthPanel from '@/components/ui/GoogleEmailAuthPanel';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
-import { HIT_STUDY_YEARS } from '@/data/hitFaculty';
 import {
   Bookmark,
   FolderPlus,
@@ -225,8 +225,8 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
     updateFolderStyle,
     deleteFolder,
     importSharedFolder,
-    signInWithGoogle,
     signOutProfile,
+    cloudSyncing,
   } = useSavedItems();
 
   const [selectedFolderId, setSelectedFolderId] = useState('all'); // 'all' | 'unfiled' | folder.id
@@ -246,14 +246,8 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
   const [shareFeedback, setShareFeedback] = useState('');
   const [importBanner, setImportBanner] = useState('');
 
-  // Google Profile Modal / Inline Form state
+  // Google / Verified Email Profile Drawer state
   const [isGoogleSignInOpen, setIsGoogleSignInOpen] = useState(false);
-  const [googleForm, setGoogleForm] = useState({
-    name: '',
-    email: '',
-    studyYear: 'שנה ב׳',
-  });
-  const [googleError, setGoogleError] = useState('');
 
   // Check if URL contains a shared folder payload (?import=...)
   useEffect(() => {
@@ -388,21 +382,6 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
     window.setTimeout(() => setShareFeedback(''), 3500);
   };
 
-  const handleGoogleSignInSubmit = (e) => {
-    e.preventDefault();
-    if (!googleForm.name.trim()) {
-      setGoogleError('יש להזין שם מלא');
-      return;
-    }
-    if (!googleForm.email.trim() || !googleForm.email.includes('@')) {
-      setGoogleError('יש להזין כתובת אימייל של Google');
-      return;
-    }
-    signInWithGoogle(googleForm);
-    setIsGoogleSignInOpen(false);
-    setGoogleError('');
-  };
-
   return (
     <section dir="rtl" className="animate-tetris-stack">
       {/* ===== UNDO TOAST (Norman Error Recovery) ===== */}
@@ -472,8 +451,8 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
             </h2>
             <p className="text-sm text-dark-gray font-ibm mt-1">
               {userProfile
-                ? `${userProfile.email} · ${userProfile.studyYear} · מחובר/ת עם Google`
-                : 'שמרו כלים, פונטים, ספרים והשראות בתיקיות אישיות. התחברו עם Google כדי להעלות עבודות למוזיאון הסטודנטים.'}
+                ? `${userProfile.email} · ${userProfile.studyYear} · חשבון מאומת בענן${cloudSyncing ? ' (מסנכרן...)' : ' ✓'}`
+                : 'שמרו כלים, פונטים, ספרים והשראות בתיקיות אישיות. התחברו ואמתו את המייל עם Google כדי לשמור את המגירה שלכם בענן מכל מכשיר.'}
             </p>
           </div>
         </div>
@@ -487,7 +466,7 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
                 className="inline-flex items-center gap-2 px-4 py-2.5 bg-tetris-orange text-off-black font-headline text-xs md:text-sm font-bold border-2 border-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
               >
                 <Sparkles size={15} />
-                <span>העלאת עבודה למוזיאון ({submissions.length})</span>
+                <span>העלאת עבודה למוזיאון ({submissions.filter((s) => s.userId === userProfile.id).length})</span>
               </button>
               <button
                 type="button"
@@ -522,91 +501,21 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
                   d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
                 />
               </svg>
-              <span>התחברות סטודנט עם Google</span>
+              <span>התחבר עם Google</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Google Sign-In Form Drawer */}
+      {/* Verified Google / Email Sign-In Panel */}
       {isGoogleSignInOpen && !userProfile && (
-        <form
-          onSubmit={handleGoogleSignInSubmit}
-          className="mb-8 p-5 bg-off-white border-3 border-off-black shadow-brutalist"
-        >
-          <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-off-black">
-            <h3 className="font-headline text-lg font-bold text-off-black">
-              חיבור פרופיל Google לסטודנטים ב-HIT
-            </h3>
-            <button
-              type="button"
-              onClick={() => setIsGoogleSignInOpen(false)}
-              className="p-1 text-dark-gray hover:text-off-black cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
-            <div className="flex flex-col">
-              <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
-                <span>שם מלא *</span>
-              </label>
-              <input
-                type="text"
-                value={googleForm.name}
-                onChange={(e) => setGoogleForm((p) => ({ ...p, name: e.target.value }))}
-                placeholder="למשל: נועה לוי"
-                dir="rtl"
-                className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none focus:bg-off-white"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
-                <span>כתובת Gmail / אימייל מכללה *</span>
-              </label>
-              <input
-                type="email"
-                value={googleForm.email}
-                onChange={(e) => setGoogleForm((p) => ({ ...p, email: e.target.value }))}
-                placeholder="student@gmail.com"
-                dir="ltr"
-                className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-jersey text-sm outline-none focus:bg-off-white"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
-                <span>שנת לימודים</span>
-              </label>
-              <select
-                value={googleForm.studyYear}
-                onChange={(e) => setGoogleForm((p) => ({ ...p, studyYear: e.target.value }))}
-                className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
-              >
-                {HIT_STUDY_YEARS.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          {googleError && <p className="text-xs font-ibm text-red-700 mb-3">{googleError}</p>}
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setIsGoogleSignInOpen(false)}
-              className="form-control-uniform px-4 bg-light-gray border-2 border-off-black font-headline text-xs font-bold cursor-pointer inline-flex items-center justify-center"
-            >
-              ביטול
-            </button>
-            <button
-              type="submit"
-              className="form-control-uniform px-5 bg-tetris-green border-2 border-off-black shadow-brutalist-xs font-headline text-xs font-bold cursor-pointer inline-flex items-center justify-center"
-            >
-              התחבר ושמור פרופיל
-            </button>
-          </div>
-        </form>
+        <div className="mb-8">
+          <GoogleEmailAuthPanel
+            title="התחברות עם Google / אימות אימייל אישי"
+            onSuccess={() => setIsGoogleSignInOpen(false)}
+            onClose={() => setIsGoogleSignInOpen(false)}
+          />
+        </div>
       )}
 
       {/* ===== FOLDER TABS STRIP ===== */}
