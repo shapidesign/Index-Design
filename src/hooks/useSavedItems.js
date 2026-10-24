@@ -8,7 +8,7 @@ export const TETRIS_SHAPES = ['T', 'L', 'I', 'Z', 'J', 'O', 'S'];
 export const TETRIS_COLORS = ['purple', 'orange', 'blue', 'yellow', 'cyan', 'green', 'pink'];
 export const MAX_FOLDER_NAME_LENGTH = 24;
 
-// ponytail: local cache + Supabase public.user_crates sync so each verified user's folders, saved items, and notes persist across devices
+const DEFAULT_START_YEAR = String(new Date().getFullYear());
 const defaultFolders = [
   { id: 'f-typo', name: 'טיפוגרפיה', color: 'purple', shape: 'T', createdAt: 1760000000000 },
   { id: 'f-inspo', name: 'השראה להגשה', color: 'orange', shape: 'L', createdAt: 1760000001000 },
@@ -79,7 +79,7 @@ export const sanitizeCrate = (raw) => {
           name: String(raw.userProfile.name).trim(),
           email: String(raw.userProfile.email || '').trim(),
           avatar: String(raw.userProfile.avatar || '').trim(),
-          studyYear: String(raw.userProfile.studyYear || 'שנה ב׳').trim(),
+          studyYear: String(raw.userProfile.studyYear || DEFAULT_START_YEAR).trim(),
           verified: Boolean(raw.userProfile.verified),
           provider: 'google',
           signedInAt: Number(raw.userProfile.signedInAt) || Date.now(),
@@ -181,7 +181,7 @@ const buildUserProfileFromAuthUser = (user, dbRow = null) => {
     name: String(dbRow?.display_name || meta.full_name || meta.name || fallbackName).trim(),
     email,
     avatar: String(meta.avatar_url || meta.picture || '').trim(),
-    studyYear: String(dbRow?.study_year || meta.study_year || 'שנה ב׳').trim(),
+    studyYear: String(dbRow?.study_year || meta.study_year || DEFAULT_START_YEAR).trim(),
     verified: Boolean(user.email_confirmed_at || user.confirmed_at || user.app_metadata?.provider === 'google'),
     provider: user.app_metadata?.provider || 'email',
     signedInAt: Date.now(),
@@ -194,7 +194,7 @@ const mapDbWorkToClient = (row) => ({
   title: row.title,
   studentName: row.student_name,
   studentEmail: row.student_email || '',
-  year: row.study_year || 'שנה ב׳',
+  year: row.study_year || DEFAULT_START_YEAR,
   course: row.course || 'פרויקט אישי',
   teacher: row.teacher || '',
   description: row.description || '',
@@ -395,7 +395,7 @@ export const SavedItemsProvider = ({ children }) => {
             user_id: authUser.id,
             email: profile?.email || authUser.email || '',
             display_name: profile?.name || '',
-            study_year: profile?.studyYear || 'שנה ב׳',
+            study_year: profile?.studyYear || DEFAULT_START_YEAR,
             folders: crate.folders,
             items: crate.items,
             updated_at: new Date().toISOString(),
@@ -750,7 +750,7 @@ export const SavedItemsProvider = ({ children }) => {
         student_email: String(submission.studentEmail || profile?.email || authUser.email || '').trim(),
         title: String(submission.title).trim(),
         course: String(submission.course || 'טיפוגרפיה א׳'),
-        study_year: String(submission.year || submission.studyYear || profile?.studyYear || 'שנה ב׳'),
+        study_year: String(submission.year || submission.studyYear || profile?.studyYear || DEFAULT_START_YEAR),
         teacher: String(submission.teacher || '').trim(),
         description: String(submission.description || '').trim(),
         tags: Array.isArray(submission.tags)

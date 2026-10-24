@@ -97,10 +97,11 @@ assert.equal(decodeSharedFolder('not-valid-base64-$$$'), null);
 
 // 4. HIT Design Faculty & Museum Data
 assert(HIT_DESIGN_PROFESSORS.length >= 25, 'should include HIT design professors from phonebook');
-assert(HIT_DESIGN_PROFESSORS.some((p) => p.includes('ארז בכר')), 'should include head of Visual Communication Ereznf Bachar');
+assert(HIT_DESIGN_PROFESSORS.some((p) => p.includes('ארז בכר')), 'should include head of Visual Communication Erez Bachar');
 assert(HIT_DESIGN_PROFESSORS.some((p) => p.includes('עודד עזר')), 'should include Prof. Oded Ezer');
 assert(HIT_COURSES.length >= 10, 'should include HIT Visual Communication courses');
-assert.equal(HIT_STUDY_YEARS.length, 5);
+assert(HIT_STUDY_YEARS.includes('1990'), 'degree start years must include 1990');
+assert(HIT_STUDY_YEARS.includes(String(new Date().getFullYear())), 'degree start years must include current year');
 assert(SEED_STUDENT_WORKS.length >= 5, 'should include seeded student works');
 
 // 5. Guard: HIT Viscom logo and moving Eye remain hidden until explicitly requested

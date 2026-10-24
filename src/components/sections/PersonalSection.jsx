@@ -451,7 +451,7 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
             </h2>
             <p className="text-sm text-dark-gray font-ibm mt-1">
               {userProfile
-                ? `${userProfile.email} · ${userProfile.studyYear} · חשבון מאומת בענן${cloudSyncing ? ' (מסנכרן...)' : ' ✓'}`
+                ? `${userProfile.email} · שנת התחלת תואר: ${userProfile.studyYear} · חשבון מאומת בענן${cloudSyncing ? ' (מסנכרן...)' : ' ✓'}`
                 : 'שמרו כלים, פונטים, ספרים והשראות בתיקיות אישיות. התחברו ואמתו את המייל עם Google כדי לשמור את המגירה שלכם בענן מכל מכשיר.'}
             </p>
           </div>

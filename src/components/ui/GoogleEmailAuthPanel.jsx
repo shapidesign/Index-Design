@@ -1,23 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { supabase, GOOGLE_CLIENT_ID } from '@/lib/supabase';
-import { HIT_STUDY_YEARS } from '@/data/hitFaculty';
+import ScrollYearPicker from '@/components/ui/ScrollYearPicker';
 import { Mail, KeyRound, CheckCircle2, ArrowRight, X, ShieldCheck } from 'lucide-react';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DEFAULT_START_YEAR = String(new Date().getFullYear());
 
 /**
- * GoogleEmailAuthPanel - Real Supabase Authentication (Google Identity / OAuth + Verified Email OTP & Password)
- * Ensures users cannot spoof an email without real verification, and links session to per-user Supabase storage.
+ * GoogleEmailAuthPanel - Real Supabase Authentication
+ * - Uses in-page 6-digit OTP code verification (never redirects to localhost:3000)
+ * - Uses ScrollYearPicker for "שנת התחלת התואר" (1990 -> current year)
+ * - Only renders Google One-Tap if VITE_GOOGLE_CLIENT_ID is explicitly configured for the current origin
  */
-const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות ואימות חשבון עם Google / אימייל' }) => {
+const GoogleEmailAuthPanel = ({
+  onSuccess,
+  onClose,
+  title = 'התחברות ואימות חשבון עם Google / אימייל',
+}) => {
   const [authMethod, setAuthMethod] = useState('otp'); // 'otp' | 'password'
   const [passwordMode, setPasswordMode] = useState('signin'); // 'signin' | 'signup'
   const [step, setStep] = useState('request'); // 'request' | 'verify'
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [studyYear, setStudyYear] = useState('שנה ב׳');
+  const [studyYear, setStudyYear] = useState(DEFAULT_START_YEAR);
   const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
 
@@ -26,7 +33,7 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
   const [infoMessage, setInfoMessage] = useState('');
   const googleBtnContainerRef = useRef(null);
 
-  // Initialize official Google Identity Services button -> exchanges signed Google JWT with Supabase Auth
+  // Only initialize Google Identity Services if a dedicated VITE_GOOGLE_CLIENT_ID is configured for this domain
   useEffect(() => {
     if (typeof window === 'undefined' || !GOOGLE_CLIENT_ID) return undefined;
 
@@ -46,7 +53,7 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
           onSuccess?.(data.session);
         }
       } catch (err) {
-        setError(err?.message || 'התחברות עם Google נכשלה. נסו אימות במייל למטה.');
+        setError(err?.message || 'התחברות עם Google נכשלה. נסו אימות קוד במייל למטה.');
       } finally {
         if (!cancelled) setBusy(false);
       }
@@ -70,11 +77,11 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
             text: 'continue_with',
             shape: 'rectangular',
             locale: 'he',
-            width: 280,
+            width: 260,
           });
         }
       } catch {
-        /* GIS initialization fallback */
+        /* GIS fallback */
       }
     };
 
@@ -118,12 +125,10 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
 
     setBusy(true);
     try {
-      const redirectTo = `${window.location.origin}${window.location.pathname}${window.location.hash}`;
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: redirectTo,
           data: {
             full_name: cleanName,
             study_year: studyYear,
@@ -133,17 +138,19 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
 
       if (otpError) {
         if (/rate limit|security purposes/i.test(otpError.message)) {
-          throw new Error('נשלחו יותר מדי בקשות אימות בדקה האחרונה. אנא המתינו כדקה או השתמשו בקוד שכבר נשלח למייל.');
+          throw new Error(
+            'נשלחו יותר מדי בקשות אימות בדקה האחרונה. אנא המתינו כדקה או הזינו את הקוד שכבר נשלח למייל.'
+          );
         }
         throw otpError;
       }
 
       setStep('verify');
       setInfoMessage(
-        `שלחנו מייל אימות לכתובת ${cleanEmail}. הזינו את קוד האימות מהמייל (או לחצו על קישור האימות במייל) כדי להשלים את החיבור.`
+        `שלחנו קוד אימות לכתובת ${cleanEmail}. העתיקו את קוד המספרים מהמייל והזינו אותו כאן למטה (אל תלחצו על קישור ה-localhost במייל).`
       );
     } catch (err) {
-      setError(err?.message || 'שליחת מייל האימות נכשלה. בדקו את הכתובת ונסו שוב.');
+      setError(err?.message || 'שליחת קוד האימות נכשלה. בדקו את הכתובת ונסו שוב.');
     } finally {
       setBusy(false);
     }
@@ -163,7 +170,6 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
 
     setBusy(true);
     try {
-      // Try 'email' first, then 'signup' or 'magiclink' in case this is a brand-new user confirmation
       let verifyResult = await supabase.auth.verifyOtp({
         email: cleanEmail,
         token: cleanToken,
@@ -187,14 +193,13 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
       }
 
       if (verifyResult.error) {
-        throw new Error('קוד האימות שגוי או שפג תוקפו. בדקו את המייל ונסו שוב.');
+        throw new Error('קוד האימות שגוי או שפג תוקפו. בדקו את הקוד במייל ונסו שוב.');
       }
 
-      // Ensure user metadata includes name and studyYear if provided
-      if (name.trim()) {
+      if (name.trim() || studyYear) {
         await supabase.auth.updateUser({
           data: {
-            full_name: name.trim(),
+            full_name: name.trim() || undefined,
             study_year: studyYear,
           },
         });
@@ -241,21 +246,23 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
         if (signInError) {
           if (/email not confirmed/i.test(signInError.message)) {
             setStep('verify');
-            setInfoMessage('החשבון קיים אך טרם אומת במייל. הזינו את קוד האימות שנשלח למייל שלכם:');
+            setInfoMessage(
+              'החשבון קיים אך טרם אומת. הזינו כאן את קוד המספרים שנשלח למייל שלכם:'
+            );
             return;
           }
-          throw new Error('הכניסה נכשלה. ודאו שהאימייל והסיסמה נכונים (או הירשמו אם זו פעם ראשונה).');
+          throw new Error(
+            'הכניסה נכשלה. ודאו שהאימייל והסיסמה נכונים (או הירשמו אם זו פעם ראשונה).'
+          );
         }
         if (data?.session) {
           onSuccess?.(data.session);
         }
       } else {
-        const redirectTo = `${window.location.origin}${window.location.pathname}${window.location.hash}`;
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: cleanEmail,
           password,
           options: {
-            emailRedirectTo: redirectTo,
             data: {
               full_name: cleanName,
               study_year: studyYear,
@@ -267,10 +274,9 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
         if (data?.session) {
           onSuccess?.(data.session);
         } else {
-          // Email confirmation is required by Supabase! Transition to OTP verification step.
           setStep('verify');
           setInfoMessage(
-            `נשלח מייל אימות לכתובת ${cleanEmail}. אשרו את הקישור במייל או הזינו כאן את קוד האימות כדי להפעיל את החשבון.`
+            `נשלח קוד אימות לכתובת ${cleanEmail}. הזינו כאן את קוד המספרים מהמייל כדי להפעיל את החשבון (אל תלחצו על קישור ה-localhost במייל).`
           );
         }
       }
@@ -308,49 +314,62 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
       {/* Security / Per-User Cloud Sync Notice */}
       <div className="mb-5 p-3 bg-tetris-yellow/35 border-2 border-off-black flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p className="text-xs font-ibm text-off-black leading-relaxed">
-          <strong>חיבור מאומת בענן:</strong> התיקיות, הפריטים השמורים, ההערות והעבודות שלכם נשמרים באופן אישי ומאובטח לחשבון האימייל המאומת שלכם מכל מכשיר.
+          <strong>חיבור מאומת בענן:</strong> הזינו את כתובת ה-Gmail / האימייל שלכם כדי לקבל <strong>קוד אימות חד-פעמי</strong> ישירות למייל. כל התיקיות, הפריטים השמורים והעבודות נשמרים לחשבון האישי שלכם מכל מכשיר.
         </p>
-        {/* Official Google Sign-In Button container */}
-        <div className="shrink-0 flex items-center justify-end" ref={googleBtnContainerRef} />
+        {GOOGLE_CLIENT_ID && (
+          <div className="shrink-0 flex items-center justify-end" ref={googleBtnContainerRef} />
+        )}
       </div>
 
       {/* Method Selector Tabs */}
       {step === 'request' && (
-        <div className="flex border-2 border-off-black mb-5 bg-light-gray w-fit">
-          <button
-            type="button"
-            onClick={() => {
-              setAuthMethod('otp');
-              setError('');
-              setInfoMessage('');
-            }}
-            className={cn(
-              'h-10 px-4 font-headline text-xs font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer',
-              authMethod === 'otp'
-                ? 'bg-tetris-purple text-off-white'
-                : 'bg-off-white text-off-black hover:bg-light-gray'
-            )}
-          >
-            <Mail size={14} />
-            <span>קוד אימות למייל (Google / Email OTP)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setAuthMethod('password');
-              setError('');
-              setInfoMessage('');
-            }}
-            className={cn(
-              'h-10 px-4 font-headline text-xs font-bold border-r-2 border-off-black inline-flex items-center gap-1.5 transition-colors cursor-pointer',
-              authMethod === 'password'
-                ? 'bg-tetris-purple text-off-white'
-                : 'bg-off-white text-off-black hover:bg-light-gray'
-            )}
-          >
-            <KeyRound size={14} />
-            <span>כניסה / הרשמה עם סיסמה</span>
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-5">
+          <div className="flex border-2 border-off-black bg-light-gray w-fit">
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMethod('otp');
+                setError('');
+                setInfoMessage('');
+              }}
+              className={cn(
+                'h-10 px-4 font-headline text-xs font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer',
+                authMethod === 'otp'
+                  ? 'bg-tetris-purple text-off-white'
+                  : 'bg-off-white text-off-black hover:bg-light-gray'
+              )}
+            >
+              <Mail size={14} />
+              <span>קוד אימות ל-Gmail / מייל (ללא סיסמה)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMethod('password');
+                setError('');
+                setInfoMessage('');
+              }}
+              className={cn(
+                'h-10 px-4 font-headline text-xs font-bold border-r-2 border-off-black inline-flex items-center gap-1.5 transition-colors cursor-pointer',
+                authMethod === 'password'
+                  ? 'bg-tetris-purple text-off-white'
+                  : 'bg-off-white text-off-black hover:bg-light-gray'
+              )}
+            >
+              <KeyRound size={14} />
+              <span>כניסה / הרשמה עם סיסמה</span>
+            </button>
+          </div>
+
+          {email.trim() && (
+            <button
+              type="button"
+              onClick={() => setStep('verify')}
+              className="text-xs font-headline underline text-tetris-purple cursor-pointer"
+            >
+              כבר קיבלתם קוד למייל? הזינו אותו כאן
+            </button>
+          )}
         </div>
       )}
 
@@ -390,31 +409,24 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
 
             <div className="flex flex-col">
               <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
-                <span>שנת לימודים</span>
+                <span>שנת התחלת התואר</span>
               </label>
-              <select
-                value={studyYear}
-                onChange={(e) => setStudyYear(e.target.value)}
-                className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
-              >
-                {HIT_STUDY_YEARS.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
+              <ScrollYearPicker value={studyYear} onChange={setStudyYear} />
             </div>
           </div>
 
           {error && (
-            <p role="alert" className="text-xs font-ibm text-red-800 bg-red-100 border-2 border-red-700 px-3 py-2">
+            <p
+              role="alert"
+              className="text-xs font-ibm text-red-800 bg-red-100 border-2 border-red-700 px-3 py-2"
+            >
               {error}
             </p>
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
             <span className="text-xs font-ibm text-dark-gray">
-              יישלח קוד אימות חד-פעמי וקישור התחברות לכתובת המייל שתזינו.
+              יישלח קוד אימות בן 6–8 ספרות לכתובת ה-Gmail / המייל שתזינו.
             </span>
             <div className="flex items-center gap-2">
               {onClose && (
@@ -467,7 +479,7 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
                 passwordMode === 'signup' ? 'bg-tetris-yellow font-bold' : 'bg-light-gray'
               )}
             >
-              יצירת חשבון חדש (עם אימות מייל)
+              יצירת חשבון חדש (עם קוד אימות למייל)
             </button>
           </div>
 
@@ -528,25 +540,18 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
             {passwordMode === 'signup' && (
               <div className="flex flex-col">
                 <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
-                  <span>שנת לימודים</span>
+                  <span>שנת התחלת התואר</span>
                 </label>
-                <select
-                  value={studyYear}
-                  onChange={(e) => setStudyYear(e.target.value)}
-                  className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
-                >
-                  {HIT_STUDY_YEARS.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
+                <ScrollYearPicker value={studyYear} onChange={setStudyYear} />
               </div>
             )}
           </div>
 
           {error && (
-            <p role="alert" className="text-xs font-ibm text-red-800 bg-red-100 border-2 border-red-700 px-3 py-2">
+            <p
+              role="alert"
+              className="text-xs font-ibm text-red-800 bg-red-100 border-2 border-red-700 px-3 py-2"
+            >
               {error}
             </p>
           )}
@@ -571,7 +576,7 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
                 {busy
                   ? 'מתחבר...'
                   : passwordMode === 'signup'
-                    ? 'הרשמה ושליחת מייל אימות'
+                    ? 'הרשמה ושליחת קוד אימות'
                     : 'התחבר לחשבון'}
               </span>
             </button>
@@ -596,9 +601,9 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
               <input
                 type="email"
                 value={email}
-                readOnly
+                onChange={(e) => setEmail(e.target.value)}
                 dir="ltr"
-                className="form-control-uniform w-full px-3 bg-light-gray/70 border-2 border-off-black font-jersey text-sm text-dark-gray outline-none"
+                className="form-control-uniform w-full px-3 bg-light-gray/70 border-2 border-off-black font-jersey text-sm text-off-black outline-none"
               />
             </div>
 
@@ -622,7 +627,10 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
           </div>
 
           {error && (
-            <p role="alert" className="text-xs font-ibm text-red-800 bg-red-100 border-2 border-red-700 px-3 py-2">
+            <p
+              role="alert"
+              className="text-xs font-ibm text-red-800 bg-red-100 border-2 border-red-700 px-3 py-2"
+            >
               {error}
             </p>
           )}

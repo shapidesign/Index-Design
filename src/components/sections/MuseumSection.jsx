@@ -5,6 +5,7 @@ import TetrisShape from '@/components/tetris/TetrisShape';
 import SaveItemButton from '@/components/ui/SaveItemButton';
 import FilterToggle from '@/components/ui/FilterToggle';
 import GoogleEmailAuthPanel from '@/components/ui/GoogleEmailAuthPanel';
+import ScrollYearPicker from '@/components/ui/ScrollYearPicker';
 import useSavedItems from '@/hooks/useSavedItems';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 import {
@@ -260,7 +261,7 @@ const StudentWorkModal = ({ work, onClose }) => {
                 )}
                 <div className="flex items-center gap-2 text-sm font-headline">
                   <BookOpen size={15} className="text-tetris-blue shrink-0" />
-                  <span className="font-bold text-off-black">קורס ושנה:</span>
+                  <span className="font-bold text-off-black">קורס ושנת התחלת תואר:</span>
                   <span className="text-dark-gray">
                     {work.course} · {work.year}
                   </span>
@@ -354,7 +355,7 @@ const MuseumSection = ({ pendingNavigation }) => {
   const [uploadForm, setUploadForm] = useState({
     title: '',
     course: HIT_COURSES[0],
-    year: userProfile?.studyYear || 'שנה ב׳',
+    year: userProfile?.studyYear || String(new Date().getFullYear()),
     teacher: HIT_DESIGN_PROFESSORS[0],
     customTeacher: '',
     description: '',
@@ -551,7 +552,7 @@ const MuseumSection = ({ pendingNavigation }) => {
       setUploadForm({
         title: '',
         course: HIT_COURSES[0],
-        year: userProfile.studyYear || 'שנה ב׳',
+        year: userProfile.studyYear || String(new Date().getFullYear()),
         teacher: HIT_DESIGN_PROFESSORS[0],
         customTeacher: '',
         description: '',
@@ -595,7 +596,7 @@ const MuseumSection = ({ pendingNavigation }) => {
             </span>
           </div>
           <p className="text-sm md:text-base text-dark-gray font-ibm mt-1 max-w-2xl">
-            תערוכת פרויקטים של סטודנטים וסטודנטיות לתקשורת חזותית ועיצוב ב-HIT — מסווגים לפי קורס, שנת לימודים, מרצה מנחה ותגיות.
+            תערוכת פרויקטים של סטודנטים וסטודנטיות לתקשורת חזותית ועיצוב ב-HIT — מסווגים לפי קורס, שנת התחלת התואר, מרצה מנחה ותגיות.
           </p>
         </div>
 
@@ -722,21 +723,12 @@ const MuseumSection = ({ pendingNavigation }) => {
 
                 <div className="flex flex-col">
                   <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
-                    <span>שנת לימודים *</span>
+                    <span>שנת התחלת התואר *</span>
                   </label>
-                  <select
+                  <ScrollYearPicker
                     value={uploadForm.year}
-                    onChange={(e) =>
-                      setUploadForm((p) => ({ ...p, year: e.target.value }))
-                    }
-                    className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-headline text-sm outline-none cursor-pointer"
-                  >
-                    {HIT_STUDY_YEARS.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(y) => setUploadForm((p) => ({ ...p, year: y }))}
+                  />
                 </div>
 
                 <div className="flex flex-col">
@@ -945,7 +937,7 @@ const MuseumSection = ({ pendingNavigation }) => {
               onClear={() => setSelectedCourses([])}
             />
             <SearchableDropdown
-              label="שנת לימודים"
+              label="שנת התחלת התואר"
               options={yearOptions}
               selected={selectedYears}
               onToggle={toggleItem(setSelectedYears)}

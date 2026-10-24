@@ -68,13 +68,15 @@ export const HIT_COURSES = [
   'פרויקט אישי',
 ];
 
-export const HIT_STUDY_YEARS = [
-  'שנה א׳',
-  'שנה ב׳',
-  'שנה ג׳',
-  'שנה ד׳',
-  'בוגר/ת',
-];
+const CURRENT_YEAR = new Date().getFullYear();
+
+/** Years from current year down to 1990 for "שנת התחלת התואר" */
+export const DEGREE_START_YEARS = Array.from(
+  { length: CURRENT_YEAR - 1990 + 1 },
+  (_, i) => String(CURRENT_YEAR - i)
+);
+
+export const HIT_STUDY_YEARS = DEGREE_START_YEARS;
 
 export const SUGGESTED_WORK_TAGS = [
   'טיפוגרפיה',
@@ -103,7 +105,7 @@ export const SEED_STUDENT_WORKS = [
     studentEmail: 'noa.levi@my.hit.ac.il',
     studentAvatar: '',
     course: 'טיפוגרפיה ב׳',
-    year: 'שנה ב׳',
+    year: '2024',
     teacher: 'פרופ׳ עודד עזר (טיפוגרפיה ותקשורת חזותית)',
     description: 'מחקר צורני של אותיות עבריות גיאומטריות בהשראת באוהאוס ומשחקי ארקייד. הפרויקט משלב כרזה מודפסת עם שכבת אנימציה שמגיבה לתנועת העכבר.',
     tags: ['טיפוגרפיה', 'כרזה', 'פונט עברי', 'אינטראקטיב'],
@@ -120,7 +122,7 @@ export const SEED_STUDENT_WORKS = [
     studentEmail: 'ido.cohen@my.hit.ac.il',
     studentAvatar: '',
     course: 'מיתוג וזהות חזותית',
-    year: 'שנה ג׳',
+    year: '2023',
     teacher: 'ארז בכר (ראש המחלקה לתקשורת חזותית)',
     description: 'שפה חזותית נאו-ברוטליסטית המשלבת דפוס רשת ידני עם מערכת אייקונים מודולרית, שילוט רחוב ואריזות לסוחרי השוק.',
     tags: ['מיתוג', 'מערכת שפה', 'דפוס', 'אריזות'],
@@ -137,7 +139,7 @@ export const SEED_STUDENT_WORKS = [
     studentEmail: 'maya.shapira@my.hit.ac.il',
     studentAvatar: '',
     course: 'איור וציור',
-    year: 'שנה א׳',
+    year: '2025',
     teacher: 'שירי פיורוביץ בכר (תקשורת חזותית)',
     description: 'תיעוד מאויר של שלטי מלאכה ובתי מלאכה ישנים בחולון ובתל אביב, מודפס בריזוגרף דו-צבעוני בסדנת הפקולטה בבניין 6.',
     tags: ['איור', 'ריזוגרף', 'דפוס', 'עבודת יד'],
@@ -154,7 +156,7 @@ export const SEED_STUDENT_WORKS = [
     studentEmail: 'tomer.barak@my.hit.ac.il',
     studentAvatar: '',
     course: 'עיצוב ממשקים (UX/UI)',
-    year: 'שנה ג׳',
+    year: '2023',
     teacher: 'דויד אופנהיים שמש (עיצוב ממשקים UX/UI ו-AI)',
     description: 'אפיון ועיצוב ממשק משתמש אדפטיבי לסטודנטים חדשים במכון, כולל מיפוי סדנאות, השאלת ציוד וניווט בזמן אמת בין בניינים 6 ו-7.',
     tags: ['UX/UI', 'אינטראקטיב', 'AI', 'מערכת שפה'],
@@ -171,7 +173,7 @@ export const SEED_STUDENT_WORKS = [
     studentEmail: 'roni.almog@my.hit.ac.il',
     studentAvatar: '',
     course: 'מושן גרפיקס ואפטר אפקטס',
-    year: 'שנה ב׳',
+    year: '2024',
     teacher: 'רועי צורף (אפטר אפקטס ומושן)',
     description: 'סיקוונס כותרות דינמי המשלב טיפוגרפיה קינטית, חיתוכי נייר סרוקים וסינתזה קולית.',
     tags: ['מושן', 'טיפוגרפיה', 'אקספרימנטלי'],
@@ -188,7 +190,7 @@ export const SEED_STUDENT_WORKS = [
     studentEmail: 'daniel.m@my.hit.ac.il',
     studentAvatar: '',
     course: 'עיצוב פונטים',
-    year: 'שנה ד׳',
+    year: '2022',
     teacher: 'תמר לב-און (אוצרת גלריה ויטרינה ומרצה)',
     description: 'פיתוח גופן עברי מקורי לטקסט רץ ולכותרות, בהשראת מכונות כתיבה עבריות משנות ה-60.',
     tags: ['פונט עברי', 'טיפוגרפיה', 'פרויקט גמר'],
