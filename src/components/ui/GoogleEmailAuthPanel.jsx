@@ -118,7 +118,7 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
 
     setBusy(true);
     try {
-      const redirectTo = `${window.location.origin}${window.location.pathname}${window.location.hash}`;
+      const redirectTo = `${window.location.origin}${window.location.pathname}${window.location.search}`;
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
         options: {
@@ -250,7 +250,7 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
           onSuccess?.(data.session);
         }
       } else {
-        const redirectTo = `${window.location.origin}${window.location.pathname}${window.location.hash}`;
+        const redirectTo = `${window.location.origin}${window.location.pathname}${window.location.search}`;
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: cleanEmail,
           password,

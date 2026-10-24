@@ -11,6 +11,7 @@ import EyeLogo from '@/components/ui/EyeLogo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { SavedItemsProvider } from '@/hooks/useSavedItems';
+import { legacyHashToPath, sectionIdFromPathname } from '@/lib/section-route';
 import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
 import { APPS as KEYBOARD_APPS, SHORTCUTS } from '@/data/shortcuts';
 
@@ -154,10 +155,17 @@ const getPreviewText = (text, max = 85) => {
   return clean.length > max ? `${clean.slice(0, max)}...` : clean;
 };
 
-/** Read the active section from the URL hash (#/toolbox etc.) */
-const sectionFromHash = () => {
-  const id = window.location.hash.match(/^#\/([a-z]+)/)?.[1];
-  return navSections.some((s) => s.id === id) ? id : null;
+const sectionIds = navSections.map((section) => section.id);
+
+/** Read the active section from the path (`/toolbox`). Rewrite old `/#/toolbox` links. */
+const sectionFromLocation = () => {
+  const legacy = legacyHashToPath(window.location.hash);
+  if (legacy && sectionIdFromPathname(legacy, sectionIds)) {
+    window.history.replaceState(null, '', legacy);
+  } else if (window.location.hash === '#' || window.location.hash === '#/') {
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+  }
+  return sectionIdFromPathname(window.location.pathname, sectionIds);
 };
 
 /** Bump this to show "What's New" again for returning users */
@@ -167,7 +175,7 @@ const WHATS_NEW_STORAGE_KEY = `index-whats-new-seen-${WHATS_NEW_VERSION}`;
 
 const App = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState(sectionFromHash);
+  const [activeSection, setActiveSection] = useState(sectionFromLocation);
   const [luckyHighlight, setLuckyHighlight] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
@@ -185,21 +193,18 @@ const App = () => {
   const lastLuckyTargetRef = useRef(null);
   const prevSectionRef = useRef(activeSection);
 
-  /** Hash routing: keep URL in sync + react to back/forward */
+  /** Path routing: keep the URL in sync and react to back/forward */
   useEffect(() => {
-    const onHashChange = () => setActiveSection(sectionFromHash());
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    const onPopState = () => setActiveSection(sectionFromLocation());
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   useEffect(() => {
-    if (sectionFromHash() !== activeSection) {
-      // Preserve query params on #/saved?import=... when first landing on saved
-      if (activeSection === 'saved' && window.location.hash.startsWith('#/saved?')) {
-        return;
-      }
-      window.location.hash = activeSection ? `#/${activeSection}` : '';
-    }
+    const current = sectionIdFromPathname(window.location.pathname, sectionIds);
+    if (current === activeSection) return;
+    if (activeSection === 'saved' && new URLSearchParams(window.location.search).has('import')) return;
+    window.history.pushState(null, '', activeSection ? `/${activeSection}` : '/');
   }, [activeSection]);
 
   /** On real section change: clear stale search text, scroll to top */
