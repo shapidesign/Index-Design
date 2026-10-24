@@ -10,8 +10,13 @@ import WhatsNewModal from '@/components/ui/WhatsNewModal';
 import EyeLogo from '@/components/ui/EyeLogo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { SavedItemsProvider } from '@/hooks/useSavedItems';
+import { legacyHashToPath, sectionIdFromPathname } from '@/lib/section-route';
 import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
 import { APPS as KEYBOARD_APPS, SHORTCUTS } from '@/data/shortcuts';
+
+/** Moving eye stays in source; flip to show it again. */
+const SHOW_EYE = false;
 
 /** Lazy-loaded section components */
 const CHUNK_RELOAD_FLAG = 'chunk-reload-attempted';
@@ -50,6 +55,7 @@ const LibrarySection = lazyWithChunkRecovery(() => import('@/components/sections
 const MapSection = lazyWithChunkRecovery(() => import('@/components/sections/MapSection'));
 const TipsSection = lazyWithChunkRecovery(() => import('@/components/sections/TipsSection'));
 const KeyboardSection = lazyWithChunkRecovery(() => import('@/components/sections/KeyboardSection'));
+const PersonalSection = lazyWithChunkRecovery(() => import('@/components/sections/PersonalSection'));
 
 /**
  * App - Main Application Component
@@ -64,18 +70,20 @@ const navSections = [
   { id: 'keyboard', label: 'מקלדת' },
   { id: 'map', label: 'המפה' },
   { id: 'tips', label: 'טיפים' },
+  { id: 'saved', label: 'המגירה שלי' },
   { id: 'lucky', label: 'הפתעה' },
 ];
 
 /** Category cards with matching tetris shape icons */
 const categories = [
   { id: 'toolbox', title: 'ארגז הכלים', desc: 'כלים חינמיים ומומלצים לעיצוב', color: 'purple', shape: 'T' },
-  { id: 'museum', title: 'המוזיאון', desc: 'מעצבים ויצירות שחובה להכיר', color: 'orange', shape: 'L' },
+  { id: 'museum', title: 'המוזיאון', desc: 'עבודות ופרויקטים של סטודנטים ב-HIT', color: 'orange', shape: 'L' },
   { id: 'library', title: 'הספרייה', desc: 'ספרים וחומרי לימוד מומלצים', color: 'blue', shape: 'I' },
   { id: 'dictionary', title: 'מילון', desc: 'אינדקס פונטים עבריים מסונן', color: 'yellow', shape: 'Z' },
   { id: 'keyboard', title: 'מקלדת', desc: 'קיצורי מקלדת, תרגול וחידון', color: 'cyan', shape: 'J' },
   { id: 'map', title: 'המפה', desc: 'מיקומים שימושיים לסטודנטים', color: 'green', shape: 'O' },
   { id: 'tips', title: 'טיפים', desc: 'טיפים וביקורות מסטודנטים', color: 'pink', shape: 'S' },
+  { id: 'saved', title: 'המגירה שלי', desc: 'מועדפים, תיקיות אישיות ופרופיל', color: 'yellow', shape: 'T' },
 ];
 
 /** Sections that can be selected by the fortune cookie */
@@ -147,10 +155,17 @@ const getPreviewText = (text, max = 85) => {
   return clean.length > max ? `${clean.slice(0, max)}...` : clean;
 };
 
-/** Read the active section from the URL hash (#/toolbox etc.) */
-const sectionFromHash = () => {
-  const id = window.location.hash.match(/^#\/([a-z]+)/)?.[1];
-  return navSections.some((s) => s.id === id) ? id : null;
+const sectionIds = navSections.map((section) => section.id);
+
+/** Read the active section from the path (`/toolbox`). Rewrite old `/#/toolbox` links. */
+const sectionFromLocation = () => {
+  const legacy = legacyHashToPath(window.location.hash);
+  if (legacy && sectionIdFromPathname(legacy, sectionIds)) {
+    window.history.replaceState(null, '', legacy);
+  } else if (window.location.hash === '#' || window.location.hash === '#/') {
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+  }
+  return sectionIdFromPathname(window.location.pathname, sectionIds);
 };
 
 /** Bump this to show "What's New" again for returning users */
@@ -160,7 +175,7 @@ const WHATS_NEW_STORAGE_KEY = `index-whats-new-seen-${WHATS_NEW_VERSION}`;
 
 const App = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState(sectionFromHash);
+  const [activeSection, setActiveSection] = useState(sectionFromLocation);
   const [luckyHighlight, setLuckyHighlight] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
@@ -178,17 +193,18 @@ const App = () => {
   const lastLuckyTargetRef = useRef(null);
   const prevSectionRef = useRef(activeSection);
 
-  /** Hash routing: keep URL in sync + react to back/forward */
+  /** Path routing: keep the URL in sync and react to back/forward */
   useEffect(() => {
-    const onHashChange = () => setActiveSection(sectionFromHash());
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    const onPopState = () => setActiveSection(sectionFromLocation());
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   useEffect(() => {
-    if (sectionFromHash() !== activeSection) {
-      window.location.hash = activeSection ? `#/${activeSection}` : '';
-    }
+    const current = sectionIdFromPathname(window.location.pathname, sectionIds);
+    if (current === activeSection) return;
+    if (activeSection === 'saved' && new URLSearchParams(window.location.search).has('import')) return;
+    window.history.pushState(null, '', activeSection ? `/${activeSection}` : '/');
   }, [activeSection]);
 
   /** On real section change: clear stale search text, scroll to top */
@@ -732,6 +748,7 @@ const App = () => {
   }
 
   return (
+    <SavedItemsProvider>
     <div dir="rtl" className="min-h-screen bg-off-white text-off-black font-headline animate-app-fade-in">
 
       {/* ===== NAVBAR - Dark for differentiation ===== */}
@@ -749,9 +766,11 @@ const App = () => {
           <>
             <section className="text-center mb-8 py-4 flex flex-col items-center">
               {/* Eye Logo Animation */}
-              <div className="mb-6">
-                <EyeLogo className="w-20 h-20 md:w-28 md:h-28" />
-              </div>
+              {SHOW_EYE && (
+                <div className="mb-6">
+                  <EyeLogo className="w-20 h-20 md:w-28 md:h-28" />
+                </div>
+              )}
 
               {/* Logo "אינדקס" from Figma */}
               <div className="flex justify-center mb-1 md:mb-4">
@@ -1287,6 +1306,39 @@ const App = () => {
             </Suspense>
           </div>
         )}
+
+        {/* ===== PERSONAL SAVED CRATE & SHOWCASE SECTION ===== */}
+        {activeSection === 'saved' && (
+          <div className="mt-12" id="section-saved">
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={() => setActiveSection(null)}
+                className={cn(
+                  "px-4 py-2",
+                  "font-headline text-sm font-bold text-off-black",
+                  "bg-light-gray",
+                  "border-2 border-off-black",
+                  "shadow-brutalist-xs",
+                  "hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+                  "transition-all duration-200"
+                )}
+              >
+                חזרה לכל הקטגוריות
+              </button>
+            </div>
+            <Suspense fallback={<TetrisLoader className="min-h-[400px]" />}>
+              <PersonalSection
+                onNavigateToItem={(target) => {
+                  if (!target?.sectionId) return;
+                  setActiveSection(target.sectionId);
+                  setPendingNavigation(target);
+                }}
+                onBrowseSection={(secId) => setActiveSection(secId)}
+              />
+            </Suspense>
+          </div>
+        )}
       </main>
 
       {/* ===== FOOTER ===== */}
@@ -1354,6 +1406,7 @@ const App = () => {
         onClose={handleWhatsNewClose}
       />
     </div>
+    </SavedItemsProvider>
   );
 };
 

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
 import PricingBadge from '@/components/ui/PricingBadge';
+import SaveItemButton from '@/components/ui/SaveItemButton';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
 /**
@@ -213,6 +214,16 @@ const ToolboxCard = ({
   // Priority: 1. Custom image, 2. Screenshot (if no error), 3. Placeholder
   const displayImage = image || (screenshotUrl && !imgError ? screenshotUrl : null);
   const showImage = !!displayImage;
+  const saveKeyId = itemId || name;
+  const saveSnapshot = {
+    titleHe: name,
+    titleEn: '',
+    description: description || '',
+    link: link || '',
+    image: displayImage || '',
+    tags: tags || [],
+    badge: types?.[0] || 'כלי',
+  };
 
   // href: use link as-is if it starts with http, else prepend https://
   const href = link
@@ -267,7 +278,17 @@ const ToolboxCard = ({
             >
               {name}
             </h3>
-            {pricing && <PricingBadge pricing={pricing} />}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {pricing && <PricingBadge pricing={pricing} />}
+              {saveKeyId && (
+                <SaveItemButton
+                  sectionId="toolbox"
+                  itemId={saveKeyId}
+                  snapshot={saveSnapshot}
+                  size="sm"
+                />
+              )}
+            </div>
           </div>
 
           {description && (
@@ -350,7 +371,7 @@ const ToolboxCard = ({
 
         {/* Type badges overlaid on the image — top right in RTL */}
         {types.length > 0 && (
-          <div className="absolute top-2 right-2 flex flex-wrap gap-1 max-w-[85%]">
+          <div className="absolute top-2 right-2 flex flex-wrap gap-1 max-w-[75%] z-10">
             {types.map((type) => (
               <Badge
                 key={type}
@@ -360,6 +381,18 @@ const ToolboxCard = ({
                 {type}
               </Badge>
             ))}
+          </div>
+        )}
+
+        {/* Save to Personal Crate button — top left in RTL */}
+        {saveKeyId && (
+          <div className="absolute top-2 left-2 z-20">
+            <SaveItemButton
+              sectionId="toolbox"
+              itemId={saveKeyId}
+              snapshot={saveSnapshot}
+              size="sm"
+            />
           </div>
         )}
 

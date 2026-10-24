@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import TipArticleModal from '../ui/TipArticleModal';
 import FilterToggle from '@/components/ui/FilterToggle';
+import SaveItemButton from '@/components/ui/SaveItemButton';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
@@ -172,17 +173,25 @@ const TipsSection = () => {
               {filteredTips.map((tip, idx) => {
                 const headColor = bgColorMap[idx % 5];
                 return (
-                  <button
-                    key={tip.id}
-                    id={`search-item-tips-${String(tip.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`}
-                    onClick={() => handleOpenTip(tip.id)}
-                    className={cn(
-                      'group relative overflow-hidden bg-off-white text-right',
-                      'border-3 border-off-black shadow-brutalist',
-                      'aspect-[3/4] md:aspect-[4/5] flex flex-col',
-                      'transition-all duration-300 hover:shadow-none hover:translate-x-1 hover:translate-y-1'
-                    )}
-                  >
+                <div
+                  key={tip.id}
+                  id={`search-item-tips-${String(tip.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleOpenTip(tip.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleOpenTip(tip.id);
+                    }
+                  }}
+                  className={cn(
+                    'group relative overflow-hidden bg-off-white text-right cursor-pointer',
+                    'border-3 border-off-black shadow-brutalist',
+                    'aspect-[3/4] md:aspect-[4/5] flex flex-col',
+                    'transition-all duration-300 hover:shadow-none hover:translate-x-1 hover:translate-y-1'
+                  )}
+                >
                     {/* Header Area */}
                     <div className={cn('h-[40%] border-b-3 border-off-black relative p-4', headColor)}>
                       <div className="absolute inset-0 bg-noise opacity-30 mix-blend-overlay" />
@@ -191,6 +200,22 @@ const TipsSection = () => {
                           {tip.type}
                         </div>
                       )}
+                      <div className="absolute top-3 left-3 z-20">
+                        <SaveItemButton
+                          sectionId="tips"
+                          itemId={tip.id}
+                          size="sm"
+                          snapshot={{
+                            titleHe: tip.title || '',
+                            titleEn: tip.author || '',
+                            description: (tip.content || '').slice(0, 160),
+                            link: '',
+                            image: '',
+                            tags: tip.tags || [],
+                            badge: tip.type || 'טיפ',
+                          }}
+                        />
+                      </div>
                     </div>
 
                     {/* Content Area */}
@@ -227,7 +252,7 @@ const TipsSection = () => {
                         )}
                       </div>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
