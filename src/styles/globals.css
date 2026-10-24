@@ -173,8 +173,50 @@
     border-left-width: 3px;
   }
 
-  .border-r-3 {
-    border-right-width: 3px;
+  /* Uniform custom form control class so <input>, <select>, and buttons match pixel-for-pixel in height */
+  .form-control-uniform {
+    height: 44px;
+    min-height: 44px;
+    max-height: 44px;
+    box-sizing: border-box;
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 40px;
+  }
+
+  select.form-control-uniform {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231F1F1F' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 0.75rem center;
+    padding-inline-end: 2.25rem;
+  }
+
+  .form-label-uniform {
+    display: flex;
+    align-items: center;
+    height: 24px;
+    min-height: 24px;
+    max-height: 24px;
+    margin-bottom: 6px;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Hide horizontal/vertical scrollbars on single-line navbars while preserving scroll if needed */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
