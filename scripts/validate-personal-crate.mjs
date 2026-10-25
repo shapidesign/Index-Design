@@ -7,6 +7,7 @@ import {
   TETRIS_SHAPES,
   makeSavedKey,
   sanitizeCrate,
+  sanitizeProfilePatch,
   encodeSharedFolder,
   decodeSharedFolder,
 } from '../src/hooks/useSavedItems.js';
@@ -56,6 +57,13 @@ assert(TETRIS_SHAPES.includes(dirty.folders[0].shape), 'invalid folder shape mus
 assert.deepEqual(dirty.items['toolbox:item1'].folderIds, ['f-1'], 'dangling folder references must be stripped');
 assert.equal(dirty.items.brokenItem, undefined, 'broken items must be stripped');
 assert.equal(dirty.userProfile.name, 'נועה לוי');
+
+const renamed = sanitizeProfilePatch({ name: '  נועה   לוי  ', studyYear: 'שנה ג׳' });
+assert.equal(renamed.ok, true);
+assert.equal(renamed.name, 'נועה לוי');
+assert.equal(renamed.studyYear, 'שנה ג׳');
+assert.equal(sanitizeProfilePatch({ name: ' ', studyYear: 'שנה א׳' }).ok, false);
+assert.equal(sanitizeProfilePatch({ name: 'דנה', studyYear: '1990' }).ok, false);
 
 // Verify empty folders array stays empty (so deleting all folders persists)
 const emptyDeleted = sanitizeCrate({ folders: [], items: {} });
@@ -124,6 +132,13 @@ assert.equal(hasAuthCallback({ search: '', hash: '#access_token=xyz' }), true);
 assert.equal(hasAuthCallback({ search: '', hash: '' }), false);
 
 const personalSrc = fs.readFileSync(new URL('../src/components/sections/PersonalSection.jsx', import.meta.url), 'utf8');
+const personalSettingsReady = () =>
+  personalSrc.includes('עריכת פרופיל') &&
+  personalSrc.includes('updateUserProfile') &&
+  personalSrc.includes('שמור פרופיל') &&
+  personalSrc.includes('id="profile-email"') &&
+  personalSrc.includes('readOnly');
+assert(personalSettingsReady(), 'profile editor must be wired into the drawer');
 const museumSrc = fs.readFileSync(new URL('../src/components/sections/MuseumSection.jsx', import.meta.url), 'utf8');
 const buttonSrc = fs.readFileSync(new URL('../src/components/ui/GoogleSignInButton.jsx', import.meta.url), 'utf8');
 assert(personalSrc.includes('<GoogleSignInButton />'), 'saved drawer must start Google sign-in directly');

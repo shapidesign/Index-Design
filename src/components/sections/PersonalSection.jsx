@@ -10,6 +10,7 @@ import useSavedItems, {
 import TetrisShape from '@/components/tetris/TetrisShape';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
+import { HIT_STUDY_YEARS } from '@/data/hitFaculty';
 import {
   Bookmark,
   FolderPlus,
@@ -31,6 +32,140 @@ import {
 } from 'lucide-react';
 
 const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test((text || '').trim());
+
+const ProfileSettingsForm = ({ userProfile, onSave, onClose }) => {
+  const yearOptions = HIT_STUDY_YEARS.includes(userProfile.studyYear)
+    ? HIT_STUDY_YEARS
+    : [userProfile.studyYear, ...HIT_STUDY_YEARS].filter(Boolean);
+
+  const [name, setName] = useState(userProfile.name || '');
+  const [studyYear, setStudyYear] = useState(yearOptions[0] || HIT_STUDY_YEARS[1]);
+  const [syncedKey, setSyncedKey] = useState(`${userProfile.name}|${userProfile.studyYear}`);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [savedSnapshot, setSavedSnapshot] = useState('');
+
+  const nextKey = `${userProfile.name}|${userProfile.studyYear}`;
+  if (nextKey !== syncedKey) {
+    setSyncedKey(nextKey);
+    setName(userProfile.name || '');
+    setStudyYear(HIT_STUDY_YEARS.includes(userProfile.studyYear) ? userProfile.studyYear : yearOptions[0]);
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSavedSnapshot('');
+    setBusy(true);
+    try {
+      const result = await onSave({ name, studyYear });
+      if (!result?.ok) {
+        setError(result?.error || 'שמירת הפרופיל נכשלה. נסו שוב.');
+        return;
+      }
+      setSavedSnapshot(`${name.trim().replace(/\s+/g, ' ')}|${studyYear}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      dir="rtl"
+      className="mb-8 p-5 md:p-6 bg-light-gray border-3 border-off-black shadow-brutalist-sm"
+    >
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h3 className="font-headline text-lg font-bold text-off-black">עריכת פרופיל</h3>
+        <button
+          type="button"
+          onClick={onClose}
+          className="h-10 px-3 bg-off-white text-off-black font-headline text-xs border-2 border-off-black cursor-pointer"
+        >
+          סגור
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+        <div className="flex flex-col">
+          <label htmlFor="profile-name" className="form-label-uniform font-headline text-xs font-bold text-off-black">
+            <span>שם מלא *</span>
+          </label>
+          <input
+            id="profile-name"
+            type="text"
+            value={name}
+            maxLength={40}
+            onChange={(event) => {
+              setName(event.target.value);
+              setSavedSnapshot('');
+              if (error) setError('');
+            }}
+            dir="rtl"
+            autoComplete="name"
+            className="form-control-uniform w-full px-3 bg-off-white border-2 border-off-black font-headline text-sm text-off-black outline-none"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label htmlFor="profile-year" className="form-label-uniform font-headline text-xs font-bold text-off-black">
+            <span>שנת לימודים *</span>
+          </label>
+          <select
+            id="profile-year"
+            value={studyYear}
+            onChange={(event) => {
+              setStudyYear(event.target.value);
+              setSavedSnapshot('');
+              if (error) setError('');
+            }}
+            className="form-control-uniform w-full px-3 bg-off-white border-2 border-off-black font-headline text-sm text-off-black outline-none cursor-pointer"
+          >
+            {yearOptions.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col md:col-span-2">
+          <label htmlFor="profile-email" className="form-label-uniform font-headline text-xs font-bold text-off-black">
+            <span>אימייל (חשבון Google)</span>
+          </label>
+          <input
+            id="profile-email"
+            type="email"
+            value={userProfile.email || ''}
+            readOnly
+            dir="ltr"
+            className="form-control-uniform w-full px-3 bg-light-gray border-2 border-off-black font-jersey text-sm text-dark-gray outline-none cursor-not-allowed"
+          />
+        </div>
+      </div>
+
+      <p className="mt-3 text-xs font-ibm text-dark-gray">
+        השם מתעדכן גם על עבודות שהעליתם למוזיאון. האימייל מגיע מ-Google ולא ניתן לשינוי כאן.
+      </p>
+
+      {error && <p className="mt-2 text-xs font-ibm text-red-700">{error}</p>}
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={busy}
+          className="h-11 px-4 bg-tetris-purple text-off-white font-headline text-xs font-bold border-2 border-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer disabled:opacity-60 disabled:cursor-wait"
+        >
+          {savedSnapshot && savedSnapshot === `${name.trim().replace(/\s+/g, ' ')}|${studyYear}`
+            ? 'נשמר ✓'
+            : busy
+              ? 'שומר...'
+              : 'שמור פרופיל'}
+        </button>
+      </div>
+    </form>
+  );
+};
 
 const SECTION_META = {
   toolbox: { label: 'ארגז הכלים', bg: 'bg-tetris-purple', text: 'text-off-white' },
@@ -226,6 +361,7 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
     deleteFolder,
     importSharedFolder,
     signOutProfile,
+    updateUserProfile,
     cloudSyncing,
   } = useSavedItems();
 
@@ -245,6 +381,7 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
   const [isCustomizingStyle, setIsCustomizingStyle] = useState(false);
   const [shareFeedback, setShareFeedback] = useState('');
   const [importBanner, setImportBanner] = useState('');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   // Check if URL contains a shared folder payload (?import=...)
   useEffect(() => {
@@ -464,6 +601,15 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
               </button>
               <button
                 type="button"
+                onClick={() => setIsEditingProfile((open) => !open)}
+                aria-expanded={isEditingProfile}
+                className="inline-flex items-center gap-1.5 px-3 py-2.5 bg-tetris-yellow text-off-black font-headline text-xs font-bold border-2 border-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
+              >
+                <Edit3 size={14} />
+                <span>{isEditingProfile ? 'סגור עריכה' : 'עריכת פרופיל'}</span>
+              </button>
+              <button
+                type="button"
                 onClick={signOutProfile}
                 className="inline-flex items-center gap-1.5 px-3 py-2.5 bg-light-gray text-off-black font-headline text-xs border-2 border-off-black hover:bg-tetris-pink transition-colors cursor-pointer"
               >
@@ -476,6 +622,14 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
           )}
         </div>
       </div>
+
+      {userProfile && isEditingProfile && (
+        <ProfileSettingsForm
+          userProfile={userProfile}
+          onSave={updateUserProfile}
+          onClose={() => setIsEditingProfile(false)}
+        />
+      )}
 
       {/* ===== FOLDER TABS STRIP ===== */}
       <div className="mb-6 p-4 bg-off-white border-3 border-off-black shadow-brutalist-sm">
