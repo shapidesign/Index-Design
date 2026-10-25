@@ -38,6 +38,10 @@ function pointOf(event) {
 
 function sendToGa(row) {
   if (typeof window.gtag !== 'function') return;
+  if (row.kind === 'view') {
+    window.gtag('event', 'page_view', { page_path: row.path });
+    return;
+  }
   if (row.kind === 'share' || row.kind === 'forward') {
     window.gtag('event', 'share', {
       method: row.label || row.kind,
@@ -98,9 +102,21 @@ export function trackShare(method) {
   flush();
 }
 
+let lastView = '';
+
+function trackView() {
+  const path = `${window.location.pathname}${window.location.hash}`;
+  if (path === lastView) return;
+  lastView = path;
+  enqueue(buildAnalyticsEvent({
+    kind: 'view',
+    section: sectionNow(),
+    path,
+  }));
+  flush();
+}
+
 export function initTracking() {
-  // index.html already sends hash page views for this property. A second listener doubles them.
-  const pageViewsAlreadySent = typeof window.gtag === 'function';
   loadGa();
   const path = () => `${window.location.pathname}${window.location.hash}`;
 
@@ -134,23 +150,32 @@ export function initTracking() {
     }));
   };
 
-  const onHash = () => {
-    if (typeof window.gtag === 'function') {
-      window.gtag('event', 'page_view', { page_path: path() });
-    }
+  const pushState = window.history.pushState.bind(window.history);
+  const replaceState = window.history.replaceState.bind(window.history);
+  window.history.pushState = (...args) => {
+    const result = pushState(...args);
+    trackView();
+    return result;
+  };
+  window.history.replaceState = (...args) => {
+    const result = replaceState(...args);
+    trackView();
+    return result;
   };
 
   document.addEventListener('click', onClick, true);
   document.addEventListener('mouseover', onHover, true);
-  if (!pageViewsAlreadySent) {
-    window.addEventListener('hashchange', onHash);
-    onHash();
-  }
+  window.addEventListener('hashchange', trackView);
+  window.addEventListener('popstate', trackView);
+  trackView();
 
   return () => {
     document.removeEventListener('click', onClick, true);
     document.removeEventListener('mouseover', onHover, true);
-    if (!pageViewsAlreadySent) window.removeEventListener('hashchange', onHash);
+    window.removeEventListener('hashchange', trackView);
+    window.removeEventListener('popstate', trackView);
+    window.history.pushState = pushState;
+    window.history.replaceState = replaceState;
     flush();
   };
 }

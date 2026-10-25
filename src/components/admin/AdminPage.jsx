@@ -3,10 +3,10 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import { bumpVersion, normalizeItems } from '@/data/whatsNew';
-import { HEAT_COLS, HEAT_ROWS, binHeat } from '@/lib/analytics-event';
+import { HEAT_COLS, HEAT_ROWS, binHeat, buttonLabel, pageOf, rankCounts } from '@/lib/analytics-event';
 
 const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-43GN2SH9KR';
-const KIND_LABEL = { click: 'קליקים', hover: 'ריחופים', share: 'שיתופים', forward: 'העברות' };
+const KIND_LABEL = { click: 'קליקים', hover: 'ריחופים', share: 'שיתופים', forward: 'העברות', view: 'כניסות' };
 const SECTION_LABEL = {
   home: 'דף הבית',
   toolbox: 'ארגז הכלים',
@@ -16,6 +16,7 @@ const SECTION_LABEL = {
   keyboard: 'מקלדת',
   map: 'המפה',
   tips: 'טיפים',
+  saved: 'המגירה שלי',
   lucky: 'הפתעה',
 };
 
@@ -301,6 +302,26 @@ const NewsEditor = () => {
   );
 };
 
+const RankList = ({ title, note, rows, labelOf, barClass }) => {
+  const max = Math.max(1, ...rows.map(([, count]) => count));
+  return (
+    <section className="border-3 border-off-black p-4 space-y-2 bg-off-white">
+      <h2 className="font-bold">{title}</h2>
+      {note && <p className="font-ibm text-xs text-dark-gray">{note}</p>}
+      {rows.length === 0 && <p className="font-ibm text-sm">עדיין אין נתונים בטווח הזה.</p>}
+      {rows.map(([key, count]) => (
+        <div key={key} className="flex items-center gap-2">
+          <span className="w-36 shrink-0 truncate font-ibm text-sm" title={labelOf(key)}>{labelOf(key)}</span>
+          <div className="flex-1 h-4 border-2 border-off-black bg-off-white">
+            <div className={cn('h-full', barClass)} style={{ width: `${(count / max) * 100}%` }} />
+          </div>
+          <span className="w-8 text-sm font-ibm tabular-nums">{count}</span>
+        </div>
+      ))}
+    </section>
+  );
+};
+
 const AnalyticsBoard = () => {
   const [days, setDays] = useState(7);
   const [heat, setHeat] = useState('click');
@@ -320,7 +341,7 @@ const AnalyticsBoard = () => {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
     // ponytail: 5000-row cap. Counts under-report after that; move the sum into SQL if traffic grows.
     supabase.from('analytics_events')
-      .select('kind,section,label,x,y,created_at')
+      .select('kind,path,section,label,x,y,created_at')
       .gte('created_at', since)
       .order('created_at', { ascending: false })
       .limit(5000)
@@ -349,6 +370,13 @@ const AnalyticsBoard = () => {
   const maxCell = Math.max(1, ...heatCells);
   const sectionRows = Object.entries(sections).sort((a, b) => b[1] - a[1]);
   const sectionMax = Math.max(1, ...sectionRows.map(([, count]) => count));
+  const viewEvents = events.filter((event) => event.kind === 'view');
+  const pageEvents = viewEvents.length ? viewEvents : events.filter((event) => event.kind === 'click');
+  const pageRows = rankCounts(pageEvents, pageOf);
+  const buttonRows = rankCounts(
+    events.filter((event) => event.kind === 'click'),
+    (event) => buttonLabel(event.label),
+  );
   const colors = { click: 'bg-tetris-purple', hover: 'bg-tetris-cyan', share: 'bg-tetris-green', forward: 'bg-tetris-orange' };
 
   return (
@@ -368,13 +396,29 @@ const AnalyticsBoard = () => {
       </div>
       {status && <p role="status" className="font-ibm text-sm">{status}</p>}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {Object.keys(KIND_LABEL).map((kind) => (
+        {['click', 'hover', 'share', 'forward'].map((kind) => (
           <div key={kind} className={cn('border-3 border-off-black p-3 shadow-brutalist-xs', colors[kind])}>
             <p className="text-sm font-ibm">{KIND_LABEL[kind]}</p>
             <p className="text-3xl font-bold">{totals[kind] || 0}</p>
           </div>
         ))}
       </div>
+      <RankList
+        title="עמודים הכי נצפים"
+        note={viewEvents.length
+          ? 'כניסה נספרת פעם אחת בכל טעינה או מעבר לעמוד.'
+          : 'עדיין אין ספירת כניסות בטווח. הדירוג לפי קליקים בעמוד.'}
+        rows={pageRows}
+        labelOf={(key) => SECTION_LABEL[key] || key}
+        barClass="bg-tetris-cyan"
+      />
+      <RankList
+        title="כפתורים הכי נלחצים"
+        note="קליקים על כפתורים וקישורים. רקע, שדות, וטקסט שנראה כמו אימייל לא נספרים."
+        rows={buttonRows}
+        labelOf={(key) => key}
+        barClass="bg-tetris-orange"
+      />
       <section className="border-3 border-off-black p-4 bg-off-white">
         <div className="flex gap-2 mb-3">
           {['click', 'hover'].map((kind) => (

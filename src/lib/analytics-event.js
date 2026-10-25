@@ -1,4 +1,4 @@
-const KINDS = new Set(['click', 'hover', 'share', 'forward']);
+const KINDS = new Set(['click', 'hover', 'share', 'forward', 'view']);
 
 export const HEAT_COLS = 10;
 export const HEAT_ROWS = 16;
@@ -35,6 +35,48 @@ export function buildAnalyticsEvent(input) {
     event.y = clamp(Math.round(Number(input.y)), 0, 100);
   }
   return event;
+}
+
+/** Subpage id from a stored path. Hash routes and `/saved` recorded as home still count. */
+export function pageOf(event) {
+  const path = String(event?.path || '');
+  const id = path.match(/#\/([a-z]+)/)?.[1]
+    || path.match(/^\/([a-z]+)\/?$/)?.[1]
+    || event?.section
+    || 'home';
+  if (!id || id === 'admin' || id === 'privacy' || id === 'terms') return 'home';
+  return id;
+}
+
+/** Button name worth ranking. Background, fields, and typed emails are not buttons. */
+export function buttonLabel(label) {
+  const text = String(label || '').replace(/\s+/g, ' ').trim();
+  if (!text || text === 'רקע' || text === 'שדה') return null;
+  if (text.includes('@') || /^[•*.\s]+$/.test(text)) return null;
+  return text;
+}
+
+/** Highest counts first. Ties break on the Hebrew label so the order stays stable. */
+export function rankCounts(rows, keyOf, limit = 8) {
+  const counts = new Map();
+  for (const row of rows) {
+    const key = keyOf(row);
+    if (!key) continue;
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0]), 'he'))
+    .slice(0, limit);
+}
+
+export function checkAnalyticsRanks() {
+  if (pageOf({ path: '/saved', section: 'home' }) !== 'saved') throw new Error('saved path');
+  if (pageOf({ path: '/#/toolbox', section: 'home' }) !== 'toolbox') throw new Error('hash path');
+  if (pageOf({ path: '/', section: 'home' }) !== 'home') throw new Error('home');
+  if (buttonLabel('רקע') !== null || buttonLabel('a@b.com') !== null) throw new Error('noise');
+  if (buttonLabel('מצב כהה') !== 'מצב כהה') throw new Error('button');
+  const ranked = rankCounts([{ kind: 'click' }, { kind: 'click' }, { kind: 'view' }], (row) => row.kind);
+  if (ranked[0][0] !== 'click' || ranked[0][1] !== 2 || ranked[1][0] !== 'view') throw new Error('rank');
 }
 
 /** Coarse page map. x/y are 0–100 across the document, not a screenshot overlay. */
