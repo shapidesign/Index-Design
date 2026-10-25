@@ -10,6 +10,7 @@ import {
   encodeSharedFolder,
   decodeSharedFolder,
 } from '../src/hooks/useSavedItems.js';
+import { legacyHashToPath, sectionIdFromPathname } from '../src/lib/section-route.js';
 import {
   HIT_DESIGN_PROFESSORS,
   HIT_COURSES,
@@ -108,6 +109,11 @@ assert(SEED_STUDENT_WORKS.length >= 5, 'should include seeded student works');
 const headerSrc = fs.readFileSync(new URL('../src/components/layout/Header.jsx', import.meta.url), 'utf8');
 const footerSrc = fs.readFileSync(new URL('../src/components/layout/Footer.jsx', import.meta.url), 'utf8');
 const appSrc = fs.readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8');
+assert.equal(legacyHashToPath('#/toolbox'), '/toolbox');
+assert.equal(legacyHashToPath('#/saved?import=abc'), '/saved?import=abc');
+assert.equal(legacyHashToPath('#access_token=xyz'), null);
+assert.equal(sectionIdFromPathname('/saved', ['saved', 'toolbox']), 'saved');
+assert.equal(sectionIdFromPathname('/', ['saved']), null);
 assert(headerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Header must keep SHOW_HIT_LOGO = false');
 assert(footerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Footer must keep SHOW_HIT_LOGO = false');
 assert(appSrc.includes('const SHOW_EYE = false;'), 'App must keep SHOW_EYE = false');

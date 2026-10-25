@@ -251,10 +251,7 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
 
   // Check if URL contains a shared folder payload (?import=...)
   useEffect(() => {
-    const hash = window.location.hash || '';
-    const qIndex = hash.indexOf('?');
-    if (qIndex === -1) return undefined;
-    const params = new URLSearchParams(hash.slice(qIndex + 1));
+    const params = new URLSearchParams(window.location.search);
     const encoded = params.get('import');
     if (!encoded) return undefined;
 
@@ -266,7 +263,7 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
       if (folderId) {
         setSelectedFolderId(folderId);
         setImportBanner(`התיקייה "${decoded.name}" יובאה בהצלחה למגירה שלך!`);
-        window.history.replaceState(null, '', '#/saved');
+        window.history.replaceState(null, '', '/saved');
       }
     }, 0);
     return () => window.clearTimeout(timer);
@@ -371,7 +368,7 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
     };
     const encoded = encodeSharedFolder(folderToShare, visibleItems);
     if (!encoded) return;
-    const shareUrl = `${window.location.origin}${window.location.pathname}#/saved?import=${encoded}`;
+    const shareUrl = `${window.location.origin}/saved?import=${encoded}`;
 
     try {
       await navigator.clipboard.writeText(shareUrl);
