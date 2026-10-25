@@ -2,6 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { ExternalLink, MapPin } from 'lucide-react';
 import TetrisShape from '@/components/tetris/TetrisShape';
+import SaveItemButton from '@/components/ui/SaveItemButton';
 import { getFlagPath, getRandomThumbnail } from '@/lib/museum';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
@@ -38,6 +39,16 @@ const MuseumCard = ({
 
     // Use imageUrl if available, otherwise fall back to a URL screenshot thumbnail
     const displayImage = imageUrl || getLinkThumbnail(link);
+    const saveKeyId = id || nameHe || nameEn;
+    const saveSnapshot = {
+        titleHe: nameHe || nameEn || '',
+        titleEn: nameEn || '',
+        description: description || '',
+        link: link || '',
+        image: displayImage || '',
+        tags: tags || [],
+        badge: country || type?.[0] || 'מוזיאון',
+    };
 
     if (viewMode === 'list') {
         return (
@@ -121,23 +132,33 @@ const MuseumCard = ({
                     </div>
                 )}
 
-                {/* Link Button */}
-                {link && (
-                    <a
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className={cn(
-                            'p-2 bg-tetris-purple text-off-white',
-                            'border-2 border-off-black',
-                            'hover:bg-tetris-orange transition-colors'
-                        )}
-                        aria-label={`ביקור ב-${nameHe}`}
-                    >
-                        <ExternalLink size={16} />
-                    </a>
-                )}
+                {/* Link + Save Buttons */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                    {saveKeyId && (
+                        <SaveItemButton
+                            sectionId="museum"
+                            itemId={saveKeyId}
+                            snapshot={saveSnapshot}
+                            size="sm"
+                        />
+                    )}
+                    {link && (
+                        <a
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className={cn(
+                                'p-2 bg-tetris-purple text-off-white',
+                                'border-2 border-off-black',
+                                'hover:bg-tetris-orange transition-colors'
+                            )}
+                            aria-label={`ביקור ב-${nameHe}`}
+                        >
+                            <ExternalLink size={16} />
+                        </a>
+                    )}
+                </div>
             </div>
         );
     }
@@ -178,6 +199,18 @@ const MuseumCard = ({
                     <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 bg-off-white border-2 border-off-black shadow-brutalist-xs z-10">
                         {flagPath && <img src={flagPath} alt={country} className="w-4 h-auto" />}
                         <span className={cn("text-xs font-bold", isEnglish(country) ? 'font-jersey' : 'font-headline')}>{country}</span>
+                    </div>
+                )}
+
+                {/* Save Button (Top Left) */}
+                {saveKeyId && (
+                    <div className="absolute top-2 left-2 z-20">
+                        <SaveItemButton
+                            sectionId="museum"
+                            itemId={saveKeyId}
+                            snapshot={saveSnapshot}
+                            size="sm"
+                        />
                     </div>
                 )}
             </div>

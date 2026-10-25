@@ -1,0 +1,189 @@
+@font-face {
+  font-family: "Reisinger Amir";
+  src: url("/fonts/reisinger-amir/Reisinger-Amir-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --purple: #7d53fa;
+  --green: #36ef79;
+  --orange: #fd982e;
+  --yellow: #fde047;
+  --pink: #f9a8d4;
+  --off-black: #1f1f1f;
+  --dark-gray: #404040;
+  --off-white: #fafaf9;
+  --light-gray: #f5f5f4;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--off-white);
+  color: var(--off-black);
+  font-family: "IBM Plex Sans Hebrew", sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+a { color: inherit; }
+
+a:focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 3px;
+}
+
+.top {
+  background: var(--off-black);
+  color: var(--off-white);
+  border-bottom: 3px solid var(--off-black);
+}
+
+.top-inner,
+.wrap,
+.bottom-inner {
+  width: min(760px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.top-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.logo {
+  display: block;
+  height: 32px;
+  width: auto;
+}
+
+.top nav {
+  display: flex;
+  gap: 0.75rem;
+  font-family: "Reisinger Amir", sans-serif;
+  font-size: 0.95rem;
+}
+
+.top nav a {
+  color: var(--green);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.top nav a[aria-current="page"] {
+  color: var(--off-white);
+  text-decoration: none;
+  background: var(--purple);
+  padding: 0.2rem 0.55rem;
+  border: 2px solid var(--off-white);
+}
+
+.wrap { padding: 2.5rem 0 4rem; }
+
+.kicker {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  padding: 0.15rem 0.55rem;
+  background: var(--yellow);
+  border: 2px solid var(--off-black);
+  box-shadow: 2px 2px 0 var(--off-black);
+  font-family: "Reisinger Amir", sans-serif;
+  font-size: 0.95rem;
+}
+
+h1 {
+  margin: 0 0 0.35rem;
+  font-family: "Reisinger Amir", sans-serif;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.english,
+.updated {
+  margin: 0 0 1.25rem;
+  color: var(--dark-gray);
+}
+
+.english {
+  direction: ltr;
+  text-align: right;
+  font-size: 0.98rem;
+}
+
+article {
+  background: var(--off-white);
+  border: 3px solid var(--off-black);
+  box-shadow: 6px 6px 0 var(--off-black);
+  padding: 1.25rem 1.25rem 0.5rem;
+}
+
+h2 {
+  margin: 1.6rem 0 0.4rem;
+  font-family: "Reisinger Amir", sans-serif;
+  font-size: 1.45rem;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+p, li { margin: 0.4rem 0; }
+
+ul {
+  margin: 0.4rem 0 0.8rem;
+  padding-inline-start: 1.25rem;
+}
+
+a.inline {
+  color: var(--off-black);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+}
+
+.bottom {
+  background: var(--off-black);
+  color: var(--off-white);
+  border-top: 3px solid var(--off-black);
+}
+
+.bottom-inner {
+  padding: 1.5rem 0 2rem;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.blocks {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+.blocks span {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--off-white);
+}
+
+.b-purple { background: var(--purple); }
+.b-green { background: var(--green); }
+.b-orange { background: var(--orange); }
+.b-yellow { background: var(--yellow); }
+
+.bottom a {
+  color: var(--green);
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .top-inner { align-items: flex-start; }
+  article { padding: 1rem 0.9rem 0.25rem; }
+}

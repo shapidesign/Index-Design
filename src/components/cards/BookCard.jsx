@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
+import SaveItemButton from '@/components/ui/SaveItemButton';
 import { ExternalLink } from 'lucide-react';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
@@ -15,6 +16,7 @@ const AVAILABILITY_MARK = {
  * Displays a book recommendation with cover, author, and description
  */
 const BookCard = ({
+  itemId,
   title,
   author,
   why,
@@ -29,6 +31,16 @@ const BookCard = ({
   category,
   className,
 }) => {
+  const saveKeyId = itemId || title;
+  const saveSnapshot = {
+    titleHe: title || '',
+    titleEn: author || '',
+    description: why || '',
+    link: link || '',
+    image: coverUrl || '',
+    tags: tags || [],
+    badge: year ? String(year) : 'ספר',
+  };
   const isEnglish = (text) => /^[a-zA-Z0-9\s/&\-_.()]+$/.test(text);
   const isSymbolHeavyText = (value) => /[0-9()[\]{}\-_/\\:;,.+&%#@!?*]/.test(String(value || ''));
   const textFontClass = (value) => (isEnglish(value) || isSymbolHeavyText(value) ? 'font-jersey' : 'font-headline');
@@ -102,27 +114,37 @@ const BookCard = ({
                   </div>
                 )}
               </div>
-              {link && (
-                <div dir="ltr" className="flex flex-col items-start gap-2 shrink-0">
-                  <a
-                    href={link}
-                    dir="rtl"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={linkLabel ? `${linkLabel}: ${title}` : `קישור לספר ${title}`}
-                    className={cn(
-                      'inline-flex items-center justify-center gap-1 p-2',
-                      'bg-tetris-cyan border-2 border-off-black shadow-brutalist-xs',
-                      'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
-                      'transition-all duration-200'
-                    )}
-                  >
-                    {linkLabel && <span className="text-xs font-bold font-headline">{linkLabel}</span>}
-                    <ExternalLink size={14} />
-                  </a>
-                  {yearBadge}
-                </div>
-              )}
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                {saveKeyId && (
+                  <SaveItemButton
+                    sectionId="library"
+                    itemId={saveKeyId}
+                    snapshot={saveSnapshot}
+                    size="sm"
+                  />
+                )}
+                {link && (
+                  <div dir="ltr" className="flex flex-col items-start gap-2 shrink-0">
+                    <a
+                      href={link}
+                      dir="rtl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={linkLabel ? `${linkLabel}: ${title}` : `קישור לספר ${title}`}
+                      className={cn(
+                        'inline-flex items-center justify-center gap-1 p-2',
+                        'bg-tetris-cyan border-2 border-off-black shadow-brutalist-xs',
+                        'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                        'transition-all duration-200'
+                      )}
+                    >
+                      {linkLabel && <span className="text-xs font-bold font-headline">{linkLabel}</span>}
+                      <ExternalLink size={14} />
+                    </a>
+                    {yearBadge}
+                  </div>
+                )}
+              </div>
             </div>
 
             {why && (
@@ -177,10 +199,20 @@ const BookCard = ({
         className
       )}
     >
-      <div className="mb-4 border-3 border-off-black overflow-hidden h-48 bg-light-gray">
+      <div className="relative mb-4 border-3 border-off-black overflow-hidden h-48 bg-light-gray">
         <div className="w-full h-full">
           {coverElement}
         </div>
+        {saveKeyId && (
+          <div className="absolute top-2 left-2 z-20">
+            <SaveItemButton
+              sectionId="library"
+              itemId={saveKeyId}
+              snapshot={saveSnapshot}
+              size="sm"
+            />
+          </div>
+        )}
       </div>
 
       <h3 className="text-xl font-bold font-mixed text-off-black text-right mb-1 line-clamp-2 min-h-[56px]">{title}</h3>
