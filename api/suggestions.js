@@ -157,10 +157,11 @@ const mapSuggestionRecord = (page) => {
   const props = page.properties || {};
   const result = { id: page.id };
   for (const [key, val] of Object.entries(props)) {
+    // Public approved list. Contact addresses stay in Notion only.
+    if (val.type === 'email' || /email|אימייל|דוא"?ל|מייל/i.test(key)) continue;
     switch (val.type) {
       case 'title': result[key] = extractPlainText(val.title); break;
       case 'rich_text': result[key] = extractPlainText(val.rich_text); break;
-      case 'email': result[key] = val.email || ''; break;
       case 'url': result[key] = val.url || ''; break;
       case 'checkbox': result[key] = val.checkbox; break;
       case 'select': result[key] = val.select?.name || ''; break;
