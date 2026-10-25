@@ -11,6 +11,7 @@ import {
   decodeSharedFolder,
 } from '../src/hooks/useSavedItems.js';
 import { legacyHashToPath, sectionIdFromPathname } from '../src/lib/section-route.js';
+import { currentAppUrl, hasAuthCallback } from '../src/lib/auth-redirect.js';
 import {
   HIT_DESIGN_PROFESSORS,
   HIT_COURSES,
@@ -114,7 +115,28 @@ assert.equal(legacyHashToPath('#access_token=xyz'), null);
 assert.equal(sectionIdFromPathname('/saved', ['saved', 'toolbox']), 'saved');
 assert.equal(sectionIdFromPathname('/', ['saved']), null);
 
+assert.equal(
+  currentAppUrl({ origin: 'https://www.designindex.io', pathname: '/saved', search: '?import=abc' }),
+  'https://www.designindex.io/saved?import=abc'
+);
+assert.equal(hasAuthCallback({ search: '?code=abc', hash: '' }), true);
+assert.equal(hasAuthCallback({ search: '', hash: '#access_token=xyz' }), true);
+assert.equal(hasAuthCallback({ search: '', hash: '' }), false);
+
+const personalSrc = fs.readFileSync(new URL('../src/components/sections/PersonalSection.jsx', import.meta.url), 'utf8');
+const museumSrc = fs.readFileSync(new URL('../src/components/sections/MuseumSection.jsx', import.meta.url), 'utf8');
+const buttonSrc = fs.readFileSync(new URL('../src/components/ui/GoogleSignInButton.jsx', import.meta.url), 'utf8');
+assert(personalSrc.includes('<GoogleSignInButton />'), 'saved drawer must start Google sign-in directly');
+assert(!personalSrc.includes('התחברות באימייל'), 'saved drawer must not offer email-code sign-in');
+assert(!personalSrc.includes('signInWithOtp'), 'saved drawer must not send email codes');
+assert(museumSrc.includes('התחבר עם Google והעלה עבודה'), 'museum upload must start Google sign-in directly');
+assert(!museumSrc.includes('התחברות באימייל'), 'museum must not offer email-code sign-in');
+assert(buttonSrc.includes('signInWithGoogle'), 'sign-in button must call Google OAuth');
+assert.equal(fs.existsSync(new URL('../src/components/ui/GoogleEmailAuthPanel.jsx', import.meta.url)), false);
+
 assert(headerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Header must keep SHOW_HIT_LOGO = false');
+assert(headerSrc.includes('<ThemeToggle />'), 'Header must include the light/dark toggle');
+assert(fs.existsSync(new URL('../src/components/ui/ThemeToggle.jsx', import.meta.url)));
 assert(footerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Footer must keep SHOW_HIT_LOGO = false');
 assert(appSrc.includes('const SHOW_EYE = false;'), 'App must keep SHOW_EYE = false');
 

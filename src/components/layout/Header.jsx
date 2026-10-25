@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { Menu, X, User, Bookmark } from 'lucide-react';
 import logoDark from '@/assets/svg/logo-dark.svg';
 import vcLogo from '@/assets/svg/vc-logo-small.svg';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 import useSavedItems from '@/hooks/useSavedItems';
 
 /** HIT / VC mark stays in source; flip to show it again. */
@@ -52,13 +53,14 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
       className={cn(
         'sticky top-0 z-50',
         'bg-off-black',
-        'border-b-3 border-off-black'
+        'border-b-3 border-off-black',
+        'dark:bg-[#0E0E0E] dark:border-dark-gray'
       )}
     >
       <div
         className={cn(
           'max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between md:grid md:gap-4',
-          SHOW_HIT_LOGO ? 'md:grid-cols-[auto_1fr_auto]' : 'md:grid-cols-[auto_1fr]'
+          'md:grid-cols-[auto_1fr_auto]'
         )}
       >
 
@@ -143,8 +145,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
         {/* Left corner (Top-Left of screen in RTL): Mobile Profile icon + optional VC logo + Mobile hamburger */}
         <div
           className={cn(
-            'flex items-center gap-2.5 shrink-0 md:justify-self-end',
-            !SHOW_HIT_LOGO && 'md:hidden'
+            'flex items-center gap-2.5 shrink-0 md:justify-self-end'
           )}
         >
           {/* Profile / Personal Drawer Icon Button (Mobile) */}
@@ -188,6 +189,8 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
             </a>
           )}
 
+          <ThemeToggle />
+
           {/* Mobile: hamburger */}
           <button
             className={cn(
@@ -215,7 +218,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
       {/* Mobile Menu Overlay */}
       <div
         className={cn(
-          'md:hidden fixed inset-0 top-[79px] bg-off-black z-40 p-6 overflow-y-auto',
+          'md:hidden fixed inset-0 top-[79px] bg-off-black dark:bg-[#0E0E0E] z-40 p-6 overflow-y-auto',
           'transition-transform duration-300',
           mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         )}

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import SaveItemButton from '@/components/ui/SaveItemButton';
 import FilterToggle from '@/components/ui/FilterToggle';
-import GoogleEmailAuthPanel from '@/components/ui/GoogleEmailAuthPanel';
+import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import useSavedItems from '@/hooks/useSavedItems';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 import {
@@ -188,7 +188,7 @@ const StudentWorkModal = ({ work, onClose }) => {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-off-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-off-black/80 dark:bg-black/70 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -600,20 +600,27 @@ const MuseumSection = ({ pendingNavigation }) => {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setIsUploadOpen((prev) => !prev)}
-            className={cn(
-              'inline-flex items-center gap-2 px-4 py-2.5',
-              'bg-tetris-purple text-off-white font-headline text-xs md:text-sm font-bold',
-              'border-3 border-off-black shadow-brutalist-sm',
-              'hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]',
-              'transition-all duration-150 cursor-pointer'
-            )}
-          >
-            <Upload size={16} />
-            <span>{userProfile ? 'העלאת עבודה חדשה' : 'התחברות והעלאת עבודה'}</span>
-          </button>
+          {userProfile ? (
+            <button
+              type="button"
+              onClick={() => setIsUploadOpen((prev) => !prev)}
+              className={cn(
+                'inline-flex items-center gap-2 px-4 py-2.5',
+                'bg-tetris-purple text-off-white font-headline text-xs md:text-sm font-bold',
+                'border-3 border-off-black shadow-brutalist-sm',
+                'hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]',
+                'transition-all duration-150 cursor-pointer'
+              )}
+            >
+              <Upload size={16} />
+              <span>העלאת עבודה חדשה</span>
+            </button>
+          ) : (
+            <GoogleSignInButton
+              className="bg-tetris-purple text-off-white hover:bg-tetris-yellow hover:text-off-black"
+              label="התחבר עם Google והעלה עבודה"
+            />
+          )}
 
           <FilterToggle
             isOpen={showFilters}
@@ -655,16 +662,6 @@ const MuseumSection = ({ pendingNavigation }) => {
       {uploadSuccess && (
         <div className="mb-6 p-3 px-4 bg-tetris-green border-3 border-off-black shadow-brutalist-sm font-headline text-sm font-bold text-off-black">
           {uploadSuccess}
-        </div>
-      )}
-
-      {/* ===== UPLOAD WORK / GOOGLE PROFILE PANEL ===== */}
-      {isUploadOpen && !userProfile && (
-        <div className="mb-8">
-          <GoogleEmailAuthPanel
-            title="התחברות עם Google / אימות אימייל להעלאת עבודה למוזיאון"
-            onClose={() => setIsUploadOpen(false)}
-          />
         </div>
       )}
 

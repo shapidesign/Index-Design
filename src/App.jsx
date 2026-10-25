@@ -12,6 +12,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { SavedItemsProvider } from '@/hooks/useSavedItems';
 import { legacyHashToPath, sectionIdFromPathname } from '@/lib/section-route';
+import { hasAuthCallback } from '@/lib/auth-redirect';
 import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
 import { APPS as KEYBOARD_APPS, SHORTCUTS } from '@/data/shortcuts';
 
@@ -203,6 +204,7 @@ const App = () => {
   useEffect(() => {
     const current = sectionIdFromPathname(window.location.pathname, sectionIds);
     if (current === activeSection) return;
+    if (hasAuthCallback(window.location)) return;
     if (activeSection === 'saved' && new URLSearchParams(window.location.search).has('import')) return;
     window.history.pushState(null, '', activeSection ? `/${activeSection}` : '/');
   }, [activeSection]);
@@ -1342,7 +1344,7 @@ const App = () => {
       </main>
 
       {/* ===== FOOTER ===== */}
-      <footer className="border-t-3 border-off-black bg-off-black text-off-white mt-16">
+      <footer className="border-t-3 border-off-black bg-off-black text-off-white dark:bg-[#0E0E0E] dark:border-dark-gray dark:text-[#F2F1EE] mt-16">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
           <div className="mb-5 flex justify-center gap-3">
             <button
@@ -1384,7 +1386,7 @@ const App = () => {
               href="https://www.alefsofit.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-off-white transition-colors"
+              className="underline underline-offset-2 hover:text-off-white dark:hover:text-white transition-colors"
             >
               יהונתן שפירא
             </a>
