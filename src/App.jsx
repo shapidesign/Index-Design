@@ -14,7 +14,8 @@ import EyeLogo from '@/components/ui/EyeLogo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { SavedItemsProvider } from '@/hooks/useSavedItems';
-import { legacyHashToPath, sectionIdFromPathname } from '@/lib/section-route';
+import { legacyHashToPath, sectionIdFromPathname, sectionStaysMounted } from '@/lib/section-route';
+import { rememberData } from '@/hooks/useData';
 import { hasAuthCallback } from '@/lib/auth-redirect';
 import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
 import { APPS as KEYBOARD_APPS, SHORTCUTS } from '@/data/shortcuts';
@@ -52,14 +53,39 @@ const lazyWithChunkRecovery = (importer) =>
     }
   });
 
-const ToolboxSection = lazyWithChunkRecovery(() => import('@/components/sections/ToolboxSection'));
-const DictionarySection = lazyWithChunkRecovery(() => import('@/components/sections/DictionarySection'));
-const MuseumSection = lazyWithChunkRecovery(() => import('@/components/sections/MuseumSection'));
-const LibrarySection = lazyWithChunkRecovery(() => import('@/components/sections/LibrarySection'));
-const MapSection = lazyWithChunkRecovery(() => import('@/components/sections/MapSection'));
-const TipsSection = lazyWithChunkRecovery(() => import('@/components/sections/TipsSection'));
-const KeyboardSection = lazyWithChunkRecovery(() => import('@/components/sections/KeyboardSection'));
-const PersonalSection = lazyWithChunkRecovery(() => import('@/components/sections/PersonalSection'));
+const loadOnce = (load) => {
+  let pending;
+  return () => (pending ??= load());
+};
+
+const loadToolbox = loadOnce(() => import('@/components/sections/ToolboxSection'));
+const loadDictionary = loadOnce(() => import('@/components/sections/DictionarySection'));
+const loadMuseum = loadOnce(() => import('@/components/sections/MuseumSection'));
+const loadLibrary = loadOnce(() => import('@/components/sections/LibrarySection'));
+const loadMap = loadOnce(() => import('@/components/sections/MapSection'));
+const loadTips = loadOnce(() => import('@/components/sections/TipsSection'));
+const loadKeyboard = loadOnce(() => import('@/components/sections/KeyboardSection'));
+const loadPersonal = loadOnce(() => import('@/components/sections/PersonalSection'));
+
+const ToolboxSection = lazyWithChunkRecovery(loadToolbox);
+const DictionarySection = lazyWithChunkRecovery(loadDictionary);
+const MuseumSection = lazyWithChunkRecovery(loadMuseum);
+const LibrarySection = lazyWithChunkRecovery(loadLibrary);
+const MapSection = lazyWithChunkRecovery(loadMap);
+const TipsSection = lazyWithChunkRecovery(loadTips);
+const KeyboardSection = lazyWithChunkRecovery(loadKeyboard);
+const PersonalSection = lazyWithChunkRecovery(loadPersonal);
+
+// ponytail: download during the intro. Drop the eager calls if the bundle budget gets tight.
+const warmSection = (load) => { load().catch(() => {}); };
+warmSection(loadToolbox);
+warmSection(loadDictionary);
+warmSection(loadMuseum);
+warmSection(loadLibrary);
+warmSection(loadMap);
+warmSection(loadTips);
+warmSection(loadKeyboard);
+warmSection(loadPersonal);
 
 /**
  * App - Main Application Component
@@ -175,6 +201,7 @@ const sectionFromLocation = () => {
 const App = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [activeSection, setActiveSection] = useState(sectionFromLocation);
+  const [seenSections, setSeenSections] = useState({});
   const [luckyHighlight, setLuckyHighlight] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
@@ -206,6 +233,11 @@ const App = () => {
     if (hasAuthCallback(window.location)) return;
     if (activeSection === 'saved' && new URLSearchParams(window.location.search).has('import')) return;
     window.history.pushState(null, '', activeSection ? `/${activeSection}` : '/');
+  }, [activeSection]);
+
+  useEffect(() => {
+    if (!activeSection) return;
+    setSeenSections((prev) => (prev[activeSection] ? prev : { ...prev, [activeSection]: true }));
   }, [activeSection]);
 
   /** On real section change: clear stale search text, scroll to top */
@@ -294,7 +326,9 @@ const App = () => {
               console.info(`Global search source unavailable: ${label} (${res.status})`);
               return { results: [] };
             }
-            return await res.json();
+            const json = await res.json();
+            rememberData(url, json);
+            return json;
           } catch (error) {
             console.info(`Global search source failed: ${label}`, error);
             return { results: [] };
@@ -1010,8 +1044,8 @@ const App = () => {
         )}
 
         {/* ===== TOOLBOX SECTION ===== */}
-        {activeSection === 'toolbox' && (
-          <div className="mt-12" id="section-toolbox">
+        {sectionStaysMounted('toolbox', activeSection, seenSections) && (
+          <div className="mt-12" id="section-toolbox" hidden={activeSection !== 'toolbox'}>
             <div className="flex justify-end mb-4">
               <button
                 type="button"
@@ -1036,8 +1070,8 @@ const App = () => {
         )}
 
         {/* ===== DICTIONARY SECTION ===== */}
-        {activeSection === 'dictionary' && (
-          <div className="mt-12" id="section-dictionary">
+        {sectionStaysMounted('dictionary', activeSection, seenSections) && (
+          <div className="mt-12" id="section-dictionary" hidden={activeSection !== 'dictionary'}>
             <div className="flex justify-end mb-4">
               <button
                 type="button"
@@ -1062,8 +1096,8 @@ const App = () => {
         )}
 
         {/* ===== MUSEUM SECTION ===== */}
-        {activeSection === 'museum' && (
-          <div className="mt-12" id="section-museum">
+        {sectionStaysMounted('museum', activeSection, seenSections) && (
+          <div className="mt-12" id="section-museum" hidden={activeSection !== 'museum'}>
             <div className="flex justify-end mb-4">
               <button
                 type="button"
@@ -1088,8 +1122,8 @@ const App = () => {
         )}
 
         {/* ===== LIBRARY SECTION ===== */}
-        {activeSection === 'library' && (
-          <div className="mt-12" id="section-library">
+        {sectionStaysMounted('library', activeSection, seenSections) && (
+          <div className="mt-12" id="section-library" hidden={activeSection !== 'library'}>
             <div className="flex justify-end mb-4">
               <button
                 type="button"
@@ -1114,8 +1148,8 @@ const App = () => {
         )}
 
         {/* ===== TIPS SECTION ===== */}
-        {activeSection === 'tips' && (
-          <div className="mt-12" id="section-tips">
+        {sectionStaysMounted('tips', activeSection, seenSections) && (
+          <div className="mt-12" id="section-tips" hidden={activeSection !== 'tips'}>
             <div className="flex justify-end mb-4">
               <button
                 type="button"
@@ -1293,8 +1327,8 @@ const App = () => {
         )}
 
         {/* ===== MAP SECTION ===== */}
-        {activeSection === 'map' && (
-          <div className="mt-12" id="section-map">
+        {sectionStaysMounted('map', activeSection, seenSections) && (
+          <div className="mt-12" id="section-map" hidden={activeSection !== 'map'}>
             <div className="flex justify-end mb-4">
               <button
                 type="button"
@@ -1319,8 +1353,8 @@ const App = () => {
         )}
 
         {/* ===== PERSONAL SAVED CRATE & SHOWCASE SECTION ===== */}
-        {activeSection === 'saved' && (
-          <div className="mt-12" id="section-saved">
+        {sectionStaysMounted('saved', activeSection, seenSections) && (
+          <div className="mt-12" id="section-saved" hidden={activeSection !== 'saved'}>
             <div className="flex justify-end mb-4">
               <button
                 type="button"

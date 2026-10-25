@@ -1,5 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 
+// ponytail: one in-memory cache for the session. A reload still refetches.
+const dataCache = new Map();
+
+/** Share a response the search index already fetched, so a section can open without the loader. */
+export function rememberData(endpoint, data) {
+  if (!endpoint || data == null) return;
+  dataCache.set(endpoint, data);
+}
+
 /**
  * useData - הוק לטעינת נתונים
  * Generic data fetching hook with loading/error states
@@ -9,15 +18,19 @@ import { useState, useEffect, useCallback } from 'react';
  * @returns {Object} { data, loading, error, refetch }
  */
 const useData = (endpoint, options = {}) => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const cached = dataCache.get(endpoint) ?? null;
+  const [data, setData] = useState(cached);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState(null);
 
   const fetchData = useCallback(async () => {
+    const warm = dataCache.get(endpoint);
     try {
-      setLoading(true);
-      setError(null);
-      
+      if (!warm) {
+        setLoading(true);
+        setError(null);
+      }
+
       const response = await fetch(endpoint, options);
       
       if (!response.ok) {
@@ -35,10 +48,12 @@ const useData = (endpoint, options = {}) => {
       }
       
       const result = await response.json();
+      rememberData(endpoint, result);
       setData(result);
+      setError(null);
     } catch (err) {
       console.error('Error fetching data:', err);
-      setError(err.message || 'שגיאה לא צפויה');
+      if (!dataCache.get(endpoint)) setError(err.message || 'שגיאה לא צפויה');
     } finally {
       setLoading(false);
     }
