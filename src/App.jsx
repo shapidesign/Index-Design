@@ -2,6 +2,9 @@ import React, { useState, useCallback, useMemo, useRef, useEffect, lazy, Suspens
 import { cn, withinOneEdit } from '@/lib/utils';
 import logoHero from '@/assets/svg/logo-hero-purple.svg';
 import { Menu, MessageSquare, Heart } from 'lucide-react';
+import { FALLBACK_WHATS_NEW, WHATS_NEW_SEEN_PREFIX } from '@/data/whatsNew';
+import { fetchWhatsNew } from '@/lib/supabase';
+import { initTracking } from '@/lib/track';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import MessageSuggestionModal from '@/components/ui/MessageSuggestionModal';
@@ -169,11 +172,6 @@ const sectionFromLocation = () => {
   return sectionIdFromPathname(window.location.pathname, sectionIds);
 };
 
-/** Bump this to show "What's New" again for returning users */
-const WHATS_NEW_VERSION = 'v6';
-
-const WHATS_NEW_STORAGE_KEY = `index-whats-new-seen-${WHATS_NEW_VERSION}`;
-
 const App = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [activeSection, setActiveSection] = useState(sectionFromLocation);
@@ -187,6 +185,7 @@ const App = () => {
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
+  const [whatsNew, setWhatsNew] = useState(undefined);
   const [luckyPick, setLuckyPick] = useState(null);
   const searchContainerRef = useRef(null);
   const highlightedTargetRef = useRef(null);
@@ -229,34 +228,44 @@ const App = () => {
     return () => window.clearTimeout(timer);
   }, []);
 
-  /** Show "What's New" once per user per version (after initial load) */
+  useEffect(() => initTracking(), []);
+
+  /** Load "What's New" from Supabase. null means the request failed. */
   useEffect(() => {
-    if (isInitialLoading) return;
+    let cancel = false;
+    fetchWhatsNew().then((row) => {
+      if (!cancel) setWhatsNew(row);
+    });
+    return () => { cancel = true; };
+  }, []);
+
+  /** Show "What's New" once per visitor per version, after the loader. */
+  useEffect(() => {
+    if (isInitialLoading || whatsNew === undefined) return undefined;
+    const data = whatsNew || FALLBACK_WHATS_NEW;
+    if (!data.enabled) return undefined;
     const timer = window.setTimeout(() => {
       try {
-        const seen = localStorage.getItem(WHATS_NEW_STORAGE_KEY);
-        if (seen !== 'true') {
-          setIsWhatsNewOpen(true);
-        }
+        if (localStorage.getItem(`${WHATS_NEW_SEEN_PREFIX}${data.version}`) === 'true') return;
       } catch {
-        /* localStorage unavailable */
-        setIsWhatsNewOpen(true); // Fallback to showing it
+        /* localStorage unavailable — still show it */
       }
+      setIsWhatsNewOpen(true);
     }, 400);
     return () => window.clearTimeout(timer);
-  }, [isInitialLoading]);
+  }, [isInitialLoading, whatsNew]);
 
   const handleWhatsNewClose = useCallback((dontShowAgain) => {
     setIsWhatsNewOpen(false);
     // A click event is truthy. Only the checked "don't show again" box dismisses this version.
-    if (dontShowAgain === true) {
-      try {
-        localStorage.setItem(WHATS_NEW_STORAGE_KEY, 'true');
-      } catch {
-        /* localStorage unavailable */
-      }
+    if (dontShowAgain !== true) return;
+    const version = (whatsNew || FALLBACK_WHATS_NEW).version;
+    try {
+      localStorage.setItem(`${WHATS_NEW_SEEN_PREFIX}${version}`, 'true');
+    } catch {
+      /* localStorage unavailable */
     }
-  }, []);
+  }, [whatsNew]);
 
   /** Close dropdown when clicking outside */
   useEffect(() => {
@@ -1419,6 +1428,8 @@ const App = () => {
       />
       <WhatsNewModal
         open={isWhatsNewOpen}
+        title={(whatsNew || FALLBACK_WHATS_NEW).title}
+        items={(whatsNew || FALLBACK_WHATS_NEW).items}
         onClose={handleWhatsNewClose}
       />
     </div>

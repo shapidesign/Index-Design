@@ -32,4 +32,15 @@ export async function signInWithGoogle() {
   return data;
 }
 
+/** The single "What's New" row edited from /admin. null means it could not be read. */
+export async function fetchWhatsNew() {
+  const { data, error } = await supabase
+    .from('whats_new')
+    .select('version,title,items,enabled')
+    .eq('id', 1)
+    .maybeSingle();
+  if (error || !data || !Array.isArray(data.items)) return null;
+  return data;
+}
+
 export default supabase;
