@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import TipArticleModal from '../ui/TipArticleModal';
 import FilterToggle from '@/components/ui/FilterToggle';
+import SaveItemButton from '@/components/ui/SaveItemButton';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
@@ -124,7 +125,7 @@ const TipsSection = () => {
                       'px-3 py-1 font-headline border-2 border-off-black transition-all',
                       selectedType === type
                         ? 'bg-tetris-purple text-off-white shadow-none translate-x-[2px] translate-y-[2px] font-bold'
-                        : 'bg-white text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] font-bold'
+                        : 'bg-off-white text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] font-bold'
                     )}
                   >
                     {type}
@@ -146,7 +147,7 @@ const TipsSection = () => {
                         'px-3 py-1 font-mixed border-2 border-off-black transition-all',
                         isTagSelected
                           ? cn(tagBg, getTagTextClass(tagBg), 'shadow-none translate-x-[2px] translate-y-[2px]')
-                          : 'bg-white text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                          : 'bg-off-white text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
                       )}
                     >
                       {tag}
@@ -164,7 +165,7 @@ const TipsSection = () => {
 
           {/* Cards Grid */}
           {filteredTips.length === 0 ? (
-            <div className="py-12 text-center text-dark-gray font-ibm border-3 border-dashed border-mid-gray bg-white/50">
+            <div className="py-12 text-center text-dark-gray font-ibm border-3 border-dashed border-mid-gray bg-off-white/50">
               לא נמצאו טיפים התואמים לסינון.
             </div>
           ) : (
@@ -172,17 +173,25 @@ const TipsSection = () => {
               {filteredTips.map((tip, idx) => {
                 const headColor = bgColorMap[idx % 5];
                 return (
-                  <button
-                    key={tip.id}
-                    id={`search-item-tips-${String(tip.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`}
-                    onClick={() => handleOpenTip(tip.id)}
-                    className={cn(
-                      'group relative overflow-hidden bg-off-white text-right',
-                      'border-3 border-off-black shadow-brutalist',
-                      'aspect-[3/4] md:aspect-[4/5] flex flex-col',
-                      'transition-all duration-300 hover:shadow-none hover:translate-x-1 hover:translate-y-1'
-                    )}
-                  >
+                <div
+                  key={tip.id}
+                  id={`search-item-tips-${String(tip.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleOpenTip(tip.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleOpenTip(tip.id);
+                    }
+                  }}
+                  className={cn(
+                    'group relative overflow-hidden bg-off-white text-right cursor-pointer',
+                    'border-3 border-off-black shadow-brutalist',
+                    'aspect-[3/4] md:aspect-[4/5] flex flex-col',
+                    'transition-all duration-300 hover:shadow-none hover:translate-x-1 hover:translate-y-1'
+                  )}
+                >
                     {/* Header Area */}
                     <div className={cn('h-[40%] border-b-3 border-off-black relative p-4', headColor)}>
                       <div className="absolute inset-0 bg-noise opacity-30 mix-blend-overlay" />
@@ -191,10 +200,26 @@ const TipsSection = () => {
                           {tip.type}
                         </div>
                       )}
+                      <div className="absolute top-3 left-3 z-20">
+                        <SaveItemButton
+                          sectionId="tips"
+                          itemId={tip.id}
+                          size="sm"
+                          snapshot={{
+                            titleHe: tip.title || '',
+                            titleEn: tip.author || '',
+                            description: (tip.content || '').slice(0, 160),
+                            link: '',
+                            image: '',
+                            tags: tip.tags || [],
+                            badge: tip.type || 'טיפ',
+                          }}
+                        />
+                      </div>
                     </div>
 
                     {/* Content Area */}
-                    <div className="p-4 flex-1 flex flex-col min-h-0 bg-noise mix-blend-multiply">
+                    <div className="p-4 flex-1 flex flex-col min-h-0 bg-noise mix-blend-multiply dark:mix-blend-normal">
                       <h3 className="text-xl md:text-2xl font-bold font-headline text-off-black mb-2 line-clamp-3 leading-tight group-hover:text-tetris-purple transition-colors">
                         {tip.title}
                       </h3>
@@ -227,7 +252,7 @@ const TipsSection = () => {
                         )}
                       </div>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>

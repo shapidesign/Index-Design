@@ -687,6 +687,7 @@ const LibrarySection = ({ pendingNavigation }) => {
           {filteredBooks.map((book) => (
             <div key={book.id} id={makeBookTargetId(book.id)} className="h-full">
               <BookCard
+                itemId={book.id}
                 viewMode="gallery"
                 title={book.title}
                 author={book.author}
@@ -705,6 +706,7 @@ const LibrarySection = ({ pendingNavigation }) => {
           {filteredBooks.map((book) => (
             <div key={book.id} id={makeBookTargetId(book.id)}>
               <BookCard
+                itemId={book.id}
                 viewMode="list"
                 title={book.title}
                 author={book.author}
