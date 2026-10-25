@@ -12,7 +12,6 @@ import {
   HIT_COURSES,
   HIT_STUDY_YEARS,
   SUGGESTED_WORK_TAGS,
-  SEED_STUDENT_WORKS,
 } from '@/data/hitFaculty';
 import {
   LayoutGrid,
@@ -369,9 +368,22 @@ const MuseumSection = ({ pendingNavigation }) => {
   const [uploadSuccess, setUploadSuccess] = useState('');
   const [uploadingWork, setUploadingWork] = useState(false);
 
-  // Combine user-uploaded works + seeded HIT student works
+  useEffect(() => {
+    if (!isUploadOpen) return undefined;
+    const onKey = (event) => {
+      if (event.key === 'Escape') setIsUploadOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isUploadOpen]);
+
   const allWorks = useMemo(() => {
-    const userWorks = (submissions || []).map((s) => ({
+    return (submissions || []).map((s) => ({
       ...s,
       year: s.year || s.studyYear || 'שנה ב׳',
       course: s.course || 'פרויקט אישי',
@@ -380,7 +392,6 @@ const MuseumSection = ({ pendingNavigation }) => {
       link: s.link || s.projectUrl || '',
       isUserSubmission: true,
     }));
-    return [...userWorks, ...SEED_STUDENT_WORKS];
   }, [submissions]);
 
   // All available filter options (combining HIT lists + dynamic values)
@@ -670,8 +681,20 @@ const MuseumSection = ({ pendingNavigation }) => {
         </div>
       )}
 
-      {isUploadOpen && userProfile && (
-        <div className="mb-8 p-6 bg-off-white border-3 border-off-black shadow-brutalist">
+      {isUploadOpen && userProfile && typeof document !== 'undefined' && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] overflow-y-auto bg-off-black/80 dark:bg-black/70"
+          onClick={() => setIsUploadOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="העלאת עבודה למוזיאון"
+        >
+        <div className="flex min-h-full items-center justify-center p-4">
+        <div
+          dir="rtl"
+          className="relative w-full max-w-3xl my-4 p-6 bg-off-white border-3 border-off-black shadow-brutalist"
+          onClick={(event) => event.stopPropagation()}
+        >
           <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-off-black">
             <h3 className="text-xl font-bold font-headline text-off-black">
               {`העלאת עבודה למוזיאון (${userProfile.name} · ${userProfile.email})`}
@@ -908,6 +931,9 @@ const MuseumSection = ({ pendingNavigation }) => {
               </div>
             </form>
         </div>
+        </div>
+        </div>,
+        document.body
       )}
 
       {/* ===== FILTER BAR (Course, Year, Lecturer, Tags + Search) ===== */}
@@ -1010,19 +1036,43 @@ const MuseumSection = ({ pendingNavigation }) => {
       {filteredWorks.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-off-white border-3 border-off-black shadow-brutalist">
           <TetrisShape type="L" color="orange" size={32} className="mb-4 opacity-60" />
-          <p className="text-lg font-bold text-off-black font-headline mb-1">
-            לא נמצאו עבודות סטודנטים תואמות
-          </p>
-          <p className="text-sm text-dark-gray font-ibm mb-4">
-            נסו לשנות את סינון הקורס, המרצה או התגיות, או העלו עבודה חדשה.
-          </p>
-          <button
-            type="button"
-            onClick={clearAll}
-            className="px-4 py-2 bg-tetris-pink border-2 border-off-black font-headline text-sm font-bold shadow-brutalist-xs cursor-pointer"
-          >
-            נקה סינון
-          </button>
+          {allWorks.length === 0 ? (
+            <>
+              <p className="text-lg font-bold text-off-black font-headline mb-1">
+                המוזיאון עדיין ריק
+              </p>
+              <p className="text-sm text-dark-gray font-ibm mb-4 max-w-md">
+                יופיעו כאן רק עבודות שסטודנטים העלו אחרי התחברות עם Google.
+              </p>
+              {userProfile ? (
+                <button
+                  type="button"
+                  onClick={() => setIsUploadOpen(true)}
+                  className="px-4 py-2 bg-tetris-purple text-off-white border-2 border-off-black font-headline text-sm font-bold shadow-brutalist-xs cursor-pointer"
+                >
+                  העלאת עבודה חדשה
+                </button>
+              ) : (
+                <GoogleSignInButton label="התחבר עם Google והעלה עבודה" />
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-lg font-bold text-off-black font-headline mb-1">
+                לא נמצאו עבודות סטודנטים תואמות
+              </p>
+              <p className="text-sm text-dark-gray font-ibm mb-4">
+                נסו לשנות את סינון הקורס, המרצה או התגיות.
+              </p>
+              <button
+                type="button"
+                onClick={clearAll}
+                className="px-4 py-2 bg-tetris-pink border-2 border-off-black font-headline text-sm font-bold shadow-brutalist-xs cursor-pointer"
+              >
+                נקה סינון
+              </button>
+            </>
+          )}
         </div>
       ) : viewMode === 'gallery' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

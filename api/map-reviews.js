@@ -8,7 +8,73 @@
  */
 
 import { Client } from '@notionhq/client';
+import { createClient } from '@supabase/supabase-js';
 import { applyGuard } from './_guard.js';
+
+const SUPABASE_URL =
+    process.env.VITE_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    'https://eagvurbzbpehksxmzzbq.supabase.co';
+const SUPABASE_KEY =
+    process.env.VITE_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    'sb_publishable_hbUv81Kv-M6qs1MRXtip-w_azXeUTZ_';
+
+const authClient = createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+});
+
+export const displayNameFromUser = (user) => {
+    const meta = user?.user_metadata || {};
+    const email = user?.email || '';
+    return String(meta.full_name || meta.name || (email ? email.split('@')[0] : '')).trim();
+};
+
+export const sanitizePlaceTags = (raw) => {
+    if (!Array.isArray(raw)) return [];
+    const seen = new Set();
+    const tags = [];
+    for (const item of raw) {
+        const tag = String(item || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+        if (!tag || seen.has(tag)) continue;
+        seen.add(tag);
+        tags.push(tag);
+        if (tags.length >= 5) break;
+    }
+    return tags;
+};
+
+const requireUser = async (req) => {
+    const header = String(req.headers.authorization || '');
+    const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+    if (!token) return null;
+    const { data, error } = await authClient.auth.getUser(token);
+    if (error || !data?.user) return null;
+    return data.user;
+};
+
+const splitTags = (value) =>
+    String(value || '')
+        .split(/[,،]/)
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+        .slice(0, 5);
+
+const readTags = (prop, lines) => {
+    if (prop?.type === 'multi_select') {
+        return (prop.multi_select || []).map((option) => option.name).filter(Boolean).slice(0, 5);
+    }
+    if (prop && (prop.type === 'rich_text' || prop.type === 'title')) {
+        return splitTags(getPlainText(prop));
+    }
+    for (const label of ['תגיות', 'Tags']) {
+        for (const line of lines || []) {
+            const prefix = `${label}:`;
+            if (String(line).startsWith(prefix)) return splitTags(String(line).slice(prefix.length));
+        }
+    }
+    return [];
+};
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const NOTION_MAP_REVIEWS_DB =
@@ -151,6 +217,8 @@ export default async function handler(req, res) {
             let [ratingKey] = findProperty(props, ['דירוג', 'Rating', 'Stars']);
             if (!ratingKey) [ratingKey] = findPropertyByType(props, ['number']);
 
+            let [tagsKey] = findProperty(props, ['תגיות', 'Tags', 'tags']);
+
             // Find the approved checkbox (checkbox property named מאושר or Approved)
             let [checkboxKey] = findProperty(props, ['מאושר', 'Approved', 'approved']);
             if (!checkboxKey) [checkboxKey] = findPropertyByType(props, ['checkbox']);
@@ -244,12 +312,15 @@ export default async function handler(req, res) {
                 // Filter by place name if requested (post-filter since no property column)
                 if (placeFilter && place.toLowerCase() !== placeFilter.toLowerCase()) return null;
 
+                const tags = readTags(tagsKey ? p[tagsKey] : null, lines);
+
                 return {
                     id: page.id,
                     name,
                     place,
                     recommendation,
                     rating,
+                    tags,
                     createdAt: page.created_time,
                 };
             }).filter(Boolean);
@@ -270,13 +341,18 @@ export default async function handler(req, res) {
                 return res.status(429).json({ error: 'יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.' });
             }
 
-            const name = String(req.body?.name || '').trim();
+            const user = await requireUser(req);
+            if (!user) {
+                return res.status(401).json({ error: 'יש להתחבר עם Google כדי להגיב ולתייג מקום.' });
+            }
+            const name = displayNameFromUser(user);
             const place = String(req.body?.place || '').trim();
             const recommendation = String(req.body?.recommendation || '').trim();
             const rating = req.body?.rating != null ? Number(req.body.rating) : null;
+            const tags = sanitizePlaceTags(req.body?.tags);
 
             // Validation
-            if (!name) return res.status(400).json({ error: 'יש להזין שם.' });
+            if (!name) return res.status(400).json({ error: 'לחשבון Google אין שם לתצוגה.' });
             if (!place) return res.status(400).json({ error: 'שם המקום חסר.' });
             if (!recommendation || recommendation.length < 3) {
                 return res.status(400).json({ error: 'יש להזין המלצה (לפחות 3 תווים).' });
@@ -302,6 +378,8 @@ export default async function handler(req, res) {
 
             let [statusKey, statusMeta] = findProperty(props, ['סטטוס', 'Status']);
             if (!statusKey) [statusKey, statusMeta] = findPropertyByType(props, ['status', 'select']);
+
+            let [tagsKey, tagsMeta] = findProperty(props, ['תגיות', 'Tags', 'tags']);
 
             if (!nameKey) {
                 return res.status(500).json({
@@ -331,6 +409,22 @@ export default async function handler(req, res) {
             // Rating (number)
             if (rating !== null && ratingKey && ratingMeta?.type === 'number') {
                 notionProperties[ratingKey] = { number: rating };
+            }
+
+            const extraTags = [];
+            if (tags.length && tagsKey && tagsMeta?.type === 'multi_select') {
+                const known = new Set((tagsMeta.multi_select?.options || []).map((option) => option.name));
+                const matched = tags.filter((tag) => known.has(tag));
+                extraTags.push(...tags.filter((tag) => !known.has(tag)));
+                if (matched.length) {
+                    notionProperties[tagsKey] = { multi_select: matched.map((name) => ({ name })) };
+                }
+            } else if (tags.length && tagsKey && tagsMeta) {
+                const tagsPayload = buildTextValue(tagsMeta, tags.join(', '));
+                if (tagsPayload) notionProperties[tagsKey] = tagsPayload;
+                else extraTags.push(...tags);
+            } else {
+                extraTags.push(...tags);
             }
 
             // Status → default to pending
@@ -366,6 +460,12 @@ export default async function handler(req, res) {
                 fallbackChildren.push({
                     object: 'block', type: 'paragraph',
                     paragraph: { rich_text: [{ text: { content: `דירוג: ${rating}/5` } }] },
+                });
+            }
+            if (extraTags.length) {
+                fallbackChildren.push({
+                    object: 'block', type: 'paragraph',
+                    paragraph: { rich_text: [{ text: { content: `תגיות: ${extraTags.join(', ')}` } }] },
                 });
             }
 

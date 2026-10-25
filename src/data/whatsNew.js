@@ -18,10 +18,51 @@ export function bumpVersion(version) {
   return `v${n + 1}`;
 }
 
+const MAX_SLIDE_TEXT = 400;
+const MAX_IMAGE_CHARS = 280000;
+
+export function normalizeSlide(item) {
+  const source = typeof item === 'string' ? { text: item, imageUrl: '' } : item;
+  if (!source || typeof source !== 'object') return null;
+  const text = String(source.text || '').replace(/\s+/g, ' ').trim().slice(0, MAX_SLIDE_TEXT);
+  let imageUrl = String(source.imageUrl || source.image || '').trim();
+  const allowed = /^https?:\/\//i.test(imageUrl) || imageUrl.startsWith('data:image/');
+  if (!allowed || imageUrl.length > MAX_IMAGE_CHARS) imageUrl = '';
+  if (!text && !imageUrl) return null;
+  return { text, imageUrl };
+}
+
 export function normalizeItems(items) {
   if (!Array.isArray(items)) return [];
-  return items
-    .map((item) => String(item || '').replace(/\s+/g, ' ').trim().slice(0, 400))
-    .filter(Boolean)
-    .slice(0, 30);
+  return items.map(normalizeSlide).filter(Boolean).slice(0, 12);
+}
+
+/** Shrink a local image so a What's New slide stays small enough to store. */
+export function resizeImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      const maxEdge = 960;
+      const scale = Math.min(1, maxEdge / Math.max(image.width, image.height, 1));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+      const context = canvas.getContext('2d');
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      let quality = 0.82;
+      let data = canvas.toDataURL('image/jpeg', quality);
+      while (data.length > 200000 && quality > 0.45) {
+        quality -= 0.08;
+        data = canvas.toDataURL('image/jpeg', quality);
+      }
+      URL.revokeObjectURL(url);
+      resolve(data.length > MAX_IMAGE_CHARS ? '' : data);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('image'));
+    };
+    image.src = url;
+  });
 }

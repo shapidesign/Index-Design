@@ -8,6 +8,7 @@ import pinSuppliers from '../../../Pins/p5-2.png';
 import StarIcon from '@/assets/star.svg';
 import MapReviewModal from '../ui/MapReviewModal';
 import FilterToggle from '@/components/ui/FilterToggle';
+import useSavedItems from '@/hooks/useSavedItems';
 
 const GOOGLE_MAPS_EMBED_URL =
   'https://www.google.com/maps/d/u/0/embed?mid=1F_s6PIi59T-J0hgTAwJAzbzG9Ru_Kgo&ehbc=2E312F&noprof=1';
@@ -220,6 +221,15 @@ const CategoryGroup = ({ category, places, defaultOpen, reviewsMap, onOpenReview
                           {rev.recommendation && (
                             <p className="line-clamp-2">“{rev.recommendation}”</p>
                           )}
+                          {Array.isArray(rev.tags) && rev.tags.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {rev.tags.map((tag) => (
+                                <span key={tag} className="px-1.5 py-0.5 bg-tetris-yellow border border-off-black font-headline text-[10px] text-off-black">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                           <div className="flex items-center justify-between mt-1 gap-2">
                             <span className="font-headline text-off-black text-[11px]">— {rev.name}</span>
                             {rev.rating && (
@@ -301,6 +311,7 @@ const CategoryGroup = ({ category, places, defaultOpen, reviewsMap, onOpenReview
  * Embeds the custom Google My Maps board + a full list view of all places.
  */
 const MapSection = () => {
+  const { userProfile } = useSavedItems();
   const [viewMode, setViewMode] = useState('map');
   const [activeFilters, setActiveFilters] = useState(new Set(CATEGORIES.map((c) => c.id)));
   const [showFilters, setShowFilters] = useState(false);
@@ -565,6 +576,7 @@ const MapSection = () => {
         open={!!reviewModalPlace}
         onClose={() => setReviewModalPlace(null)}
         placeName={reviewModalPlace}
+        userProfile={userProfile}
       />
     </section>
   );

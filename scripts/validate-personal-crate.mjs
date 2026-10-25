@@ -19,6 +19,8 @@ import {
   HIT_STUDY_YEARS,
   SEED_STUDENT_WORKS,
 } from '../src/data/hitFaculty.js';
+import { normalizeItems } from '../src/data/whatsNew.js';
+import { displayNameFromUser, sanitizePlaceTags } from '../api/map-reviews.js';
 
 // 1. Key formatting
 assert.equal(makeSavedKey('toolbox', 'abc-123'), 'toolbox:abc-123');
@@ -111,7 +113,13 @@ assert(HIT_DESIGN_PROFESSORS.some((p) => p.includes('ארז בכר')), 'should i
 assert(HIT_DESIGN_PROFESSORS.some((p) => p.includes('עודד עזר')), 'should include Prof. Oded Ezer');
 assert(HIT_COURSES.length >= 10, 'should include HIT Visual Communication courses');
 assert.equal(HIT_STUDY_YEARS.length, 5);
-assert(SEED_STUDENT_WORKS.length >= 5, 'should include seeded student works');
+assert(SEED_STUDENT_WORKS.length >= 5, 'seed data can remain in the data file');
+assert.deepEqual(normalizeItems(['  שלום  ', { text: 'עוד', imageUrl: 'https://example.com/a.png' }, { text: '', imageUrl: 'javascript:alert(1)' }]), [
+  { text: 'שלום', imageUrl: '' },
+  { text: 'עוד', imageUrl: 'https://example.com/a.png' },
+]);
+assert.deepEqual(sanitizePlaceTags(['  דפוס  ', 'דפוס', '', 'א'.repeat(50), 'עוד']), ['דפוס', 'א'.repeat(40), 'עוד']);
+assert.equal(displayNameFromUser({ user_metadata: { full_name: 'דנה כהן' }, email: 'a@b.com' }), 'דנה כהן');
 
 // 5. Guard: HIT Viscom logo and moving Eye remain hidden until explicitly requested
 const headerSrc = fs.readFileSync(new URL('../src/components/layout/Header.jsx', import.meta.url), 'utf8');
@@ -145,6 +153,14 @@ assert(personalSrc.includes('<GoogleSignInButton />'), 'saved drawer must start 
 assert(!personalSrc.includes('התחברות באימייל'), 'saved drawer must not offer email-code sign-in');
 assert(!personalSrc.includes('signInWithOtp'), 'saved drawer must not send email codes');
 assert(museumSrc.includes('התחבר עם Google והעלה עבודה'), 'museum upload must start Google sign-in directly');
+assert(!museumSrc.includes('SEED_STUDENT_WORKS'), 'museum must not show seeded sample works');
+assert(museumSrc.includes('createPortal'), 'museum upload must open in a modal');
+assert(museumSrc.includes('המוזיאון עדיין ריק'), 'empty museum must explain that only uploaded works appear');
+const mapModalSrc = fs.readFileSync(new URL('../src/components/ui/MapReviewModal.jsx', import.meta.url), 'utf8');
+assert(mapModalSrc.includes('GoogleSignInButton'), 'map comments must offer Google sign-in');
+assert(mapModalSrc.includes('Authorization'), 'map comments must send the Google session');
+assert(fs.readFileSync(new URL('../api/map-reviews.js', import.meta.url), 'utf8').includes('requireUser'), 'map review API must require a user');
+assert(fs.readFileSync(new URL('../src/components/ui/WhatsNewModal.jsx', import.meta.url), 'utf8').includes('שקופית הבאה'), 'whats new must be a carousel');
 assert(!museumSrc.includes('התחברות באימייל'), 'museum must not offer email-code sign-in');
 assert(buttonSrc.includes('signInWithGoogle'), 'sign-in button must call Google OAuth');
 assert.equal(fs.existsSync(new URL('../src/components/ui/GoogleEmailAuthPanel.jsx', import.meta.url)), false);

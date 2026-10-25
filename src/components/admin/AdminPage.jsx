@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
-import { bumpVersion, normalizeItems } from '@/data/whatsNew';
+import { bumpVersion, normalizeItems, resizeImageFile } from '@/data/whatsNew';
 import { HEAT_COLS, HEAT_ROWS, binHeat } from '@/lib/analytics-event';
 
 const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-43GN2SH9KR';
@@ -194,7 +194,7 @@ const NotAllowed = ({ email }) => (
 
 const NewsEditor = () => {
   const [title, setTitle] = useState('');
-  const [items, setItems] = useState(['']);
+  const [items, setItems] = useState([{ text: '', imageUrl: '' }]);
   const [enabled, setEnabled] = useState(true);
   const [version, setVersion] = useState('v6');
   const [reshow, setReshow] = useState(true);
@@ -211,7 +211,8 @@ const NewsEditor = () => {
           return;
         }
         setTitle(data.title);
-        setItems(data.items.length ? data.items : ['']);
+        const slides = normalizeItems(data.items);
+        setItems(slides.length ? slides : [{ text: '', imageUrl: '' }]);
         setEnabled(data.enabled);
         setVersion(data.version);
       });
@@ -244,7 +245,7 @@ const NewsEditor = () => {
       return;
     }
     setVersion(nextVersion);
-    setItems(nextItems.length ? nextItems : ['']);
+    setItems(nextItems.length ? nextItems : [{ text: '', imageUrl: '' }]);
     setStatus(reshow ? `נשמר. מבקרים שסגרו את החלון יראו את ${nextVersion}` : 'נשמר בלי להציג מחדש');
   };
 
@@ -259,35 +260,90 @@ const NewsEditor = () => {
         כותרת
         <input value={title} maxLength={80} onChange={(event) => setTitle(event.target.value)} className={cn(fieldClass, 'mt-1')} />
       </label>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {items.map((item, index) => (
-          <div key={index} className="flex gap-2 items-start">
-            <textarea
-              value={item}
-              rows={2}
-              maxLength={400}
-              aria-label={`סעיף ${index + 1}`}
-              onChange={(event) => {
-                const next = items.slice();
-                next[index] = event.target.value;
-                setItems(next);
-              }}
-              className={cn(fieldClass, 'min-h-16')}
-            />
-            <div className="flex flex-col gap-1">
-              <button type="button" className={cn(buttonClass, 'px-2 py-1 bg-off-white text-sm')} aria-label="הזזה למעלה" onClick={() => move(index, -1)}>↑</button>
-              <button type="button" className={cn(buttonClass, 'px-2 py-1 bg-off-white text-sm')} aria-label="הזזה למטה" onClick={() => move(index, 1)}>↓</button>
-              <button type="button" className={cn(buttonClass, 'px-2 py-1 bg-tetris-pink text-sm')} aria-label="מחיקת סעיף" onClick={() => setItems(items.length === 1 ? [''] : items.filter((_, i) => i !== index))}>×</button>
+          <div key={index} className="border-2 border-off-black p-3 space-y-2">
+            <div className="flex gap-2 items-start">
+              <textarea
+                value={item.text}
+                rows={2}
+                maxLength={400}
+                aria-label={`טקסט שקופית ${index + 1}`}
+                onChange={(event) => {
+                  const next = items.slice();
+                  next[index] = { ...item, text: event.target.value };
+                  setItems(next);
+                }}
+                className={cn(fieldClass, 'min-h-16')}
+              />
+              <div className="flex flex-col gap-1">
+                <button type="button" className={cn(buttonClass, 'px-2 py-1 bg-off-white text-sm')} aria-label="הזזה למעלה" onClick={() => move(index, -1)}>↑</button>
+                <button type="button" className={cn(buttonClass, 'px-2 py-1 bg-off-white text-sm')} aria-label="הזזה למטה" onClick={() => move(index, 1)}>↓</button>
+                <button type="button" className={cn(buttonClass, 'px-2 py-1 bg-tetris-pink text-sm')} aria-label="מחיקת שקופית" onClick={() => setItems(items.length === 1 ? [{ text: '', imageUrl: '' }] : items.filter((_, i) => i !== index))}>×</button>
+              </div>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="url"
+                value={String(item.imageUrl || '').startsWith('data:') ? '' : item.imageUrl || ''}
+                placeholder="קישור לתמונה (לא חובה)"
+                dir="ltr"
+                aria-label={`תמונת שקופית ${index + 1}`}
+                onChange={(event) => {
+                  const next = items.slice();
+                  next[index] = { ...item, imageUrl: event.target.value };
+                  setItems(next);
+                }}
+                className={cn(fieldClass, 'flex-1 min-w-[180px]')}
+              />
+              <label className={cn(buttonClass, 'px-3 py-2 bg-tetris-yellow text-sm cursor-pointer')}>
+                קובץ תמונה
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (event) => {
+                    const file = event.target.files?.[0];
+                    event.target.value = '';
+                    if (!file) return;
+                    try {
+                      const imageUrl = await resizeImageFile(file);
+                      if (!imageUrl) return;
+                      setItems((prev) => prev.map((slide, slideIndex) => (
+                        slideIndex === index ? { ...slide, imageUrl } : slide
+                      )));
+                    } catch {
+                      setStatus('לא הצלחנו לקרוא את התמונה');
+                    }
+                  }}
+                />
+              </label>
+              {item.imageUrl && (
+                <button
+                  type="button"
+                  className={cn(buttonClass, 'px-3 py-2 bg-off-white text-sm')}
+                  onClick={() => {
+                    const next = items.slice();
+                    next[index] = { ...item, imageUrl: '' };
+                    setItems(next);
+                  }}
+                >
+                  הסר תמונה
+                </button>
+              )}
+            </div>
+            {item.imageUrl && (
+              <img src={item.imageUrl} alt="" className="max-h-28 border-2 border-off-black" />
+            )}
           </div>
         ))}
       </div>
       <button
         type="button"
         className={cn(buttonClass, 'px-3 py-2 bg-tetris-yellow text-sm')}
-        onClick={() => items.length < 30 && setItems([...items, ''])}
+        onClick={() => items.length < 12 && setItems([...items, { text: '', imageUrl: '' }])}
       >
-        הוספת סעיף
+        הוספת שקופית
       </button>
       <label className="flex items-center gap-2 font-ibm text-sm">
         <input type="checkbox" checked={reshow} onChange={(event) => setReshow(event.target.checked)} />
