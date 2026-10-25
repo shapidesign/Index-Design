@@ -8,7 +8,6 @@ import useSavedItems, {
   decodeSharedFolder,
 } from '@/hooks/useSavedItems';
 import TetrisShape from '@/components/tetris/TetrisShape';
-import GoogleEmailAuthPanel from '@/components/ui/GoogleEmailAuthPanel';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 import {
@@ -247,9 +246,6 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
   const [shareFeedback, setShareFeedback] = useState('');
   const [importBanner, setImportBanner] = useState('');
 
-  // Google / Verified Email Profile Drawer state
-  const [isGoogleSignInOpen, setIsGoogleSignInOpen] = useState(false);
-
   // Check if URL contains a shared folder payload (?import=...)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -476,31 +472,10 @@ const PersonalSection = ({ onNavigateToItem, onBrowseSection }) => {
               </button>
             </>
           ) : (
-            <>
-              <GoogleSignInButton />
-              <button
-                type="button"
-                onClick={() => setIsGoogleSignInOpen(true)}
-                className="font-headline text-xs font-bold text-off-black underline underline-offset-4 cursor-pointer"
-              >
-                התחברות באימייל
-              </button>
-            </>
+            <GoogleSignInButton />
           )}
         </div>
       </div>
-
-      {/* Verified Google / Email Sign-In Panel */}
-      {isGoogleSignInOpen && !userProfile && (
-        <div className="mb-8">
-          <GoogleEmailAuthPanel
-            title="התחברות באימייל"
-            initialShowEmail
-            onSuccess={() => setIsGoogleSignInOpen(false)}
-            onClose={() => setIsGoogleSignInOpen(false)}
-          />
-        </div>
-      )}
 
       {/* ===== FOLDER TABS STRIP ===== */}
       <div className="mb-6 p-4 bg-off-white border-3 border-off-black shadow-brutalist-sm">

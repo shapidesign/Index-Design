@@ -125,13 +125,14 @@ assert.equal(hasAuthCallback({ search: '', hash: '' }), false);
 
 const personalSrc = fs.readFileSync(new URL('../src/components/sections/PersonalSection.jsx', import.meta.url), 'utf8');
 const museumSrc = fs.readFileSync(new URL('../src/components/sections/MuseumSection.jsx', import.meta.url), 'utf8');
-const authPanelSrc = fs.readFileSync(new URL('../src/components/ui/GoogleEmailAuthPanel.jsx', import.meta.url), 'utf8');
+const buttonSrc = fs.readFileSync(new URL('../src/components/ui/GoogleSignInButton.jsx', import.meta.url), 'utf8');
 assert(personalSrc.includes('<GoogleSignInButton />'), 'saved drawer must start Google sign-in directly');
-assert(!personalSrc.includes('setIsGoogleSignInOpen((p) => !p)'), 'Google button must not toggle the email form');
+assert(!personalSrc.includes('התחברות באימייל'), 'saved drawer must not offer email-code sign-in');
+assert(!personalSrc.includes('signInWithOtp'), 'saved drawer must not send email codes');
 assert(museumSrc.includes('התחבר עם Google והעלה עבודה'), 'museum upload must start Google sign-in directly');
-assert(!authPanelSrc.includes('accounts.google.com/gsi/client'), 'sign-in must use Supabase Google OAuth, not a buried GIS button');
-assert(authPanelSrc.includes('התחברות עם אימייל במקום'), 'email remains a secondary sign-in path');
-assert(authPanelSrc.includes('signInWithGoogle') || authPanelSrc.includes('GoogleSignInButton'), 'auth panel must offer direct Google sign-in');
+assert(!museumSrc.includes('התחברות באימייל'), 'museum must not offer email-code sign-in');
+assert(buttonSrc.includes('signInWithGoogle'), 'sign-in button must call Google OAuth');
+assert.equal(fs.existsSync(new URL('../src/components/ui/GoogleEmailAuthPanel.jsx', import.meta.url)), false);
 
 assert(headerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Header must keep SHOW_HIT_LOGO = false');
 assert(footerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Footer must keep SHOW_HIT_LOGO = false');

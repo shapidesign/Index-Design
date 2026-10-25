@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import SaveItemButton from '@/components/ui/SaveItemButton';
 import FilterToggle from '@/components/ui/FilterToggle';
-import GoogleEmailAuthPanel from '@/components/ui/GoogleEmailAuthPanel';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import useSavedItems from '@/hooks/useSavedItems';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
@@ -617,19 +616,10 @@ const MuseumSection = ({ pendingNavigation }) => {
               <span>העלאת עבודה חדשה</span>
             </button>
           ) : (
-            <>
-              <GoogleSignInButton
-                className="bg-tetris-purple text-off-white hover:bg-tetris-yellow hover:text-off-black"
-                label="התחבר עם Google והעלה עבודה"
-              />
-              <button
-                type="button"
-                onClick={() => setIsUploadOpen(true)}
-                className="font-headline text-xs font-bold text-off-black underline underline-offset-4 cursor-pointer"
-              >
-                התחברות באימייל
-              </button>
-            </>
+            <GoogleSignInButton
+              className="bg-tetris-purple text-off-white hover:bg-tetris-yellow hover:text-off-black"
+              label="התחבר עם Google והעלה עבודה"
+            />
           )}
 
           <FilterToggle
@@ -672,17 +662,6 @@ const MuseumSection = ({ pendingNavigation }) => {
       {uploadSuccess && (
         <div className="mb-6 p-3 px-4 bg-tetris-green border-3 border-off-black shadow-brutalist-sm font-headline text-sm font-bold text-off-black">
           {uploadSuccess}
-        </div>
-      )}
-
-      {/* ===== UPLOAD WORK / GOOGLE PROFILE PANEL ===== */}
-      {isUploadOpen && !userProfile && (
-        <div className="mb-8">
-          <GoogleEmailAuthPanel
-            title="התחברות באימייל להעלאת עבודה"
-            initialShowEmail
-            onClose={() => setIsUploadOpen(false)}
-          />
         </div>
       )}
 
