@@ -5,6 +5,7 @@ import TetrisShape from '@/components/tetris/TetrisShape';
 import SaveItemButton from '@/components/ui/SaveItemButton';
 import FilterToggle from '@/components/ui/FilterToggle';
 import GoogleEmailAuthPanel from '@/components/ui/GoogleEmailAuthPanel';
+import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import useSavedItems from '@/hooks/useSavedItems';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 import {
@@ -600,20 +601,36 @@ const MuseumSection = ({ pendingNavigation }) => {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setIsUploadOpen((prev) => !prev)}
-            className={cn(
-              'inline-flex items-center gap-2 px-4 py-2.5',
-              'bg-tetris-purple text-off-white font-headline text-xs md:text-sm font-bold',
-              'border-3 border-off-black shadow-brutalist-sm',
-              'hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]',
-              'transition-all duration-150 cursor-pointer'
-            )}
-          >
-            <Upload size={16} />
-            <span>{userProfile ? 'העלאת עבודה חדשה' : 'התחברות והעלאת עבודה'}</span>
-          </button>
+          {userProfile ? (
+            <button
+              type="button"
+              onClick={() => setIsUploadOpen((prev) => !prev)}
+              className={cn(
+                'inline-flex items-center gap-2 px-4 py-2.5',
+                'bg-tetris-purple text-off-white font-headline text-xs md:text-sm font-bold',
+                'border-3 border-off-black shadow-brutalist-sm',
+                'hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]',
+                'transition-all duration-150 cursor-pointer'
+              )}
+            >
+              <Upload size={16} />
+              <span>העלאת עבודה חדשה</span>
+            </button>
+          ) : (
+            <>
+              <GoogleSignInButton
+                className="bg-tetris-purple text-off-white hover:bg-tetris-yellow hover:text-off-black"
+                label="התחבר עם Google והעלה עבודה"
+              />
+              <button
+                type="button"
+                onClick={() => setIsUploadOpen(true)}
+                className="font-headline text-xs font-bold text-off-black underline underline-offset-4 cursor-pointer"
+              >
+                התחברות באימייל
+              </button>
+            </>
+          )}
 
           <FilterToggle
             isOpen={showFilters}
@@ -662,7 +679,8 @@ const MuseumSection = ({ pendingNavigation }) => {
       {isUploadOpen && !userProfile && (
         <div className="mb-8">
           <GoogleEmailAuthPanel
-            title="התחברות עם Google / אימות אימייל להעלאת עבודה למוזיאון"
+            title="התחברות באימייל להעלאת עבודה"
+            initialShowEmail
             onClose={() => setIsUploadOpen(false)}
           />
         </div>

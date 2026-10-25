@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { supabase, GOOGLE_CLIENT_ID } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
+import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import { HIT_STUDY_YEARS } from '@/data/hitFaculty';
 import { Mail, KeyRound, CheckCircle2, ArrowRight, X, ShieldCheck } from 'lucide-react';
 
@@ -10,7 +11,12 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * GoogleEmailAuthPanel - Real Supabase Authentication (Google Identity / OAuth + Verified Email OTP & Password)
  * Ensures users cannot spoof an email without real verification, and links session to per-user Supabase storage.
  */
-const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות ואימות חשבון עם Google / אימייל' }) => {
+const GoogleEmailAuthPanel = ({
+  onSuccess,
+  onClose,
+  title = 'התחברות עם Google',
+  initialShowEmail = false,
+}) => {
   const [authMethod, setAuthMethod] = useState('otp'); // 'otp' | 'password'
   const [passwordMode, setPasswordMode] = useState('signin'); // 'signin' | 'signup'
   const [step, setStep] = useState('request'); // 'request' | 'verify'
@@ -24,80 +30,7 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
-  const googleBtnContainerRef = useRef(null);
-
-  // Initialize official Google Identity Services button -> exchanges signed Google JWT with Supabase Auth
-  useEffect(() => {
-    if (typeof window === 'undefined' || !GOOGLE_CLIENT_ID) return undefined;
-
-    let cancelled = false;
-
-    const handleGoogleCredential = async (response) => {
-      if (cancelled || !response?.credential) return;
-      setError('');
-      setBusy(true);
-      try {
-        const { data, error: idTokenError } = await supabase.auth.signInWithIdToken({
-          provider: 'google',
-          token: response.credential,
-        });
-        if (idTokenError) throw idTokenError;
-        if (data?.session) {
-          onSuccess?.(data.session);
-        }
-      } catch (err) {
-        setError(err?.message || 'התחברות עם Google נכשלה. נסו אימות במייל למטה.');
-      } finally {
-        if (!cancelled) setBusy(false);
-      }
-    };
-
-    const initGsi = () => {
-      if (cancelled || !window.google?.accounts?.id) return;
-      try {
-        window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGoogleCredential,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-        });
-        if (googleBtnContainerRef.current) {
-          googleBtnContainerRef.current.innerHTML = '';
-          window.google.accounts.id.renderButton(googleBtnContainerRef.current, {
-            type: 'standard',
-            theme: 'outline',
-            size: 'large',
-            text: 'continue_with',
-            shape: 'rectangular',
-            locale: 'he',
-            width: 280,
-          });
-        }
-      } catch {
-        /* GIS initialization fallback */
-      }
-    };
-
-    if (window.google?.accounts?.id) {
-      initGsi();
-    } else {
-      const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
-      if (existingScript) {
-        existingScript.addEventListener('load', initGsi);
-        return () => existingScript.removeEventListener('load', initGsi);
-      }
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = initGsi;
-      document.head.appendChild(script);
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, [onSuccess]);
+  const [showEmail, setShowEmail] = useState(initialShowEmail);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
@@ -305,15 +238,29 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
         )}
       </div>
 
-      {/* Security / Per-User Cloud Sync Notice */}
-      <div className="mb-5 p-3 bg-tetris-yellow/35 border-2 border-off-black flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <p className="text-xs font-ibm text-off-black leading-relaxed">
-          <strong>חיבור מאומת בענן:</strong> התיקיות, הפריטים השמורים, ההערות והעבודות שלכם נשמרים באופן אישי ומאובטח לחשבון האימייל המאומת שלכם מכל מכשיר.
+      <div className="mb-4 p-3 bg-tetris-yellow/35 border-2 border-off-black">
+        <p className="text-xs font-ibm text-off-black leading-relaxed mb-3">
+          <strong>חיבור מאומת בענן:</strong> בחירת חשבון Google פותחת את המגירה שלכם מכל מכשיר. אין צורך להקליד סיסמה.
         </p>
-        {/* Official Google Sign-In Button container */}
-        <div className="shrink-0 flex items-center justify-end" ref={googleBtnContainerRef} />
+        <GoogleSignInButton className="w-full" />
       </div>
 
+      {step === 'request' && (
+        <button
+          type="button"
+          onClick={() => {
+            setShowEmail((open) => !open);
+            setError('');
+            setInfoMessage('');
+          }}
+          className="mb-5 font-headline text-xs font-bold text-off-black underline underline-offset-4 cursor-pointer"
+        >
+          {showEmail ? 'הסתר התחברות באימייל' : 'התחברות עם אימייל במקום'}
+        </button>
+      )}
+
+      {(showEmail || step === 'verify') && (
+      <>
       {/* Method Selector Tabs */}
       {step === 'request' && (
         <div className="flex border-2 border-off-black mb-5 bg-light-gray w-fit">
@@ -332,7 +279,7 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
             )}
           >
             <Mail size={14} />
-            <span>קוד אימות למייל (Google / Email OTP)</span>
+            <span>קוד אימות למייל</span>
           </button>
           <button
             type="button"
@@ -375,7 +322,7 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
 
             <div className="flex flex-col">
               <label className="form-label-uniform font-headline text-xs font-bold text-off-black">
-                <span>כתובת Google / Gmail לאימות *</span>
+                <span>כתובת אימייל לאימות *</span>
               </label>
               <input
                 type="email"
@@ -650,6 +597,8 @@ const GoogleEmailAuthPanel = ({ onSuccess, onClose, title = 'התחברות וא
             </button>
           </div>
         </form>
+      )}
+      </>
       )}
     </div>
   );

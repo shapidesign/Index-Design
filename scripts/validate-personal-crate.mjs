@@ -11,6 +11,7 @@ import {
   decodeSharedFolder,
 } from '../src/hooks/useSavedItems.js';
 import { legacyHashToPath, sectionIdFromPathname } from '../src/lib/section-route.js';
+import { currentAppUrl, hasAuthCallback } from '../src/lib/auth-redirect.js';
 import {
   HIT_DESIGN_PROFESSORS,
   HIT_COURSES,
@@ -113,6 +114,24 @@ assert.equal(legacyHashToPath('#/saved?import=abc'), '/saved?import=abc');
 assert.equal(legacyHashToPath('#access_token=xyz'), null);
 assert.equal(sectionIdFromPathname('/saved', ['saved', 'toolbox']), 'saved');
 assert.equal(sectionIdFromPathname('/', ['saved']), null);
+
+assert.equal(
+  currentAppUrl({ origin: 'https://www.designindex.io', pathname: '/saved', search: '?import=abc' }),
+  'https://www.designindex.io/saved?import=abc'
+);
+assert.equal(hasAuthCallback({ search: '?code=abc', hash: '' }), true);
+assert.equal(hasAuthCallback({ search: '', hash: '#access_token=xyz' }), true);
+assert.equal(hasAuthCallback({ search: '', hash: '' }), false);
+
+const personalSrc = fs.readFileSync(new URL('../src/components/sections/PersonalSection.jsx', import.meta.url), 'utf8');
+const museumSrc = fs.readFileSync(new URL('../src/components/sections/MuseumSection.jsx', import.meta.url), 'utf8');
+const authPanelSrc = fs.readFileSync(new URL('../src/components/ui/GoogleEmailAuthPanel.jsx', import.meta.url), 'utf8');
+assert(personalSrc.includes('<GoogleSignInButton />'), 'saved drawer must start Google sign-in directly');
+assert(!personalSrc.includes('setIsGoogleSignInOpen((p) => !p)'), 'Google button must not toggle the email form');
+assert(museumSrc.includes('התחבר עם Google והעלה עבודה'), 'museum upload must start Google sign-in directly');
+assert(!authPanelSrc.includes('accounts.google.com/gsi/client'), 'sign-in must use Supabase Google OAuth, not a buried GIS button');
+assert(authPanelSrc.includes('התחברות עם אימייל במקום'), 'email remains a secondary sign-in path');
+assert(authPanelSrc.includes('signInWithGoogle') || authPanelSrc.includes('GoogleSignInButton'), 'auth panel must offer direct Google sign-in');
 
 assert(headerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Header must keep SHOW_HIT_LOGO = false');
 assert(footerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Footer must keep SHOW_HIT_LOGO = false');
