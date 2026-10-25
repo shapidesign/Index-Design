@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import TipArticleModal from '../ui/TipArticleModal';
 import FilterToggle from '@/components/ui/FilterToggle';
 import SaveItemButton from '@/components/ui/SaveItemButton';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
+import useData from '@/hooks/useData';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
 const bgColorMap = {
@@ -15,9 +16,8 @@ const bgColorMap = {
 };
 
 const TipsSection = () => {
-  const [tips, setTips] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data, loading, error } = useData('/api/tips');
+  const tips = data?.tips || [];
 
   // Filters — null means 'show all'
   const [selectedType, setSelectedType] = useState(null);
@@ -26,23 +26,6 @@ const TipsSection = () => {
 
   // Modal State
   const [activeTipIndex, setActiveTipIndex] = useState(null);
-
-  useEffect(() => {
-    fetch('/api/tips')
-      .then((res) => {
-        if (!res.ok) throw new Error('שגיאה בטעינת טיפים');
-        return res.json();
-      })
-      .then((data) => {
-        if (data.tips) setTips(data.tips);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
 
   // Compute available filters — no 'הכל' needed
   const types = useMemo(() => {
