@@ -1344,7 +1344,7 @@ const App = () => {
       </main>
 
       {/* ===== FOOTER ===== */}
-      <footer className="border-t-3 border-off-black bg-off-black text-off-white mt-16">
+      <footer className="border-t-3 border-off-black bg-off-black text-off-white dark:bg-[#0E0E0E] dark:border-dark-gray dark:text-[#F2F1EE] mt-16">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
           <div className="mb-5 flex justify-center gap-3">
             <button
@@ -1386,7 +1386,7 @@ const App = () => {
               href="https://www.alefsofit.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-off-white transition-colors"
+              className="underline underline-offset-2 hover:text-off-white dark:hover:text-white transition-colors"
             >
               יהונתן שפירא
             </a>

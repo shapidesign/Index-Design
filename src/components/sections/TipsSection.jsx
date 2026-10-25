@@ -125,7 +125,7 @@ const TipsSection = () => {
                       'px-3 py-1 font-headline border-2 border-off-black transition-all',
                       selectedType === type
                         ? 'bg-tetris-purple text-off-white shadow-none translate-x-[2px] translate-y-[2px] font-bold'
-                        : 'bg-white text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] font-bold'
+                        : 'bg-off-white text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] font-bold'
                     )}
                   >
                     {type}
@@ -147,7 +147,7 @@ const TipsSection = () => {
                         'px-3 py-1 font-mixed border-2 border-off-black transition-all',
                         isTagSelected
                           ? cn(tagBg, getTagTextClass(tagBg), 'shadow-none translate-x-[2px] translate-y-[2px]')
-                          : 'bg-white text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                          : 'bg-off-white text-off-black shadow-brutalist-xs hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
                       )}
                     >
                       {tag}
@@ -165,7 +165,7 @@ const TipsSection = () => {
 
           {/* Cards Grid */}
           {filteredTips.length === 0 ? (
-            <div className="py-12 text-center text-dark-gray font-ibm border-3 border-dashed border-mid-gray bg-white/50">
+            <div className="py-12 text-center text-dark-gray font-ibm border-3 border-dashed border-mid-gray bg-off-white/50">
               לא נמצאו טיפים התואמים לסינון.
             </div>
           ) : (
@@ -219,7 +219,7 @@ const TipsSection = () => {
                     </div>
 
                     {/* Content Area */}
-                    <div className="p-4 flex-1 flex flex-col min-h-0 bg-noise mix-blend-multiply">
+                    <div className="p-4 flex-1 flex flex-col min-h-0 bg-noise mix-blend-multiply dark:mix-blend-normal">
                       <h3 className="text-xl md:text-2xl font-bold font-headline text-off-black mb-2 line-clamp-3 leading-tight group-hover:text-tetris-purple transition-colors">
                         {tip.title}
                       </h3>

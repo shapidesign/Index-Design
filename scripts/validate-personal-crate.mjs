@@ -135,6 +135,8 @@ assert(buttonSrc.includes('signInWithGoogle'), 'sign-in button must call Google 
 assert.equal(fs.existsSync(new URL('../src/components/ui/GoogleEmailAuthPanel.jsx', import.meta.url)), false);
 
 assert(headerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Header must keep SHOW_HIT_LOGO = false');
+assert(headerSrc.includes('<ThemeToggle />'), 'Header must include the light/dark toggle');
+assert(fs.existsSync(new URL('../src/components/ui/ThemeToggle.jsx', import.meta.url)));
 assert(footerSrc.includes('const SHOW_HIT_LOGO = false;'), 'Footer must keep SHOW_HIT_LOGO = false');
 assert(appSrc.includes('const SHOW_EYE = false;'), 'App must keep SHOW_EYE = false');
 
