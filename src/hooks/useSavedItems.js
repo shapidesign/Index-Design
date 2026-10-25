@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { HIT_STUDY_YEARS } from '../data/hitFaculty.js';
 
 const GUEST_STORAGE_KEY = 'index-personal-crate-v1';
 const userStorageKey = (userId) => (userId ? `index-personal-crate-user-${userId}` : GUEST_STORAGE_KEY);
@@ -7,6 +8,19 @@ const userStorageKey = (userId) => (userId ? `index-personal-crate-user-${userId
 export const TETRIS_SHAPES = ['T', 'L', 'I', 'Z', 'J', 'O', 'S'];
 export const TETRIS_COLORS = ['purple', 'orange', 'blue', 'yellow', 'cyan', 'green', 'pink'];
 export const MAX_FOLDER_NAME_LENGTH = 24;
+export const MAX_PROFILE_NAME_LENGTH = 40;
+
+/** Name and study year a signed-in student is allowed to save on their profile. */
+export const sanitizeProfilePatch = (input) => {
+  const name = String(input?.name || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, MAX_PROFILE_NAME_LENGTH);
+  const studyYear = HIT_STUDY_YEARS.includes(input?.studyYear) ? input.studyYear : '';
+  if (name.length < 2) return { ok: false, error: 'יש להזין שם מלא' };
+  if (!studyYear) return { ok: false, error: 'יש לבחור שנת לימודים' };
+  return { ok: true, name, studyYear };
+};
 
 // ponytail: local cache + Supabase public.user_crates sync so each verified user's folders, saved items, and notes persist across devices
 const defaultFolders = [
@@ -778,6 +792,62 @@ export const SavedItemsProvider = ({ children }) => {
     [authUser, crate.userProfile]
   );
 
+  const updateUserProfile = useCallback(
+    async (patch) => {
+      if (!authUser?.id) {
+        return { ok: false, error: 'יש להתחבר עם Google כדי לערוך את הפרופיל' };
+      }
+      const clean = sanitizeProfilePatch(patch);
+      if (!clean.ok) return clean;
+
+      const email = crate.userProfile?.email || authUser.email || '';
+      const { error } = await supabase.from('user_crates').upsert(
+        {
+          user_id: authUser.id,
+          email,
+          display_name: clean.name,
+          study_year: clean.studyYear,
+          folders: crate.folders,
+          items: crate.items,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' }
+      );
+      if (error) return { ok: false, error: 'שמירת הפרופיל נכשלה. נסו שוב.' };
+
+      skipNextCloudPushRef.current = true;
+      setCrate((prev) => ({
+        ...prev,
+        userProfile: {
+          ...(prev.userProfile || buildUserProfileFromAuthUser(authUser)),
+          id: authUser.id,
+          name: clean.name,
+          email,
+          studyYear: clean.studyYear,
+        },
+      }));
+
+      supabase.auth
+        .updateUser({
+          data: { full_name: clean.name, name: clean.name, study_year: clean.studyYear },
+        })
+        .then(() => {});
+
+      const { error: worksError } = await supabase
+        .from('student_works')
+        .update({ student_name: clean.name })
+        .eq('user_id', authUser.id);
+      if (!worksError) {
+        setCloudWorks((prev) =>
+          prev.map((work) => (work.userId === authUser.id ? { ...work, studentName: clean.name } : work))
+        );
+      }
+
+      return { ok: true };
+    },
+    [authUser, crate.folders, crate.items, crate.userProfile]
+  );
+
   const deleteLocalSubmission = useCallback(
     async (workId) => {
       if (!authUser?.id) return;
@@ -829,6 +899,7 @@ export const SavedItemsProvider = ({ children }) => {
       deleteFolder,
       importSharedFolder,
       signOutProfile,
+      updateUserProfile,
       addLocalSubmission,
       deleteLocalSubmission,
       refreshCloudWorks,
@@ -859,6 +930,7 @@ export const SavedItemsProvider = ({ children }) => {
       deleteFolder,
       importSharedFolder,
       signOutProfile,
+      updateUserProfile,
       addLocalSubmission,
       deleteLocalSubmission,
       refreshCloudWorks,

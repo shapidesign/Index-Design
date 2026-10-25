@@ -603,7 +603,12 @@ const MuseumSection = ({ pendingNavigation }) => {
           {userProfile ? (
             <button
               type="button"
-              onClick={() => setIsUploadOpen((prev) => !prev)}
+              onClick={() => {
+                setIsUploadOpen((prev) => !prev);
+                if (!isUploadOpen && HIT_STUDY_YEARS.includes(userProfile?.studyYear)) {
+                  setUploadForm((form) => ({ ...form, year: userProfile.studyYear }));
+                }
+              }}
               className={cn(
                 'inline-flex items-center gap-2 px-4 py-2.5',
                 'bg-tetris-purple text-off-white font-headline text-xs md:text-sm font-bold',
