@@ -1290,7 +1290,7 @@ const App = () => {
       </main>
 
       {/* ===== FOOTER ===== */}
-      <footer className="border-t-3 border-off-black bg-off-black text-off-white mt-16">
+      <footer className="border-t-3 border-off-black bg-off-black text-off-white dark:bg-[#0E0E0E] dark:border-dark-gray mt-16">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
           <div className="mb-5 flex justify-center gap-3">
             <button
