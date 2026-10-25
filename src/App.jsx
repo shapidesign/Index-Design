@@ -1326,6 +1326,20 @@ const App = () => {
             </button>
             */}
           </div>
+          <nav aria-label="מידע משפטי" className="mb-4 flex justify-center gap-4 text-sm font-ibm">
+            <a
+              href="/privacy"
+              className="text-tetris-green underline underline-offset-2 hover:text-off-white transition-colors"
+            >
+              מדיניות פרטיות
+            </a>
+            <a
+              href="/terms"
+              className="text-tetris-green underline underline-offset-2 hover:text-off-white transition-colors"
+            >
+              תנאי שימוש
+            </a>
+          </nav>
           <p className="text-sm text-tetris-green font-ibm">
             נבנה על ידי{' '}
             <a
