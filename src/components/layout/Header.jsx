@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User, Bookmark } from 'lucide-react';
 import logoDark from '@/assets/svg/logo-dark.svg';
 import vcLogo from '@/assets/svg/vc-logo-small.svg';
+import useSavedItems from '@/hooks/useSavedItems';
+
+/** HIT / VC mark stays in source; flip to show it again. */
+const SHOW_HIT_LOGO = false;
 
 /**
  * Header - כותרת עליונה
  * Sticky navigation header with dark bg for differentiation:
  * - Dark bg-off-black navbar
  * - Logo on the right (RTL) - white version for dark bg
- * - Nav buttons: #EEEEEE fill, square edges, 4px shadow
- * - Purple hamburger button with white lines
- * - Reisinger Amir font for all nav text
+ * - Center nav buttons: #EEEEEE fill, square edges, 4px shadow
+ * - Left corner (RTL end): Profile / Personal Drawer button ("אזור אישי / המגירה") + VC logo + Mobile hamburger
  */
 
 const navSections = [
@@ -27,7 +30,8 @@ const navSections = [
 
 const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+  const { savedCount, userProfile } = useSavedItems();
+
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -40,39 +44,47 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
     };
   }, [mobileMenuOpen]);
 
+  const isProfileActive = activeSection === 'saved';
+
   return (
     <header
       dir="rtl"
       className={cn(
         'sticky top-0 z-50',
         'bg-off-black',
-        'border-b-3 border-off-black',
+        'border-b-3 border-off-black'
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between md:grid md:grid-cols-[auto_1fr_auto] md:gap-6">
+      <div
+        className={cn(
+          'max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between md:grid md:gap-4',
+          SHOW_HIT_LOGO ? 'md:grid-cols-[auto_1fr_auto]' : 'md:grid-cols-[auto_1fr]'
+        )}
+      >
 
         {/* Logo - right corner in RTL (white version for dark bg) */}
         <button
           type="button"
           onClick={() => onHomeClick?.()}
           aria-label="אינדקס האב - דף הבית"
-          className="shrink-0"
+          className="shrink-0 cursor-pointer"
         >
           <img src={logoDark} alt="אינדקס האב" className="h-8 w-auto" />
         </button>
 
-        {/* Desktop navigation centered */}
-        <div className="hidden md:flex items-center justify-center gap-2 min-w-0 overflow-x-auto overflow-y-hidden pb-1">
-          <nav className="flex items-center justify-center gap-2">
+        {/* Desktop navigation centered — strictly single line, never wraps */}
+        <div className="hidden md:flex items-center justify-center gap-1.5 lg:gap-2 min-w-0 flex-nowrap overflow-x-auto no-scrollbar">
+          <nav className="flex items-center justify-center gap-1.5 lg:gap-2 flex-nowrap shrink-0">
             {navSections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => onSectionChange?.(section.id)}
                 className={cn(
-                  'px-3 lg:px-4 py-2',
-                  'text-xs lg:text-sm font-headline whitespace-nowrap',
+                  'h-10 px-2.5 lg:px-3.5 shrink-0',
+                  'inline-flex items-center justify-center gap-1.5',
+                  'text-xs lg:text-sm font-headline leading-none whitespace-nowrap',
                   'border border-dark-gray',
-                  'transition-all duration-200',
+                  'transition-all duration-200 cursor-pointer',
                   section.id === 'lucky'
                     ? 'bg-tetris-yellow text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
                     : activeSection === section.id
@@ -80,7 +92,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
                       : 'bg-btn-gray text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
                 )}
               >
-                {section.label}
+                <span>{section.label}</span>
               </button>
             ))}
           </nav>
@@ -89,39 +101,92 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
             type="button"
             onClick={() => onHelpClick?.()}
             className={cn(
-              'px-4 py-2',
-              'text-sm font-headline whitespace-nowrap',
+              'h-10 px-3 lg:px-4 shrink-0',
+              'inline-flex items-center justify-center',
+              'text-xs lg:text-sm font-headline leading-none whitespace-nowrap',
               'bg-tetris-purple text-off-white',
               'border border-dark-gray shadow-brutalist-nav',
-              'transition-all duration-200',
+              'transition-all duration-200 cursor-pointer',
               'hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
             )}
           >
-            לעזור
+            <span>לעזור</span>
+          </button>
+
+          {/* Profile / Personal Drawer Icon Button (Desktop — in the same row as nav buttons for exact alignment) */}
+          <button
+            type="button"
+            onClick={() => {
+              onSectionChange?.('saved');
+              setMobileMenuOpen(false);
+            }}
+            aria-label="אזור אישי והמגירה שלי"
+            title="אזור אישי · המגירה שלי"
+            className={cn(
+              'relative h-10 px-2.5 shrink-0 inline-flex items-center justify-center gap-1.5',
+              'border border-dark-gray font-headline text-xs lg:text-sm font-bold leading-none whitespace-nowrap',
+              'transition-all duration-200 cursor-pointer',
+              isProfileActive
+                ? 'bg-tetris-pink text-off-black shadow-none translate-x-[4px] translate-y-[4px]'
+                : 'bg-tetris-pink text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+            )}
+          >
+            <User size={18} strokeWidth={2.2} className="text-off-black shrink-0" />
+            {savedCount > 0 && (
+              <span className="px-1.5 py-0.5 bg-off-black text-off-white text-[11px] font-jersey leading-none">
+                {savedCount}
+              </span>
+            )}
           </button>
         </div>
 
-        {/* Left side: VC logo (desktop full, mobile icon) + mobile hamburger */}
-        <div className="flex items-center gap-2 md:justify-self-start">
-          <a
-            href="https://www.hit.ac.il/academic/design/visual-communications/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center"
+        {/* Left corner (Top-Left of screen in RTL): Mobile Profile icon + optional VC logo + Mobile hamburger */}
+        <div
+          className={cn(
+            'flex items-center gap-2.5 shrink-0 md:justify-self-end',
+            !SHOW_HIT_LOGO && 'md:hidden'
+          )}
+        >
+          {/* Profile / Personal Drawer Icon Button (Mobile) */}
+          <button
+            type="button"
+            onClick={() => {
+              onSectionChange?.('saved');
+              setMobileMenuOpen(false);
+            }}
+            aria-label="אזור אישי והמגירה שלי"
+            title="אזור אישי · המגירה שלי"
+            className={cn(
+              'md:hidden relative h-11 px-3 inline-flex items-center justify-center gap-1.5',
+              'border border-dark-gray font-headline text-xs font-bold leading-none whitespace-nowrap',
+              'transition-all duration-200 cursor-pointer',
+              isProfileActive
+                ? 'bg-tetris-pink text-off-black shadow-none translate-x-[4px] translate-y-[4px]'
+                : 'bg-tetris-pink text-off-black shadow-brutalist-nav hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]'
+            )}
           >
-            {/* Desktop: Full Logo */}
-            <img
-              src={vcLogo}
-              alt="המחלקה לתקשורת חזותית"
-              className="hidden md:block h-10 w-auto brightness-0 invert"
-            />
-            {/* Mobile: Full VC logo */}
-            <img
-              src={vcLogo}
-              alt="המחלקה לתקשורת חזותית"
-              className="md:hidden h-8 w-auto brightness-0 invert"
-            />
-          </a>
+            <User size={18} strokeWidth={2.2} className="text-off-black shrink-0" />
+            {savedCount > 0 && (
+              <span className="px-1.5 py-0.5 bg-off-black text-off-white text-[11px] font-jersey leading-none">
+                {savedCount}
+              </span>
+            )}
+          </button>
+
+          {SHOW_HIT_LOGO && (
+            <a
+              href="https://www.hit.ac.il/academic/design/visual-communications/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:flex items-center"
+            >
+              <img
+                src={vcLogo}
+                alt="המחלקה לתקשורת חזותית"
+                className="h-9 w-auto brightness-0 invert"
+              />
+            </a>
+          )}
 
           {/* Mobile: hamburger */}
           <button
@@ -156,6 +221,40 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
         )}
       >
         <nav className="flex flex-col gap-4">
+          {/* Profile / Personal Drawer entry at the top of the Hamburger Menu */}
+          <button
+            type="button"
+            onClick={() => {
+              onSectionChange?.('saved');
+              setMobileMenuOpen(false);
+            }}
+            className={cn(
+              'px-6 py-4 text-right flex items-center justify-between',
+              'font-headline text-lg font-bold',
+              'border-2 border-dark-gray',
+              'shadow-brutalist-nav',
+              'transition-all duration-200',
+              isProfileActive
+                ? 'bg-tetris-pink text-off-black shadow-none'
+                : 'bg-tetris-pink text-off-black'
+            )}
+          >
+            <span className="flex items-center gap-3">
+              <span className="w-7 h-7 bg-off-black text-off-white flex items-center justify-center">
+                <User size={16} />
+              </span>
+              <span>
+                {userProfile?.name ? `פרופיל והמגירה (${userProfile.name})` : 'פרופיל · המגירה שלי'}
+              </span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Bookmark size={16} className="fill-off-black" />
+              <span className="px-2 py-0.5 bg-off-black text-off-white text-sm font-jersey">
+                {savedCount}
+              </span>
+            </span>
+          </button>
+
           {navSections.map((section) => (
             <button
               key={section.id}
@@ -164,7 +263,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
                 setMobileMenuOpen(false);
               }}
               className={cn(
-                'px-6 py-4 text-right',
+                'px-6 py-4 text-right flex items-center justify-between',
                 'font-headline text-lg',
                 'border border-dark-gray',
                 'shadow-brutalist-nav',
@@ -176,7 +275,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
                     : 'bg-btn-gray text-off-black'
               )}
             >
-              {section.label}
+              <span>{section.label}</span>
             </button>
           ))}
           <button
