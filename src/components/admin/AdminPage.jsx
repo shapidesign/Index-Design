@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
+import { HIT_COURSES, HIT_DESIGN_PROFESSORS, HIT_STUDY_YEARS } from '@/data/hitFaculty';
 import { bumpVersion, normalizeItems, resizeImageFile } from '@/data/whatsNew';
 import { HEAT_COLS, HEAT_ROWS, binHeat } from '@/lib/analytics-event';
+import { museumWorkPatch } from '@/lib/museumWork';
 
 const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-43GN2SH9KR';
 const KIND_LABEL = { click: 'קליקים', hover: 'ריחופים', share: 'שיתופים', forward: 'העברות' };
@@ -82,8 +84,9 @@ const AdminPage = () => {
         {ready && session && !isAdmin && <NotAllowed email={session.user.email} />}
         {ready && session && isAdmin && (
           <>
-            <div className="flex gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-6">
               <TabButton active={tab === 'news'} onClick={() => setTab('news')}>מה חדש</TabButton>
+              <TabButton active={tab === 'museum'} onClick={() => setTab('museum')}>המוזיאון</TabButton>
               <TabButton active={tab === 'analytics'} onClick={() => setTab('analytics')}>אנליטיקס</TabButton>
               <button
                 type="button"
@@ -93,7 +96,9 @@ const AdminPage = () => {
                 יציאה
               </button>
             </div>
-            {tab === 'news' ? <NewsEditor /> : <AnalyticsBoard />}
+            {tab === 'news' && <NewsEditor />}
+            {tab === 'museum' && <MuseumWorks />}
+            {tab === 'analytics' && <AnalyticsBoard />}
           </>
         )}
       </main>
@@ -354,6 +359,213 @@ const NewsEditor = () => {
         {busy ? 'שומר…' : 'שמירה'}
       </button>
     </form>
+  );
+};
+
+const withCurrent = (options, current) => (
+  current && !options.includes(current) ? [current, ...options] : options
+);
+
+const draftFromWork = (work) => ({
+  title: work.title || '',
+  student_name: work.student_name || '',
+  course: work.course || HIT_COURSES[0],
+  study_year: work.study_year || HIT_STUDY_YEARS[0],
+  teacher: work.teacher || '',
+  description: work.description || '',
+  tags: Array.isArray(work.tags) ? work.tags.join(', ') : '',
+  link: work.link || '',
+  image_url: work.image_url || '',
+});
+
+const MuseumWorks = () => {
+  const [works, setWorks] = useState(null);
+  const [status, setStatus] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft] = useState(null);
+  const [busyId, setBusyId] = useState(null);
+
+  useEffect(() => {
+    let live = true;
+    supabase.from('student_works')
+      .select('id,title,student_name,course,study_year,teacher,description,tags,link,image_url,created_at')
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (!live) return;
+        if (error) {
+          setWorks([]);
+          setStatus('לא הצלחנו לטעון את עבודות המוזיאון');
+          return;
+        }
+        setWorks(data || []);
+        setStatus('');
+      });
+    return () => { live = false; };
+  }, []);
+
+  const setField = (key, value) => setDraft((prev) => ({ ...prev, [key]: value }));
+
+  const save = async (work) => {
+    const patch = museumWorkPatch(draft);
+    if (!patch.ok) {
+      setStatus(patch.error);
+      return;
+    }
+    setBusyId(work.id);
+    setStatus('');
+    const { data, error } = await supabase.from('student_works')
+      .update(patch.row)
+      .eq('id', work.id)
+      .select('id,title,student_name,course,study_year,teacher,description,tags,link,image_url,created_at')
+      .single();
+    setBusyId(null);
+    if (error || !data) {
+      setStatus('השמירה נכשלה');
+      return;
+    }
+    setWorks((prev) => prev.map((row) => (row.id === work.id ? data : row)));
+    setEditingId(null);
+    setDraft(null);
+    setStatus('נשמר');
+  };
+
+  const remove = async (work) => {
+    if (!window.confirm(`למחוק את "${work.title}" מהמוזיאון?`)) return;
+    setBusyId(work.id);
+    setStatus('');
+    const { data, error } = await supabase.from('student_works').delete().eq('id', work.id).select('id');
+    setBusyId(null);
+    if (error || !data?.length) {
+      setStatus('המחיקה נכשלה');
+      return;
+    }
+    setWorks((prev) => prev.filter((row) => row.id !== work.id));
+    if (editingId === work.id) {
+      setEditingId(null);
+      setDraft(null);
+    }
+    setStatus('העבודה הוסרה מהמוזיאון');
+  };
+
+  if (!works) return <p className="font-ibm">טוען…</p>;
+
+  return (
+    <div className="space-y-4">
+      {status && <p role="status" className="font-ibm text-sm">{status}</p>}
+      {works.length === 0 && !status && (
+        <p className="font-ibm text-sm border-3 border-off-black bg-off-white p-4">עדיין אין עבודות סטודנטים.</p>
+      )}
+      {works.map((work) => {
+        const editing = editingId === work.id;
+        const busy = busyId === work.id;
+        return (
+          <article key={work.id} className="border-3 border-off-black shadow-brutalist-xs bg-off-white p-4 space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-bold text-lg">{work.title}</h2>
+                <p className="font-ibm text-sm text-dark-gray">
+                  {work.student_name} · {work.course} · {work.study_year} · {work.teacher || 'ללא מרצה'}
+                </p>
+                <p className="font-ibm text-xs text-dark-gray">{formatWhen(work.created_at)}</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className={cn(buttonClass, 'px-3 py-1.5 text-sm bg-tetris-yellow')}
+                  onClick={() => {
+                    setStatus('');
+                    if (editing) {
+                      setEditingId(null);
+                      setDraft(null);
+                      return;
+                    }
+                    setEditingId(work.id);
+                    setDraft(draftFromWork(work));
+                  }}
+                >
+                  {editing ? 'סגירה' : 'עריכה'}
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  className={cn(buttonClass, 'px-3 py-1.5 text-sm bg-tetris-pink disabled:opacity-60')}
+                  onClick={() => remove(work)}
+                >
+                  מחיקה
+                </button>
+              </div>
+            </div>
+            {editing && draft && (
+              <form
+                className="space-y-3"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  save(work);
+                }}
+              >
+                <label className="block font-ibm text-sm">
+                  שם העבודה
+                  <input value={draft.title} maxLength={160} onChange={(event) => setField('title', event.target.value)} className={cn(fieldClass, 'mt-1')} />
+                </label>
+                <label className="block font-ibm text-sm">
+                  שם הסטודנט
+                  <input value={draft.student_name} maxLength={120} onChange={(event) => setField('student_name', event.target.value)} className={cn(fieldClass, 'mt-1')} />
+                </label>
+                <label className="block font-ibm text-sm">
+                  קורס
+                  <select value={draft.course} onChange={(event) => setField('course', event.target.value)} className={cn(fieldClass, 'mt-1')}>
+                    {withCurrent(HIT_COURSES, draft.course).map((course) => <option key={course} value={course}>{course}</option>)}
+                  </select>
+                </label>
+                <label className="block font-ibm text-sm">
+                  שנת לימודים
+                  <select value={draft.study_year} onChange={(event) => setField('study_year', event.target.value)} className={cn(fieldClass, 'mt-1')}>
+                    {withCurrent(HIT_STUDY_YEARS, draft.study_year).map((year) => <option key={year} value={year}>{year}</option>)}
+                  </select>
+                </label>
+                <label className="block font-ibm text-sm">
+                  מרצה
+                  <select value={draft.teacher} onChange={(event) => setField('teacher', event.target.value)} className={cn(fieldClass, 'mt-1')}>
+                    <option value="">ללא מרצה</option>
+                    {withCurrent(HIT_DESIGN_PROFESSORS, draft.teacher).map((teacher) => <option key={teacher} value={teacher}>{teacher}</option>)}
+                  </select>
+                </label>
+                <label className="block font-ibm text-sm">
+                  תיאור
+                  <textarea value={draft.description} rows={3} onChange={(event) => setField('description', event.target.value)} className={cn(fieldClass, 'mt-1')} />
+                </label>
+                <label className="block font-ibm text-sm">
+                  תגיות, מופרדות בפסיק
+                  <input value={draft.tags} onChange={(event) => setField('tags', event.target.value)} className={cn(fieldClass, 'mt-1')} />
+                </label>
+                <label className="block font-ibm text-sm">
+                  קישור
+                  <input dir="ltr" value={draft.link} onChange={(event) => setField('link', event.target.value)} className={cn(fieldClass, 'mt-1 text-left')} />
+                </label>
+                <label className="block font-ibm text-sm">
+                  קישור לתמונה
+                  <input
+                    dir="ltr"
+                    value={String(draft.image_url).startsWith('data:') ? '' : draft.image_url}
+                    placeholder={String(draft.image_url).startsWith('data:') ? 'יש תמונה שמורה' : 'https://'}
+                    onChange={(event) => setField('image_url', event.target.value)}
+                    className={cn(fieldClass, 'mt-1 text-left')}
+                  />
+                </label>
+                {draft.image_url && (
+                  <button type="button" className={cn(buttonClass, 'px-3 py-1.5 text-sm bg-off-white')} onClick={() => setField('image_url', '')}>
+                    הסר תמונה
+                  </button>
+                )}
+                <button type="submit" disabled={busy} className={cn(buttonClass, 'px-6 py-2.5 bg-tetris-green disabled:opacity-60')}>
+                  {busy ? 'שומר…' : 'שמירה'}
+                </button>
+              </form>
+            )}
+          </article>
+        );
+      })}
+    </div>
   );
 };
 
