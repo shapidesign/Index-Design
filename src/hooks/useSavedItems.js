@@ -294,7 +294,7 @@ export const SavedItemsProvider = ({ children }) => {
         setCloudWorks(data.map(mapDbWorkToClient));
       }
     } catch {
-      /* Fallback to local/seeded works if offline */
+      /* Leave the list as it was if the request fails. */
     }
   }, []);
 

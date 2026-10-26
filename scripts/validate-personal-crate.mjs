@@ -17,7 +17,6 @@ import {
   HIT_DESIGN_PROFESSORS,
   HIT_COURSES,
   HIT_STUDY_YEARS,
-  SEED_STUDENT_WORKS,
 } from '../src/data/hitFaculty.js';
 import { normalizeItems } from '../src/data/whatsNew.js';
 import { displayNameFromUser, sanitizePlaceTags } from '../api/map-reviews.js';
@@ -113,7 +112,7 @@ assert(HIT_DESIGN_PROFESSORS.some((p) => p.includes('ארז בכר')), 'should i
 assert(HIT_DESIGN_PROFESSORS.some((p) => p.includes('עודד עזר')), 'should include Prof. Oded Ezer');
 assert(HIT_COURSES.length >= 10, 'should include HIT Visual Communication courses');
 assert.equal(HIT_STUDY_YEARS.length, 5);
-assert(SEED_STUDENT_WORKS.length >= 5, 'seed data can remain in the data file');
+assert(!fs.readFileSync(new URL('../src/data/hitFaculty.js', import.meta.url), 'utf8').includes('SEED_STUDENT_WORKS'), 'sample student works must stay deleted');
 assert.deepEqual(normalizeItems(['  שלום  ', { text: 'עוד', imageUrl: 'https://example.com/a.png' }, { text: '', imageUrl: 'javascript:alert(1)' }]), [
   { text: 'שלום', imageUrl: '' },
   { text: 'עוד', imageUrl: 'https://example.com/a.png' },
