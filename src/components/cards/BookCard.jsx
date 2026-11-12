@@ -59,12 +59,15 @@ const BookCard = ({
       alt={coverAlt}
       loading="lazy"
       decoding="async"
-      className="w-full h-full object-cover"
+      className={cn(
+        'w-full h-full',
+        viewMode === 'gallery' ? 'object-contain md:object-cover' : 'object-cover'
+      )}
       onError={() => setCoverState({ url: coverUrl, failed: true })}
     />
   ) : (
-    <div className="w-full h-full bg-light-gray flex items-center justify-center text-center px-2">
-      <span className="text-xs font-headline text-dark-gray">אין כריכה זמינה</span>
+    <div className="w-full h-full bg-light-gray flex items-center justify-center text-center px-1">
+      <span className="text-[10px] md:text-xs font-headline text-dark-gray leading-tight">אין כריכה זמינה</span>
     </div>
   );
 
@@ -166,40 +169,46 @@ const BookCard = ({
     <article
       dir="rtl"
       className={cn(
-        'relative p-6 h-full flex flex-col',
+        'relative h-full flex flex-col',
+        'p-1.5 md:p-6',
         'bg-off-white',
         'border-3 border-off-black',
         featured
-          ? 'shadow-[6px_6px_0_#FDE047,9px_9px_0_#1F1F1F]'
-          : 'shadow-brutalist',
-        'hover:shadow-brutalist-sm hover:translate-x-[3px] hover:translate-y-[3px]',
+          ? 'shadow-[2px_2px_0_#FDE047,4px_4px_0_#1F1F1F] md:shadow-[6px_6px_0_#FDE047,9px_9px_0_#1F1F1F]'
+          : 'shadow-brutalist-xs md:shadow-brutalist',
+        'hover:shadow-none md:hover:shadow-brutalist-sm hover:translate-x-[2px] hover:translate-y-[2px] md:hover:translate-x-[3px] md:hover:translate-y-[3px]',
         'transition-all duration-200',
         className
       )}
     >
-      <div className="mb-4 border-3 border-off-black overflow-hidden h-48 bg-light-gray">
+      <div className="mb-1.5 md:mb-4 border-3 border-off-black overflow-hidden aspect-[2/3] md:aspect-auto md:h-48 bg-light-gray">
         <div className="w-full h-full">
           {coverElement}
         </div>
       </div>
 
-      <h3 className="text-xl font-bold font-mixed text-off-black text-right mb-1 line-clamp-2 min-h-[56px]">{title}</h3>
+      <h3 className="text-[11px] leading-tight md:text-xl md:leading-normal font-bold font-mixed text-off-black text-right mb-0.5 md:mb-1 line-clamp-2 md:min-h-[56px] break-words">{title}</h3>
       {year && (
-        <div className="flex justify-end mb-2">
+        <div className="hidden md:flex justify-end mb-2">
           <span className="inline-flex w-fit items-center px-3 py-0.5 text-base font-normal font-jersey bg-tetris-purple border-2 border-off-black text-off-white leading-tight">
             {year}
           </span>
         </div>
       )}
-      {author && <p className="text-sm font-mixed text-dark-gray text-right mb-3 line-clamp-1 min-h-[20px]">{author}</p>}
+      {(author || year) && (
+        <p className="md:hidden text-[10px] leading-tight font-mixed text-dark-gray text-right line-clamp-2 break-words">
+          {[author, year].filter(Boolean).join(' · ')}
+        </p>
+      )}
+      {author && <p className="hidden md:block text-sm font-mixed text-dark-gray text-right mb-3 line-clamp-1 min-h-[20px]">{author}</p>}
       {category && (
-        <div className="mb-3 flex items-center gap-2 justify-end">
+        <div className="mb-3 hidden md:flex items-center gap-2 justify-end">
           <Badge color="bg-tetris-blue">{category}</Badge>
         </div>
       )}
 
       {why && (
-        <div className="mt-3 pt-3 border-t-3 border-light-gray min-h-[112px]">
+        <div className="hidden md:block mt-3 pt-3 border-t-3 border-light-gray min-h-[112px]">
           <p className="text-sm font-mixed text-off-black text-right leading-relaxed line-clamp-4">
             <span className="font-bold">למה לקרוא: </span>{why}
           </p>
@@ -207,7 +216,7 @@ const BookCard = ({
       )}
 
       {(tags.length > 0 || availabilityBadge) && (
-        <div className="mt-3 flex flex-wrap gap-2 justify-end">
+        <div className="mt-3 hidden md:flex flex-wrap gap-2 justify-end">
           {availabilityBadge}
           {tags.slice(0, 5).map((tag) => (
             (() => {
@@ -233,7 +242,17 @@ const BookCard = ({
       )}
 
       {link && (
-        <div className="mt-auto pt-3 border-t-3 border-light-gray flex justify-end">
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={linkLabel ? `${linkLabel}: ${title}` : `קישור לספר ${title}`}
+          className="absolute inset-0 z-10 md:hidden"
+        />
+      )}
+
+      {link && (
+        <div className="mt-auto pt-3 border-t-3 border-light-gray hidden md:flex justify-end">
           <a
             href={link}
             target="_blank"
