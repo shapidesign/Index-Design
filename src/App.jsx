@@ -1,7 +1,10 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect, lazy, Suspense } from 'react';
 import { cn, withinOneEdit } from '@/lib/utils';
 import logoHero from '@/assets/svg/logo-hero-purple.svg';
-import { Menu, MessageSquare, Heart } from 'lucide-react';
+import { Menu, MessageSquare, Heart, Share2, Send } from 'lucide-react';
+import { FALLBACK_WHATS_NEW, WHATS_NEW_SEEN_PREFIX } from '@/data/whatsNew';
+import { fetchWhatsNew } from '@/lib/supabase';
+import { initTracking, trackShare } from '@/lib/track';
 import TetrisShape from '@/components/tetris/TetrisShape';
 import TetrisLoader from '@/components/tetris/TetrisLoader';
 import MessageSuggestionModal from '@/components/ui/MessageSuggestionModal';
@@ -12,6 +15,9 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
 import { APPS as KEYBOARD_APPS, SHORTCUTS } from '@/data/shortcuts';
+
+/** Moving eye stays in source; flip to show it again. */
+const SHOW_EYE = false;
 
 /** Lazy-loaded section components */
 const CHUNK_RELOAD_FLAG = 'chunk-reload-attempted';
@@ -153,11 +159,6 @@ const sectionFromHash = () => {
   return navSections.some((s) => s.id === id) ? id : null;
 };
 
-/** Bump this to show "What's New" again for returning users */
-const WHATS_NEW_VERSION = 'v6';
-
-const WHATS_NEW_STORAGE_KEY = `index-whats-new-seen-${WHATS_NEW_VERSION}`;
-
 const App = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [activeSection, setActiveSection] = useState(sectionFromHash);
@@ -171,6 +172,8 @@ const App = () => {
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
+  const [whatsNew, setWhatsNew] = useState(undefined);
+  const [shareNote, setShareNote] = useState('');
   const [luckyPick, setLuckyPick] = useState(null);
   const searchContainerRef = useRef(null);
   const highlightedTargetRef = useRef(null);
@@ -211,34 +214,76 @@ const App = () => {
     return () => window.clearTimeout(timer);
   }, []);
 
-  /** Show "What's New" once per user per version (after initial load) */
+  useEffect(() => initTracking(), []);
+
+  /** Load "What's New" from Supabase. null means the request failed. */
   useEffect(() => {
-    if (isInitialLoading) return;
+    let cancel = false;
+    fetchWhatsNew().then((row) => {
+      if (!cancel) setWhatsNew(row);
+    });
+    return () => { cancel = true; };
+  }, []);
+
+  /** Show "What's New" once per visitor per version, after the loader. */
+  useEffect(() => {
+    if (isInitialLoading || whatsNew === undefined) return undefined;
+    const data = whatsNew || FALLBACK_WHATS_NEW;
+    if (!data.enabled) return undefined;
     const timer = window.setTimeout(() => {
       try {
-        const seen = localStorage.getItem(WHATS_NEW_STORAGE_KEY);
-        if (seen !== 'true') {
-          setIsWhatsNewOpen(true);
-        }
+        if (localStorage.getItem(`${WHATS_NEW_SEEN_PREFIX}${data.version}`) === 'true') return;
       } catch {
-        /* localStorage unavailable */
-        setIsWhatsNewOpen(true); // Fallback to showing it
+        /* localStorage unavailable — still show it */
       }
+      setIsWhatsNewOpen(true);
     }, 400);
     return () => window.clearTimeout(timer);
-  }, [isInitialLoading]);
+  }, [isInitialLoading, whatsNew]);
 
   const handleWhatsNewClose = useCallback((dontShowAgain) => {
     setIsWhatsNewOpen(false);
     // A click event is truthy. Only the checked "don't show again" box dismisses this version.
-    if (dontShowAgain === true) {
-      try {
-        localStorage.setItem(WHATS_NEW_STORAGE_KEY, 'true');
-      } catch {
-        /* localStorage unavailable */
+    if (dontShowAgain !== true) return;
+    const version = (whatsNew || FALLBACK_WHATS_NEW).version;
+    try {
+      localStorage.setItem(`${WHATS_NEW_SEEN_PREFIX}${version}`, 'true');
+    } catch {
+      /* localStorage unavailable */
+    }
+  }, [whatsNew]);
+
+  const handleShare = useCallback(async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: document.title, url });
+        trackShare('native');
+        return;
       }
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareNote('הקישור הועתק');
+      trackShare('copy');
+    } catch {
+      setShareNote('לא הצלחנו לשתף');
     }
   }, []);
+
+  const handleForward = useCallback(() => {
+    const text = `${document.title}\n${window.location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+    trackShare('whatsapp');
+  }, []);
+
+  useEffect(() => {
+    if (!shareNote) return undefined;
+    const timer = window.setTimeout(() => setShareNote(''), 2500);
+    return () => window.clearTimeout(timer);
+  }, [shareNote]);
 
   /** Close dropdown when clicking outside */
   useEffect(() => {
@@ -749,9 +794,11 @@ const App = () => {
           <>
             <section className="text-center mb-8 py-4 flex flex-col items-center">
               {/* Eye Logo Animation */}
-              <div className="mb-6">
-                <EyeLogo className="w-20 h-20 md:w-28 md:h-28" />
-              </div>
+              {SHOW_EYE && (
+                <div className="mb-6">
+                  <EyeLogo className="w-20 h-20 md:w-28 md:h-28" />
+                </div>
+              )}
 
               {/* Logo "אינדקס" from Figma */}
               <div className="flex justify-center mb-1 md:mb-4">
@@ -1290,9 +1337,9 @@ const App = () => {
       </main>
 
       {/* ===== FOOTER ===== */}
-      <footer className="border-t-3 border-off-black bg-off-black text-off-white mt-16">
+      <footer className="border-t-3 border-off-black bg-off-black text-off-white dark:bg-[#0E0E0E] dark:border-dark-gray mt-16">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
-          <div className="mb-5 flex justify-center gap-3">
+          <div className="mb-5 flex flex-wrap justify-center gap-3">
             <button
               type="button"
               onClick={() => setIsSuggestionModalOpen(true)}
@@ -1307,6 +1354,38 @@ const App = () => {
             >
               <MessageSquare size={15} />
               <span>רוצים להציע תוכן לאתר?</span>
+            </button>
+            <button
+              type="button"
+              data-track="share"
+              onClick={handleShare}
+              className={cn(
+                'inline-flex items-center gap-2 px-4 py-2',
+                'bg-tetris-cyan text-off-black text-sm font-bold font-headline',
+                'border-2 border-off-white',
+                'shadow-brutalist-xs',
+                'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                'transition-all duration-200'
+              )}
+            >
+              <Share2 size={15} />
+              <span>שיתוף</span>
+            </button>
+            <button
+              type="button"
+              data-track="forward"
+              onClick={handleForward}
+              className={cn(
+                'inline-flex items-center gap-2 px-4 py-2',
+                'bg-tetris-orange text-off-black text-sm font-bold font-headline',
+                'border-2 border-off-white',
+                'shadow-brutalist-xs',
+                'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
+                'transition-all duration-200'
+              )}
+            >
+              <Send size={15} />
+              <span>העברה בוואטסאפ</span>
             </button>
             {/* Support Button - Hidden for now
             <button
@@ -1326,6 +1405,9 @@ const App = () => {
             </button>
             */}
           </div>
+          {shareNote && (
+            <p role="status" className="text-sm text-off-white font-ibm mb-3">{shareNote}</p>
+          )}
           <p className="text-sm text-tetris-green font-ibm">
             נבנה על ידי{' '}
             <a
@@ -1351,6 +1433,8 @@ const App = () => {
       />
       <WhatsNewModal
         open={isWhatsNewOpen}
+        title={(whatsNew || FALLBACK_WHATS_NEW).title}
+        items={(whatsNew || FALLBACK_WHATS_NEW).items}
         onClose={handleWhatsNewClose}
       />
     </div>

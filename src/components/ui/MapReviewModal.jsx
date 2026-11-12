@@ -133,7 +133,7 @@ const MapReviewModal = ({ open, onClose, placeName }) => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 bg-white border-2 border-off-black text-right font-headline text-lg outline-none focus:border-tetris-purple transition-all shadow-brutalist-xs focus:shadow-brutalist"
+              className="w-full px-4 py-3 bg-off-white border-2 border-off-black text-right font-headline text-lg outline-none focus:border-tetris-purple transition-all shadow-brutalist-xs focus:shadow-brutalist"
               placeholder="איך תרצו שנופיע לכם בחולצה?"
             />
           </label>
@@ -175,7 +175,7 @@ const MapReviewModal = ({ open, onClose, placeName }) => {
             <textarea
               value={recommendation}
               onChange={(e) => setRecommendation(e.target.value)}
-              className="w-full min-h-[120px] px-4 py-3 bg-white border-2 border-off-black text-right font-ibm text-base outline-none focus:border-tetris-purple transition-all shadow-brutalist-xs focus:shadow-brutalist resize-y"
+              className="w-full min-h-[120px] px-4 py-3 bg-off-white border-2 border-off-black text-right font-ibm text-base outline-none focus:border-tetris-purple transition-all shadow-brutalist-xs focus:shadow-brutalist resize-y"
               placeholder="כתבו מה ניסיתם, אהבתם או פחות אהבתם במקום הזה..."
             />
           </label>
