@@ -29,7 +29,7 @@ const WhatsNewModal = ({ open, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] overflow-y-auto bg-off-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] overflow-y-auto bg-off-black/80 dark:bg-black/70 backdrop-blur-sm"
       onClick={() => onClose(dontShowAgain)}
       role="dialog"
       aria-modal="true"

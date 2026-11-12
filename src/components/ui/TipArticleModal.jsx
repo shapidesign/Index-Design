@@ -58,7 +58,7 @@ const TipArticleModal = ({ tip, open, onClose, onNext, onPrev, hasNext, hasPrev 
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex flex-col md:flex-row bg-off-black/90 backdrop-blur-sm p-4 md:p-8 overflow-hidden"
+      className="fixed inset-0 z-[9999] flex flex-col md:flex-row bg-off-black/90 dark:bg-black/80 backdrop-blur-sm p-4 md:p-8 overflow-hidden"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
