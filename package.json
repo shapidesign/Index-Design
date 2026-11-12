@@ -10,11 +10,13 @@
     "build": "vite build",
     "scrape:fonts": "node scripts/scrape-font-previews.mjs",
     "check:shortcuts": "node scripts/validate-shortcuts.mjs",
+    "check:analytics": "node scripts/check-analytics-event.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@notionhq/client": "^5.9.0",
+    "@supabase/supabase-js": "^2.118.0",
     "@vercel/analytics": "^1.6.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.34.0",

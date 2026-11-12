@@ -4,6 +4,9 @@ import { Menu, X } from 'lucide-react';
 import logoDark from '@/assets/svg/logo-dark.svg';
 import vcLogo from '@/assets/svg/vc-logo-small.svg';
 
+/** HIT / VC mark stays in source; flip to show it again. */
+const SHOW_HIT_LOGO = false;
+
 /**
  * Header - כותרת עליונה
  * Sticky navigation header with dark bg for differentiation:
@@ -103,25 +106,27 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
 
         {/* Left side: VC logo (desktop full, mobile icon) + mobile hamburger */}
         <div className="flex items-center gap-2 md:justify-self-start">
-          <a
-            href="https://www.hit.ac.il/academic/design/visual-communications/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center"
-          >
-            {/* Desktop: Full Logo */}
-            <img
-              src={vcLogo}
-              alt="המחלקה לתקשורת חזותית"
-              className="hidden md:block h-10 w-auto brightness-0 invert"
-            />
-            {/* Mobile: Full VC logo */}
-            <img
-              src={vcLogo}
-              alt="המחלקה לתקשורת חזותית"
-              className="md:hidden h-8 w-auto brightness-0 invert"
-            />
-          </a>
+          {SHOW_HIT_LOGO && (
+            <a
+              href="https://www.hit.ac.il/academic/design/visual-communications/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center"
+            >
+              {/* Desktop: Full Logo */}
+              <img
+                src={vcLogo}
+                alt="המחלקה לתקשורת חזותית"
+                className="hidden md:block h-10 w-auto brightness-0 invert"
+              />
+              {/* Mobile: Full VC logo */}
+              <img
+                src={vcLogo}
+                alt="המחלקה לתקשורת חזותית"
+                className="md:hidden h-8 w-auto brightness-0 invert"
+              />
+            </a>
+          )}
 
           {/* Mobile: hamburger */}
           <button

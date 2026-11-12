@@ -1,19 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { X, Check } from 'lucide-react';
+import { FALLBACK_WHATS_NEW } from '@/data/whatsNew';
 
 /**
  * WhatsNewModal - "מה חדש אצלנו?" popup.
- * Shows once per user per version. Update WHATS_NEW_VERSION to show again for returning users.
+ * Shown once per visitor per version stored in Supabase.
  */
-const WhatsNewModal = ({ open, onClose }) => {
+const WhatsNewModal = ({
+  open,
+  onClose,
+  title = FALLBACK_WHATS_NEW.title,
+  items = FALLBACK_WHATS_NEW.items,
+}) => {
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [openSnapshot, setOpenSnapshot] = useState(open);
+  if (open !== openSnapshot) {
+    setOpenSnapshot(open);
+    if (!open) setDontShowAgain(false);
+  }
 
   useEffect(() => {
-    if (!open) {
-      setDontShowAgain(false); // Reset when reopening just in case
-      return;
-    }
+    if (!open) return undefined;
     const onEsc = (e) => {
       if (e.key === 'Escape') onClose(dontShowAgain);
     };
@@ -62,7 +70,7 @@ const WhatsNewModal = ({ open, onClose }) => {
         </button>
 
         <h2 id="whats-new-title" className="text-2xl font-bold font-headline text-off-black mb-4 text-right">
-          מה חדש אצלנו?
+          {title}
         </h2>
 
         <ul
@@ -73,11 +81,9 @@ const WhatsNewModal = ({ open, onClose }) => {
             'ps-4 marker:text-tetris-purple'
           )}
         >
-          <li>הוספנו מקלדת: קיצורי מקלדת לתוכנות עיצוב, הדגשה חיה של המקשים, תרגול וחידון.</li>
-          <li>הוספנו 8 כלים חדשים: 2 בטיפוגרפיה, 2 ב-UX, ועוד כלים לצילום, לצבע, לעיבוד תמונה ולקיצורי מקלדת.</li>
-          <li>הוספנו ממשק לספרייה של HIT בצורה נוחה למשתמש.</li>
-          <li>נוספו פונטים חדשים למילון, בהם עזר דיאלוג, אקסיומה, רקיע, שפגאט ומשפחת ריזינגר.</li>
-          <li>נוספו פונטים מבית <bdi dir="ltr" className="whitespace-nowrap">Nomad</bdi>: קלדנית, ספרא, מידל איסט, יפה נפש, דולומיט, <bdi dir="ltr" className="whitespace-nowrap">Kilo Text</bdi>, <bdi dir="ltr" className="whitespace-nowrap">Kilo Display</bdi>, <bdi dir="ltr" className="whitespace-nowrap">Dear AI</bdi>, <bdi dir="ltr" className="whitespace-nowrap">The Bizarre</bdi>, <bdi dir="ltr" className="whitespace-nowrap">Werd</bdi>, <bdi dir="ltr" className="whitespace-nowrap">Romanisch Spitz</bdi> ו־<bdi dir="ltr" className="whitespace-nowrap">Sugar</bdi>.</li>
+          {items.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
         </ul>
 
         <div className="mt-8 pt-4 border-t-2 border-off-black/10 flex flex-col sm:flex-row items-center justify-between gap-4">
