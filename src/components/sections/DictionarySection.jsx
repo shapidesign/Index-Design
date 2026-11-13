@@ -7,6 +7,7 @@ import previewSlugs from "@/data/font-previews.json";
 import { sampleWord, specimenFace } from "@/lib/fontSpecimen";
 import FilterToggle from "@/components/ui/FilterToggle";
 import SaveItemButton from "@/components/ui/SaveItemButton";
+import DescriptionPopup, { LongPress } from "@/components/ui/DescriptionPopup";
 
 const PREVIEW_SLUGS = new Set(previewSlugs);
 
@@ -193,6 +194,25 @@ const FontTag = ({ label, highlight = false }) => {
 
 const norm = (s) => (s || "").toLowerCase();
 
+function fontFullDescription(font) {
+  const foundry = FOUNDRIES[font.fo];
+  const styles = (font.st || []).map((id) => STYLES[id]).filter(Boolean);
+  const uses = (font.use || []).map((id) => USES[id]).filter(Boolean);
+  const tags = (font.tg || []).map((id) => TAGS[id]).filter(Boolean);
+  const vibes = (font.vb || []).map((id) => VIBES[id] || id).filter(Boolean);
+  return [
+    font.lat,
+    foundry?.name ? `בית הפונטים: ${foundry.name}` : "",
+    `עיצוב: ${font.d || "—"}`,
+    `שנה: ${font.y ?? "—"}`,
+    font.w ? `${font.w} משקלים` : "מס׳ משקלים לא צוין",
+    styles.length ? `סגנון: ${styles.join(" · ")}` : "",
+    uses.length ? `שימוש: ${uses.join(" · ")}` : "",
+    tags.length ? tags.join(" · ") : "",
+    vibes.length ? `אווירה: ${vibes.join(" · ")}` : "",
+  ].filter(Boolean).join("\n");
+}
+
 export default function DictionarySection() {
   const [query, setQuery] = useState("");
   const [foundries, setFoundries] = useState([]);
@@ -206,6 +226,7 @@ export default function DictionarySection() {
   const [openGroup, setOpenGroup] = useState(null);
   const [vibeQuery, setVibeQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [detailFont, setDetailFont] = useState(null);
 
   const designers = useMemo(() => {
     const set = new Set(FONTS.map((x) => x.d).filter(Boolean));
@@ -504,8 +525,10 @@ export default function DictionarySection() {
             ];
 
             return (
-              <article
+              <LongPress
+                as="article"
                 key={x.lat + i}
+                onLongPress={() => setDetailFont(x)}
                 id={`search-item-dictionary-${String(x.lat || x.n).replace(/[^a-zA-Z0-9_-]/g, '-')}`}
                 dir="rtl"
                 className={cn(
@@ -640,11 +663,18 @@ export default function DictionarySection() {
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
-              </article>
+              </LongPress>
             );
           })}
         </div>
       )}
+
+      <DescriptionPopup
+        open={!!detailFont}
+        title={detailFont?.n || ""}
+        description={detailFont ? fontFullDescription(detailFont) : ""}
+        onClose={() => setDetailFont(null)}
+      />
 
       <footer className="mt-10 pt-4 border-t-3 border-off-black text-xs text-dark-gray font-ibm flex justify-between flex-wrap gap-3">
         <span>הנתונים נאספו מאתרי בתי הפונטים. שדות המסומנים ב־“—” טרם אומתו.</span>
