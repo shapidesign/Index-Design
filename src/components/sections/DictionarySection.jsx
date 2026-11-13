@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { ExternalLink, ChevronDown } from "lucide-react";
 import { getTagColor, getTagTextClass } from "@/lib/tagColors";
 import { FOUNDRIES, STYLES, USES, TAGS, VIBES, ERAS, FONTS, fontSlug } from "@/data/fonts";
 import previewSlugs from "@/data/font-previews.json";
+import { sampleWord, specimenFace } from "@/lib/fontSpecimen";
 import FilterToggle from "@/components/ui/FilterToggle";
 import SaveItemButton from "@/components/ui/SaveItemButton";
 
@@ -80,6 +81,93 @@ const FilterAccordion = ({ label, activeCount = 0, isOpen, onToggle, toolbar, sc
     )}
   </div>
 );
+
+const faceCache = new Map();
+
+const loadFace = (face) => {
+  if (!faceCache.has(face.family)) {
+    faceCache.set(face.family, (async () => {
+      if (typeof FontFace === "undefined") return false;
+      try {
+        const loaded = await new FontFace(face.family, `url(${face.src})`, {
+          weight: "400",
+          style: "normal",
+        }).load();
+        document.fonts.add(loaded);
+        return true;
+      } catch {
+        return false;
+      }
+    })());
+  }
+  return faceCache.get(face.family);
+};
+
+const previewPosition = (foundry) => (
+  foundry === "hagilda" || foundry === "reisinger" ? "object-[center_26%]" : "object-center"
+);
+
+/**
+ * FontWindow - the cover slot. A short word in the real face when we can load it,
+ * otherwise the preview image.
+ */
+const FontWindow = ({ face, word, previewSrc, alt, positionClass }) => {
+  const ref = useRef(null);
+  const family = face?.family || "";
+  const src = face?.src || "";
+  const [state, setState] = useState(family ? "wait" : "off");
+
+  useEffect(() => {
+    if (!family || !src) return undefined;
+    const el = ref.current;
+    if (!el) return undefined;
+    let cancel = false;
+    const io = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      io.disconnect();
+      setState((prev) => (prev === "ready" ? prev : "loading"));
+      loadFace({ family, src }).then((ok) => {
+        if (!cancel) setState(ok ? "ready" : "failed");
+      });
+    }, { rootMargin: "240px" });
+    io.observe(el);
+    return () => {
+      cancel = true;
+      io.disconnect();
+    };
+  }, [family, src]);
+
+  const showWord = state === "ready";
+
+  return (
+    <div ref={ref} className="w-full h-full bg-off-white" style={{ containerType: "inline-size" }}>
+      {showWord ? (
+        <div className="w-full h-full flex items-center justify-center px-0.5" dir="rtl">
+          <span
+            className="text-off-black whitespace-nowrap leading-none text-xl md:text-5xl"
+            style={{ fontFamily: `"${family}"`, fontWeight: 400, fontSize: "clamp(1.5rem, 40cqi, 6rem)" }}
+          >
+            {word}
+          </span>
+        </div>
+      ) : previewSrc ? (
+        <img
+          src={previewSrc}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          className={cn("w-full h-full object-cover", positionClass)}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-center px-1">
+          {(state === "failed" || !face) && (
+            <span className="text-[10px] md:text-xs font-headline text-dark-gray leading-tight">אין תצוגה</span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const FontTag = ({ label, highlight = false }) => {
   const bg = highlight ? "bg-tetris-green" : getTagColor(label);
@@ -392,12 +480,15 @@ export default function DictionarySection() {
           נסו להסיר חלק מהסינונים.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-6 items-stretch">
           {results.map((x, i) => {
             const fo = FOUNDRIES[x.fo];
             const foundryBg = getTagColor(fo.name);
             const slug = fontSlug(x);
             const hasPreview = PREVIEW_SLUGS.has(slug);
+            const face = specimenFace(x);
+            const word = sampleWord(slug);
+            const previewSrc = hasPreview ? `/font-previews/${slug}.webp` : "";
             const cardTags = [
               ...x.st.map((s) => STYLES[s]),
               ...(x.tg.includes("free") ? ["חינמי"] : []),
@@ -416,27 +507,70 @@ export default function DictionarySection() {
               <article
                 key={x.lat + i}
                 id={`search-item-dictionary-${String(x.lat || x.n).replace(/[^a-zA-Z0-9_-]/g, '-')}`}
+                dir="rtl"
                 className={cn(
-                  "flex flex-col",
+                  "relative h-full min-w-0 flex flex-col",
+                  "p-1.5 md:p-0",
                   "bg-off-white",
                   "border-3 border-off-black",
-                  "shadow-brutalist",
-                  "hover:shadow-brutalist-sm hover:translate-x-[3px] hover:translate-y-[3px]",
-                  "transition-all duration-200",
-                  "overflow-hidden"
+                  "shadow-brutalist-xs md:shadow-brutalist",
+                  "hover:shadow-none md:hover:shadow-brutalist-sm",
+                  "hover:translate-x-[2px] hover:translate-y-[2px] md:hover:translate-x-[3px] md:hover:translate-y-[3px]",
+                  "transition-all duration-200"
                 )}
               >
-                {hasPreview && (
-                  <div className="border-b-3 border-off-black bg-light-gray">
-                    <img
-                      src={`/font-previews/${slug}.webp`}
-                      alt={`דוגמה ויזואלית של הפונט ${x.n}`}
-                      loading="lazy"
-                      className="w-full h-36 object-cover object-center"
+                <div className={cn(
+                  "relative overflow-hidden bg-light-gray",
+                  "mb-1.5 md:mb-0 aspect-[2/3] md:aspect-auto md:h-36",
+                  "max-md:border-3 border-off-black md:border-b-3",
+                  !face && !hasPreview && "md:hidden"
+                )}>
+                  <FontWindow
+                    face={face}
+                    word={word}
+                    previewSrc={previewSrc}
+                    alt={`דוגמה ויזואלית של הפונט ${x.n}`}
+                    positionClass={previewPosition(x.fo)}
+                  />
+                  <div className="absolute top-1 left-1 z-20 md:hidden">
+                    <SaveItemButton
+                      sectionId="dictionary"
+                      itemId={x.lat || x.n}
+                      size="sm"
+                      snapshot={{
+                        titleHe: x.n || "",
+                        titleEn: x.lat || "",
+                        description: [fo?.name, x.d].filter(Boolean).join(" · "),
+                        link: x.url || "",
+                        image: previewSrc,
+                        tags: cardTags.slice(0, 5),
+                        badge: fo?.name || "פונט",
+                      }}
                     />
                   </div>
-                )}
-                <div className="p-4 flex-1 flex flex-col gap-2">
+                </div>
+
+                <h3 className={cn(
+                  "md:hidden text-[11px] leading-tight font-bold text-off-black text-right line-clamp-2 break-words",
+                  isEnglish(x.n) ? "font-jersey" : "font-headline"
+                )}>
+                  {x.n}
+                </h3>
+                <p className={cn(
+                  "md:hidden text-[10px] leading-tight text-dark-gray text-right line-clamp-1",
+                  isEnglish(fo.name) ? "font-jersey" : "font-headline"
+                )}>
+                  {fo.name}
+                </p>
+                <a
+                  href={x.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`לעמוד הפונט ${x.n}`}
+                  className="absolute inset-0 z-10 md:hidden"
+                />
+
+                <div className="hidden md:flex p-4 flex-1 flex-col gap-2">
                   <div className="flex justify-between items-center gap-2">
                     <span
                       className={cn(
@@ -485,7 +619,7 @@ export default function DictionarySection() {
                   )}
                 </div>
 
-                <div className="px-4 py-3 border-t-3 border-off-black bg-light-gray flex justify-between items-center gap-3">
+                <div className="hidden md:flex px-4 py-3 border-t-3 border-off-black bg-light-gray justify-between items-center gap-3">
                   <span className="text-xs text-dark-gray font-ibm">
                     {x.w ? `${x.w} משקלים` : "מס׳ משקלים —"}
                   </span>
