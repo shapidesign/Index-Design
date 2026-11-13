@@ -24,18 +24,22 @@ export function LongPress({
 /**
  * DescriptionPopup - תיאור מלא של פריט, נסגר בכפתור X
  */
+const isCloseButton = (target) =>
+  target instanceof Element && !!target.closest('[data-description-close]');
+
 const DescriptionPopup = ({ open, title, description, onClose }) => {
-  const closeRef = useRef(null);
+  const panelRef = useRef(null);
   const body = (description || '').trim() || 'אין תיאור לפריט הזה.';
 
   useEffect(() => {
     if (!open) return undefined;
-    closeRef.current?.focus();
+    // Focus the panel, not the X, so the yellow focus ring does not sit on the close button.
+    panelRef.current?.focus();
     const onEsc = (e) => {
       if (e.key === 'Escape') onClose();
     };
     // The finger is still down when the popup opens. Swallow that release so it
-    // doesn't hit the backdrop. A later tap (the X) starts with pointerdown.
+    // doesn't hit the backdrop. A tap on the X is never part of that swallow.
     let swallowClick = false;
     let clearSwallow = 0;
     const armRelease = () => {
@@ -43,12 +47,14 @@ const DescriptionPopup = ({ open, title, description, onClose }) => {
       window.clearTimeout(clearSwallow);
       clearSwallow = window.setTimeout(() => { swallowClick = false; }, 400);
     };
-    const onPointerDown = () => {
+    const onPointerDown = (e) => {
+      if (isCloseButton(e.target)) return;
       swallowClick = false;
       window.clearTimeout(clearSwallow);
       document.removeEventListener('pointerup', armRelease, true);
     };
     const onClick = (e) => {
+      if (isCloseButton(e.target)) return;
       if (!swallowClick) return;
       swallowClick = false;
       window.clearTimeout(clearSwallow);
@@ -82,11 +88,15 @@ const DescriptionPopup = ({ open, title, description, onClose }) => {
       aria-labelledby="item-description-title"
     >
       <div
+        ref={panelRef}
+        tabIndex={-1}
         dir="rtl"
         className={cn(
           'w-full max-w-md max-h-[85vh] flex flex-col',
-          'bg-off-white border-3 border-off-black shadow-brutalist'
+          'bg-off-white border-3 border-off-black shadow-brutalist',
+          'outline-none'
         )}
+        style={{ outline: 'none' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3 p-4 border-b-3 border-off-black shrink-0">
@@ -100,15 +110,14 @@ const DescriptionPopup = ({ open, title, description, onClose }) => {
             {title}
           </h2>
           <button
-            ref={closeRef}
             type="button"
+            data-description-close=""
             onClick={onClose}
             className={cn(
-              'shrink-0 p-2',
+              'shrink-0 inline-flex items-center justify-center w-11 h-11',
               'bg-tetris-pink border-2 border-off-black shadow-brutalist-xs',
               'hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]',
-              'transition-all duration-200',
-              'focus-visible:outline-3 focus-visible:outline-tetris-yellow focus-visible:outline-offset-2'
+              'transition-all duration-200'
             )}
             aria-label="סגור"
           >
