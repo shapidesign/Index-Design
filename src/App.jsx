@@ -10,6 +10,8 @@ import WhatsNewModal from '@/components/ui/WhatsNewModal';
 import EyeLogo from '@/components/ui/EyeLogo';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import CookieConsent from '@/components/ui/CookieConsent';
+import { openCookieSettings } from '@/lib/clarityConsent';
 import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
 import { APPS as KEYBOARD_APPS, SHORTCUTS } from '@/data/shortcuts';
 
@@ -742,6 +744,8 @@ const App = () => {
         onHomeClick={handleGoHome}
       />
 
+      <CookieConsent />
+
       {/* ===== MAIN ===== */}
       <main className="max-w-7xl mx-auto px-4 py-12">
         {/* Hero + category cards: hidden when any section is active */}
@@ -1338,6 +1342,13 @@ const App = () => {
             </a>
             , 2026
           </p>
+          <button
+            type="button"
+            onClick={openCookieSettings}
+            className="mt-2 text-xs text-mid-gray underline underline-offset-2 hover:text-off-white transition-colors"
+          >
+            עוגיות ופרטיות
+          </button>
         </div>
       </footer>
 

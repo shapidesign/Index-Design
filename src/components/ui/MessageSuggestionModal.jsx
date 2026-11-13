@@ -152,6 +152,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
             <input
               type="text"
               value={name}
+              data-clarity-mask="true"
               onChange={(e) => setName(e.target.value)}
               className="mt-1 w-full px-3 py-2 bg-off-white border-2 border-off-black text-right font-headline outline-none"
               placeholder="השם שלך"
@@ -164,6 +165,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
             <input
               type="email"
               value={email}
+              data-clarity-mask="true"
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full px-3 py-2 bg-off-white border-2 border-off-black text-right font-ibm outline-none"
               placeholder="לדוגמה: name@example.com"
@@ -191,6 +193,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
             <span className="text-xs font-bold font-headline text-off-black">הודעה / הצעה *</span>
             <textarea
               value={message}
+              data-clarity-mask="true"
               onChange={(e) => setMessage(e.target.value)}
               className="mt-1 w-full min-h-28 px-3 py-2 bg-off-white border-2 border-off-black text-right font-ibm outline-none resize-y"
               placeholder="מה הייתם רוצים להוסיף לאתר?"
@@ -204,6 +207,7 @@ const MessageSuggestionModal = ({ open, onClose }) => {
               <input
                 type="text"
                 value={url}
+                data-clarity-mask="true"
                 onChange={(e) => setUrl(e.target.value)}
                 className="w-full bg-transparent text-right font-ibm outline-none"
                 placeholder="לדוגמה: https://example.com"
