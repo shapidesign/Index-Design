@@ -161,6 +161,7 @@ const MapReviewModal = ({ open, onClose, placeName, userProfile }) => {
               type="text"
               value={userProfile.name || ''}
               readOnly
+              data-clarity-mask="true"
               className="w-full px-4 py-3 bg-light-gray border-2 border-off-black text-right font-headline text-lg outline-none cursor-not-allowed"
             />
           </label>
@@ -201,6 +202,7 @@ const MapReviewModal = ({ open, onClose, placeName, userProfile }) => {
             <span className="text-lg font-bold font-headline text-off-black block mb-2">ההמלצה *</span>
             <textarea
               value={recommendation}
+              data-clarity-mask="true"
               onChange={(e) => setRecommendation(e.target.value)}
               className="w-full min-h-[120px] px-4 py-3 bg-off-white border-2 border-off-black text-right font-ibm text-base outline-none focus:border-tetris-purple transition-all shadow-brutalist-xs focus:shadow-brutalist resize-y"
               placeholder="כתבו מה ניסיתם, אהבתם או פחות אהבתם במקום הזה..."

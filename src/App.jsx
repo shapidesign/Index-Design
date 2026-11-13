@@ -16,6 +16,8 @@ import Footer from '@/components/layout/Footer';
 import { SavedItemsProvider } from '@/hooks/useSavedItems';
 import { legacyHashToPath, sectionIdFromPathname } from '@/lib/section-route';
 import { hasAuthCallback } from '@/lib/auth-redirect';
+import CookieConsent from '@/components/ui/CookieConsent';
+import { openCookieSettings } from '@/lib/clarityConsent';
 import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
 import { APPS as KEYBOARD_APPS, SHORTCUTS } from '@/data/shortcuts';
 
@@ -770,19 +772,19 @@ const App = () => {
         onHomeClick={handleGoHome}
       />
 
+      <CookieConsent />
+
       {/* ===== MAIN ===== */}
       <main className="max-w-7xl mx-auto px-4 py-12">
         {/* Hero + category cards: hidden when any section is active */}
         {!activeSection && (
           <>
             <section className="text-center mb-8 py-4 flex flex-col items-center">
-              {/* Eye Logo Animation */}
               {SHOW_EYE && (
                 <div className="mb-6">
                   <EyeLogo className="w-20 h-20 md:w-28 md:h-28" />
                 </div>
               )}
-
               {/* Logo "אינדקס" from Figma */}
               <div className="flex justify-center mb-1 md:mb-4">
                 <img
@@ -1415,6 +1417,13 @@ const App = () => {
             </a>
             , 2026
           </p>
+          <button
+            type="button"
+            onClick={openCookieSettings}
+            className="mt-2 text-xs text-mid-gray underline underline-offset-2 hover:text-off-white transition-colors"
+          >
+            עוגיות ופרטיות
+          </button>
         </div>
       </footer>
 

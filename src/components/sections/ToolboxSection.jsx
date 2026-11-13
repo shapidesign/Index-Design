@@ -206,7 +206,7 @@ const ToolboxSection = ({ pendingNavigation }) => {
       {/* Card grid */}
       {filteredResources.length > 0 ? (
         viewMode === 'gallery' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-6 items-stretch">
             {filteredResources.map((resource) => (
               <ToolboxCard
                 key={resource.id}

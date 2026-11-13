@@ -362,11 +362,11 @@ const ToolboxCard = ({
       dir="rtl"
       aria-label={`${name} - ${pricing || ''}`}
       className={cn(
-        'block',
+        'flex h-full flex-col',
         'bg-off-white',
         'border-3 border-off-black',
-        'shadow-brutalist',
-        'hover:shadow-brutalist-sm hover:translate-x-[3px] hover:translate-y-[3px]',
+        'shadow-brutalist-xs md:shadow-brutalist',
+        'hover:shadow-none md:hover:shadow-brutalist-sm hover:translate-x-[2px] hover:translate-y-[2px] md:hover:translate-x-[3px] md:hover:translate-y-[3px]',
         'transition-all duration-200',
         'group overflow-hidden',
         'focus-visible:outline-3 focus-visible:outline-tetris-yellow focus-visible:outline-offset-2',
@@ -374,7 +374,7 @@ const ToolboxCard = ({
       )}
     >
       {/* ===== IMAGE AREA ===== */}
-      <div className="relative aspect-[16/10] overflow-hidden border-b-3 border-off-black bg-light-gray">
+      <div className="relative aspect-[3/4] md:aspect-[16/10] overflow-hidden border-b-3 border-off-black bg-light-gray">
         {showImage ? (
           <img
             src={displayImage}
@@ -390,7 +390,7 @@ const ToolboxCard = ({
 
         {/* Type badges overlaid on the image — top right in RTL */}
         {types.length > 0 && (
-          <div className="absolute top-2 right-2 flex flex-wrap gap-1 max-w-[75%] z-10">
+          <div className="absolute top-2 right-2 hidden md:flex flex-wrap gap-1 max-w-[85%] z-10">
             {types.map((type) => (
               <Badge
                 key={type}
@@ -420,7 +420,7 @@ const ToolboxCard = ({
           className={cn(
             'absolute inset-0',
             'bg-off-black/85',
-            'flex flex-col p-4',
+            'hidden md:flex flex-col p-4',
             'opacity-0 translate-y-4',
             'group-hover:opacity-100 group-hover:translate-y-0',
             'transition-all duration-300',
@@ -440,27 +440,20 @@ const ToolboxCard = ({
       </div>
 
       {/* ===== CARD BODY ===== */}
-      <div className="p-4">
+      <div className="p-1.5 md:p-4">
         {/* Name — Jersey 20 for English, Reisinger Amir for Hebrew */}
         <h3
           className={cn(
-            'text-lg font-bold text-off-black text-right mb-2 leading-tight',
+            'text-[11px] leading-tight md:text-lg md:mb-2 font-bold text-off-black text-right line-clamp-2 break-words',
             isEnglish(name) ? 'font-jersey' : 'font-headline'
           )}
         >
           {name}
         </h3>
 
-        {/* Mobile description fallback (hover overlay is not accessible on touch devices) */}
-        {description && (
-          <p className="text-sm text-dark-gray text-right font-ibm leading-relaxed line-clamp-3 mb-3 md:hidden">
-            {description}
-          </p>
-        )}
-
         {/* Tags — secondary accent colors (cycled) */}
         {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
+          <div className="hidden md:flex flex-wrap gap-1.5 mb-3">
             {tags.map((tag) => (
               <span
                 key={tag}
@@ -482,7 +475,7 @@ const ToolboxCard = ({
 
         {/* Pricing badge */}
         {pricing && (
-          <div className="flex justify-start mt-2">
+          <div className="hidden md:flex justify-start mt-2">
             <PricingBadge pricing={pricing} />
           </div>
         )}
