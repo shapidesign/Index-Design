@@ -7,9 +7,7 @@ import TetrisLoader from '@/components/tetris/TetrisLoader';
 import MessageSuggestionModal from '@/components/ui/MessageSuggestionModal';
 import SupportModal from '@/components/ui/SupportModal';
 import WhatsNewModal from '@/components/ui/WhatsNewModal';
-import EyeLogo from '@/components/ui/EyeLogo';
 import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import CookieConsent from '@/components/ui/CookieConsent';
 import { openCookieSettings } from '@/lib/clarityConsent';
 import { FONTS, FOUNDRIES, STYLES, USES, TAGS } from '@/data/fonts';
@@ -752,11 +750,6 @@ const App = () => {
         {!activeSection && (
           <>
             <section className="text-center mb-8 py-4 flex flex-col items-center">
-              {/* Eye Logo Animation */}
-              <div className="mb-6">
-                <EyeLogo className="w-20 h-20 md:w-28 md:h-28" />
-              </div>
-
               {/* Logo "אינדקס" from Figma */}
               <div className="flex justify-center mb-1 md:mb-4">
                 <img

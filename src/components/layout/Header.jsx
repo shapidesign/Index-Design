@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Menu, X } from 'lucide-react';
 import logoDark from '@/assets/svg/logo-dark.svg';
-import vcLogo from '@/assets/svg/vc-logo-small.svg';
 
 /**
  * Header - כותרת עליונה
@@ -49,7 +48,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
         'border-b-3 border-off-black',
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between md:grid md:grid-cols-[auto_1fr_auto] md:gap-6">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between md:grid md:grid-cols-[auto_1fr] md:gap-6">
 
         {/* Logo - right corner in RTL (white version for dark bg) */}
         <button
@@ -101,28 +100,7 @@ const Header = ({ activeSection, onSectionChange, onHelpClick, onHomeClick }) =>
           </button>
         </div>
 
-        {/* Left side: VC logo (desktop full, mobile icon) + mobile hamburger */}
-        <div className="flex items-center gap-2 md:justify-self-start">
-          <a
-            href="https://www.hit.ac.il/academic/design/visual-communications/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center"
-          >
-            {/* Desktop: Full Logo */}
-            <img
-              src={vcLogo}
-              alt="המחלקה לתקשורת חזותית"
-              className="hidden md:block h-10 w-auto brightness-0 invert"
-            />
-            {/* Mobile: Full VC logo */}
-            <img
-              src={vcLogo}
-              alt="המחלקה לתקשורת חזותית"
-              className="md:hidden h-8 w-auto brightness-0 invert"
-            />
-          </a>
-
+        <div className="md:hidden">
           {/* Mobile: hamburger */}
           <button
             className={cn(
