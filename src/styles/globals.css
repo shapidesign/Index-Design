@@ -552,3 +552,18 @@
 .slider-thumb-interactive::-moz-range-thumb:hover {
   background: var(--color-tetris-orange);
 }
+
+/* Mobile long-press cards: block the link callout, keep inner controls usable. */
+@media (max-width: 767px) {
+  .long-press-card {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .long-press-card :is(a, button, input, textarea, select, label) {
+    -webkit-touch-callout: default;
+    -webkit-user-select: auto;
+    user-select: auto;
+  }
+}

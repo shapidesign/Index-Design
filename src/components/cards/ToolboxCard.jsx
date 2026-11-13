@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
 import PricingBadge from '@/components/ui/PricingBadge';
 import SaveItemButton from '@/components/ui/SaveItemButton';
+import DescriptionPopup, { LongPress } from '@/components/ui/DescriptionPopup';
 import { getTagColor, getTagTextClass } from '@/lib/tagColors';
 
 /**
@@ -209,6 +210,7 @@ const ToolboxCard = ({
   className,
 }) => {
   const [imgError, setImgError] = useState(false);
+  const [descOpen, setDescOpen] = useState(false);
   const screenshotUrl = getScreenshotUrl(link);
   
   // Priority: 1. Custom image, 2. Screenshot (if no error), 3. Placeholder
@@ -232,9 +234,21 @@ const ToolboxCard = ({
       : `https://${link}`
     : '#';
 
+  const descriptionPopup = (
+    <DescriptionPopup
+      open={descOpen}
+      title={name}
+      description={description}
+      onClose={() => setDescOpen(false)}
+    />
+  );
+
   if (viewMode === 'list') {
     return (
-      <a
+      <>
+      <LongPress
+        as="a"
+        onLongPress={() => setDescOpen(true)}
         id={itemId ? `search-item-toolbox-${String(itemId).replace(/[^a-zA-Z0-9_-]/g, '-')}` : undefined}
         href={href}
         target="_blank"
@@ -330,12 +344,17 @@ const ToolboxCard = ({
             )}
           </div>
         </div>
-      </a>
+      </LongPress>
+      {descriptionPopup}
+      </>
     );
   }
 
   return (
-    <a
+    <>
+    <LongPress
+      as="a"
+      onLongPress={() => setDescOpen(true)}
       id={itemId ? `search-item-toolbox-${String(itemId).replace(/[^a-zA-Z0-9_-]/g, '-')}` : undefined}
       href={href}
       target="_blank"
@@ -468,7 +487,9 @@ const ToolboxCard = ({
           </div>
         )}
       </div>
-    </a>
+    </LongPress>
+    {descriptionPopup}
+    </>
   );
 };
 
