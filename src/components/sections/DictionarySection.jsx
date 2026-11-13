@@ -590,6 +590,7 @@ export default function DictionarySection() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={`לעמוד הפונט ${x.n}`}
+                  data-card-link=""
                   className="absolute inset-0 z-10 md:hidden"
                 />
 

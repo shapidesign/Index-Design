@@ -10,13 +10,14 @@ function pressedInteractiveChild(event) {
   if (!node) return false;
   const card = node.closest('.long-press-card');
   const el = node.closest(INTERACTIVE);
-  if (!el || !card || el === card) return false;
+  if (!el || !card || el === card || el.hasAttribute('data-card-link')) return false;
   return card.contains(el);
 }
 
 /**
  * Hold on a mobile card. Ignores buttons and nested links.
- * The card itself may be a link; that still counts.
+ * The card itself may be a link; that still counts. So does a child
+ * marked data-card-link, which is the card's own hit target.
  */
 export default function useLongPress(onLongPress) {
   const timer = useRef(null);
